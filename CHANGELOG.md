@@ -4,6 +4,12 @@
 
 These entries record local development and verification dates in **Beijing time** before the first public source publication. They are not historical Git commit dates, version tags, or invented GitHub issue numbers. Future published fixes should link the real issue, commit or release after it exists.
 
+## 2026-11-11 — Post-publication macOS CI runner correction
+
+The first public-source [macOS compile-only run (42985821518)](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/42985821518), for commit `4024f41be4792372e574168c938e4a6a3da6766c`, ended as **cancelled**. All four jobs (Swift, Objective-C, Rust and Go) had no assigned runner and no executed steps. Each job annotation reported: `The configuration 'macos-14-arm64-us-default' is not supported`. Checkout and compilation never began; this run provides no source-compilation result or evidence of a billing failure.
+
+GitHub's [official macOS 14 retirement announcement](https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/) confirms retirement on 2026-11-02 and lists supported migration labels. The workflow now targets the fixed `macos-15` label instead of `macos-14`. Verification of this migration is **pending the actual subsequent GitHub Actions run**; a workflow edit alone does not establish compilation success. Even a successful compile-only run would leave native AX behavior, settings, icons and sign-in startup unverified. The earlier candidate entry below retains the verification status at its original documentation freeze.
+
 ## 2026-11-11 — Publication candidate and Windows acceptance
 
 ### Added and changed

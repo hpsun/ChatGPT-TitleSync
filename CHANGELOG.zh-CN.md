@@ -4,6 +4,12 @@
 
 以下记录首次公开源码发布前的真实本地开发与验证日期，统一为**北京时间**，不冒充历史Git提交日期、版本标签或虚构GitHub Issue编号。后续公开修复应在实际Issue、提交或Release建立后引用真实链接。
 
+## 2026-11-11 — 公开发布后的macOS CI运行环境修正
+
+首次公开源码提交 `4024f41be4792372e574168c938e4a6a3da6766c` 的[macOS仅编译运行（42985821518）](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/42985821518)结果为**已取消**。Swift、Objective-C、Rust、Go四个作业均未分配runner，且没有执行任何步骤。每个作业的注解原文均为：`The configuration 'macos-14-arm64-us-default' is not supported`。源码检出和编译均未开始；该次运行没有产生源码编译结论，也没有提供费用问题的证据。
+
+GitHub的[macOS 14退役官方公告](https://github.blog/changelog/2026-10-01-github-actions-macos-14-runner-image-retirement/)确认该环境于2026-11-02退役，并列出可迁移的运行环境标签。本次将工作流从`macos-14`改为固定的`macos-15`。迁移后的验证**仍待后续GitHub Actions真实运行结果**，不能仅凭工作流修改宣称编译成功。即使仅编译运行成功，原生AX行为、设置、图标和登录自启动仍须另行验证。下方较早的发布候选记录保留其原始文档冻结时的验证状态。
+
 ## 2026-11-11 — 发布候选与Windows实测
 
 ### 新增与调整
