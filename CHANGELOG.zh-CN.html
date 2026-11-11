@@ -68,4 +68,5 @@
 <h2 id="_5">作为限制保留的事件实验</h2>
 <p>一次Windows60秒实验中，两次导航已由来源/页头确认，而单次Document.NameProperty、TreeScope.Element订阅收到<strong>0条回调</strong>；原生前台/名称变化元数据事件有到达。本次未订阅页头文本，也不重绑文档，不能据此断言所有ChatGPT事件路径不可用。未采用纯事件监听，保留2/5秒来源兜底。见<a href="KNOWN_ISSUES.zh-CN.md#event-only-monitoring-is-not-implemented">已知问题</a>。</p>
 <h2 id="2026-11-11-mac">2026-11-11 — 实验性Mac编译修正</h2>
-<p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43019350487">首次有效运行环境检查</a>已进入真实macOS SDK：Objective-C与Rust编译成功。Go因相邻说明注释被Cgo收入前言并当成C文本而失败，现用空行分离；Swift作业在swiftc之前被共享AppleScript语法错误中止，现先计算模式索引，再统一调用一次Objective-C选择器。两处修正仍须下一轮真实CI核验；这些是编译结果，不等于Mac辅助功能或应用运行验收。</p></body></html>
+<p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43019350487">首次有效运行环境检查</a>已进入真实macOS SDK：Objective-C与Rust编译成功。Go因相邻说明注释被Cgo收入前言并当成C文本而失败，现用空行分离；Swift作业在swiftc之前被共享AppleScript语法错误中止，现先计算模式索引，再统一调用一次Objective-C选择器。两处修正仍须下一轮真实CI核验；这些是编译结果，不等于Mac辅助功能或应用运行验收。</p>
+<p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43024915028">后续真实检查</a>再次完成Objective-C与Rust编译，同时发现Go另外三处编译错误（既有错误变量赋值及两处Core Foundation引用零值）和另一处AppleScript选择器参数语法问题，现作最小修正。Swift原生编译与AppleScript语法检查拆为独立步骤，两者的失败都保留；工作流另记录实际编译器与SDK版本。本修订仍待下一轮真实工作流核验。</p></body></html>

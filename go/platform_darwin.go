@@ -122,7 +122,7 @@ func takeMac(w Window) (C.AXUIElementRef, error) {
 	defer macMu.Unlock()
 	e, ok := macEntries[w.Handle]
 	if !ok || e.W.Key() != w.Key() {
-		return nil, errors.New("identity")
+		return C.AXUIElementRef(0), errors.New("identity")
 	}
 	return C.ct_retain(e.Ref), nil
 }
@@ -141,7 +141,7 @@ func nativeList() ([]Window, error) {
 		return nil, errors.New("AX-permission")
 	}
 	ref := C.ct_focused(C.uint32_t(pid))
-	if ref == nil {
+	if ref == C.AXUIElementRef(0) {
 		return nil, nil
 	}
 	defer C.ct_release(ref)

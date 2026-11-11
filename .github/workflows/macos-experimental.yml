@@ -26,9 +26,14 @@ jobs:
       - name: Select Rust through official rustup
         if: matrix.language == 'rust'
         run: rustup toolchain install 1.82.0 --profile minimal
-      - name: Compile the shared menu script without launching it
-        if: matrix.language == 'swift'
-        run: osacompile -o "$RUNNER_TEMP/TitleSyncTray.scpt" macos/TraySettings.applescript
+      - name: Record native compiler and SDK versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+          swiftc --version
+          clang --version
       - name: Compile only - never launch the AX monitor
         shell: bash
         env:
@@ -50,3 +55,6 @@ jobs:
               (cd go && CGO_ENABLED=1 go build -trimpath -o "$RUNNER_TEMP/chatgpt-titlesync-go" .)
               ;;
           esac
+      - name: Compile the shared menu script without launching it
+        if: ${{ always() && matrix.language == 'swift' }}
+        run: osacompile -o "$RUNNER_TEMP/TitleSyncTray.scpt" macos/TraySettings.applescript

@@ -186,14 +186,12 @@ on openSettings:sender
     set selectedModeIndex to 0
     if iconMode is "random" then set selectedModeIndex to 1
     iconModeChoice's selectItemAtIndex:selectedModeIndex
-    fixedIconChoice's selectItemAtIndex:(fixedIcon - 45)
-    if iconPeriod is "day" then
-        iconPeriodChoice's selectItemAtIndex:0
-    else if iconPeriod is "hour" then
-        iconPeriodChoice's selectItemAtIndex:1
-    else
-        iconPeriodChoice's selectItemAtIndex:2
-    end if
+    set selectedPaletteIndex to (my fixedIcon) - 45
+    fixedIconChoice's selectItemAtIndex:selectedPaletteIndex
+    set selectedPeriodIndex to 0
+    if iconPeriod is "hour" then set selectedPeriodIndex to 1
+    if iconPeriod is "5min" then set selectedPeriodIndex to 2
+    iconPeriodChoice's selectItemAtIndex:selectedPeriodIndex
     my iconModeChanged:me
     foregroundField's setStringValue:(foregroundSeconds as text)
     backgroundField's setStringValue:(backgroundSeconds as text)

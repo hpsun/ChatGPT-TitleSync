@@ -90,7 +90,7 @@ func runWithTray(ctx context.Context, s *liveSettings, cancel context.CancelFunc
 	}()
 	work()
 	close(stopped)
-	e := <-watchDone
+	e = <-watchDone
 	if exists(filepath.Join(filepath.Dir(s.path), "stop")) {
 		return nil
 	}

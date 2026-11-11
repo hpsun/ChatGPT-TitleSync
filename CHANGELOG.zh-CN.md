@@ -49,3 +49,5 @@ Mac四分支——Swift、Objective-C、Go/Darwin、Rust/macOS——仍为**Expe
 ## 2026-11-11 — 实验性Mac编译修正
 
 [首次有效运行环境检查](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43019350487)已进入真实macOS SDK：Objective-C与Rust编译成功。Go因相邻说明注释被Cgo收入前言并当成C文本而失败，现用空行分离；Swift作业在swiftc之前被共享AppleScript语法错误中止，现先计算模式索引，再统一调用一次Objective-C选择器。两处修正仍须下一轮真实CI核验；这些是编译结果，不等于Mac辅助功能或应用运行验收。
+
+[后续真实检查](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43024915028)再次完成Objective-C与Rust编译，同时发现Go另外三处编译错误（既有错误变量赋值及两处Core Foundation引用零值）和另一处AppleScript选择器参数语法问题，现作最小修正。Swift原生编译与AppleScript语法检查拆为独立步骤，两者的失败都保留；工作流另记录实际编译器与SDK版本。本修订仍待下一轮真实工作流核验。
