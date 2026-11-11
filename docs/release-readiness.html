@@ -1,0 +1,172 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="release-readiness-chatgpt-titlesync">Release readiness: ChatGPT-TitleSync</h1>
+<p><a href="release-readiness.zh-CN.md">简体中文</a> · <a href="../README.md">Project home</a></p>
+<p><strong>Status: the user explicitly approved public publication on 2026-11-11; publication is in progress. Remote CI success is not claimed. Earlier pending-approval snapshots are historical.</strong> The Chinese product name is <strong>ChatGPT 标题同步助手</strong>. MIT was selected by the user; the repository LICENSE is required in the source package.</p>
+<h2 id="current-sign-in-startup-addition">Current sign-in startup addition</h2>
+<p>Start at sign-in is part of this revision and <strong>defaults on</strong>, with a direct tray/menu check and a Save/Cancel settings checkbox. It is not deferred language work. Windows shares one current-user Run value and DWORD preference across implementations; overlong enable commands are rejected, and Exit does not cancel next-login registration. See the <a href="startup.md">startup guide</a>. Current real Windows retesting is <strong>in progress</strong>; the earlier nine-runtime table is historical, not acceptance of these new startup sources. macOS LaunchAgent/preferences source is Experimental and has not been compiled or run on a Mac.</p>
+<h2 id="target-protocol-and-acceptance-boundary">Target protocol and acceptance boundary</h2>
+<p>The agreed target is three layers:</p>
+<ol>
+<li>Read the foreground ChatGPT window's source freshly on the configurable foreground interval, default 2 seconds. Do not substitute a remembered source value for that foreground read.</li>
+<li>Check known background windows' native identity/caption every second. If the app resets a caption to generic, restore the remembered title without reading its source again. Preserve a custom caption, discard changed identities, and do not invent a cache for an unknown window.</li>
+<li>Refresh background sources at a configurable low frequency, default 5 seconds per window, using one serial background worker. This may establish a cache for previously unknown background windows. Foreground work has priority and must not wait on that background source queue. Commit only for the same identity and a generic or previously written native caption; protect custom names.</li>
+</ol>
+<p>The Windows branches have controlled three-layer source/cache checks and local build/parse evidence. That is a local source-candidate review boundary, not a claim of full real-app acceptance for every language. Swift/Objective-C and the Go/Rust macOS backends remain <strong>Experimental</strong>: no native Mac SDK build or AX run has been performed. Earlier foreground-only fixtures are explicitly separated from the new protocol checks.</p>
+<h2 id="offline-audit-and-repository-file-selection">Offline audit and repository file selection</h2>
+<p>Python 3.10+ and its standard library are sufficient:</p>
+<pre><code class="language-powershell">python -m unittest discover -s tools/tests -p &quot;test_release_audit.py&quot; -v
+python tools/release_audit.py --allowlist --no-zip --output-dir &quot;$env:TEMP/ChatGPT-TitleSync-file-review&quot;
+</code></pre>
+<p>Before this directory is its own Git repository, --allowlist explicitly selects only reviewed source, documents and 45 assets. After local Git initialization/staging, omit --allowlist to check the tracked snapshot. Forbidden/unreviewed tracked files are rejected in either mode. Git-index mode also rejects a selected working file that differs from its staged content.</p>
+<p>The audit checks required files, relative document links and anchors against the <strong>package file set</strong>, 2-second foreground / 5-second background default source markers, 45 asset hashes, the MIT file and an existing source checksum index. It rejects private runtime evidence, validation directories, logs, backups, SDKs, binaries, personal absolute paths and common credential-shaped strings. Pattern checks cannot recognize every real conversation name or secret; the selected snapshot still needs human review.</p>
+<p>The accepted selection is committed as individual normal repository files: source directories, guides, shared 45 assets and required companion source. This publication does <strong>not</strong> upload a project ZIP. Use <code>git clone</code> or retrieve the files from the relevant language directory while keeping its documented dependencies. GitHub may generate source archives automatically; those are not project-uploaded ZIP assets. Local review archives from earlier preparation remain historical evidence and are not the delivery method.</p>
+<p>The audit's <code>--no-zip</code> mode produces a machine-readable report and selected-file list without an archive. The publisher verifies selected bytes and creates the corresponding blobs/tree. The root <code>.gitattributes</code> uses <code>* -text</code> to preserve reviewed bytes across checkouts. Private runtime data and downloaded SDKs are excluded.</p>
+<p>User approval on <strong>2026-11-11</strong> authorizes this public repository-file publication. It does not turn local tests into remote CI results or native Mac acceptance. The root publisher supplies the confirmed repository URL and records actual push/CI results separately.</p>
+<p><a id="local-validation"></a></p>
+<h2 id="local-validation">Local validation</h2>
+<p>Current local evidence is scoped as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th style="text-align: right;">Local result</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Release-audit synthetic boundaries</td>
+<td style="text-align: right;">12 passed</td>
+<td>Allowlist, private links, token/path detection, staged private files, stale hashes, anchors, pending gate, raw-byte Git checkouts and ZIP bytes</td>
+</tr>
+<tr>
+<td>C# controlled settings candidate</td>
+<td style="text-align: right;">41 policy + 13 helper/Job + 8 interval protocol + 12 settings passed</td>
+<td>Synthetic/self-owned scope; the public 41 policy checks duplicate that policy set. Targeted real-window/settings results are recorded below.</td>
+</tr>
+<tr>
+<td>PowerShell controlled settings candidate</td>
+<td style="text-align: right;">32 policy + 9 settings callbacks in each of 5.1 and 7</td>
+<td>Parser/native bridge and repeated atomic save passed in controlled scope. Targeted real-window/settings results are recorded below.</td>
+</tr>
+<tr>
+<td>Go</td>
+<td style="text-align: right;">38 controlled checks passed</td>
+<td>Policy/regression plus owned native settings controls and live rescheduling; targeted real ChatGPT/settings results are recorded below.</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td style="text-align: right;">30 controlled checks passed</td>
+<td>Policy/regression plus owned native settings controls and live rescheduling; targeted real ChatGPT/settings results are recorded below.</td>
+</tr>
+<tr>
+<td>Hidden-startup visibility</td>
+<td style="text-align: right;">2 owned reveal paths, in both PowerShell hosts</td>
+<td>Actual STARTUPINFO Hidden; first native Show hidden, explicit reveal visible; offscreen, no activation or ChatGPT access.</td>
+</tr>
+<tr>
+<td>Swift/Objective-C and Mac backends</td>
+<td style="text-align: right;">Static review only</td>
+<td>Experimental, not native compilation or AX verification</td>
+</tr>
+</tbody>
+</table>
+<p>Raw execution evidence, real process identifiers and conversation names remain local and are not linked or included in the public package. Source/build/fake checks are distinct from real application latency and native-Mac acceptance.</p>
+<h2 id="ci-definitions-not-ci-results">CI definitions, not CI results</h2>
+<p>Both workflows use permissions: contents: read, checkout without persisted credentials, and no upload/release action.</p>
+<ul>
+<li>Windows checks: source audit, Go/Rust build and fake/owned fixtures, C# application compile plus fake states, and PowerShell syntax/native compile/fake states.</li>
+<li>macOS checks: <strong>Experimental compile only</strong> for Swift, Objective-C, Rust and Go. They never launch the AX monitors. Failures are not hidden as a successful Mac validation.</li>
+<li>The workflow files have <strong>not run remotely</strong>, and the repository must not display a passing CI/native-Mac claim in advance.</li>
+</ul>
+<p>Official action documentation was checked for <a href="https://github.com/actions/checkout">checkout v7</a> and <a href="https://github.com/actions/setup-go">setup-go v7</a>. CI deliberately pins Go 1.27.3 and Rust 1.82.0 to the locally used releases, not to a claimed latest language version. Rust is selected using the official <a href="https://rust-lang.github.io/rustup/concepts/toolchains.html">rustup toolchain mechanism</a>; Windows linker prerequisites are described by the <a href="https://rust-lang.org/tools/install/">Rust installation documentation</a>.</p>
+<h2 id="icons-and-delivery">Icons and delivery</h2>
+<p>45 is the selected baseline: <a href="../assets/chatgpt-titlesync-icon.png">PNG</a>, <a href="../assets/chatgpt-titlesync.ico">Windows ICO</a>, <a href="../assets/chatgpt-titlesync.icns">macOS ICNS</a>. Runtime fixed/random palettes affect the program's own tray and settings windows; the executable resource and pinned shortcuts remain fixed. Build and native verification differ by implementation; see <a href="icon-themes.md">icon settings</a>. Mac .app packaging, signing and notarization remain unverified.</p>
+<p>The audit/selection tools make no network writes or startup changes. Actual repository creation and file publication are performed separately by the authorized publisher; no review ZIP is uploaded.</p>
+<h2 id="publication-boundary">Publication boundary</h2>
+<ul>
+<li>Inspect the final selected file/tree snapshot and per-file checksums.</li>
+<li>User approval was explicitly given on 2026-11-11; public repository-file publication is in progress.</li>
+<li>Do not upload any local project review ZIP. Add the confirmed URL and actual outcome after publication.</li>
+<li>Remote CI has not run. Native Mac compile/runtime checks remain future work, so Mac stays Experimental.</li>
+</ul>
+<!-- BEGIN TARGETED_WINDOWS_REAL -->
+<h2 id="targeted-real-windows-acceptance-2026-11-11">Targeted real Windows acceptance — 2026-11-11</h2>
+<p>Nine Windows runtime cases used the same three existing ChatGPT windows, reused across runs. Each case compared one source/header target, exercised one foreground generic-caption reset and one background reset, and checked three original generic captions after normal exit. Settings were invoked through the bound native command/same menu handler; this is not a physical shell-right-click claim. The numbers below are individual reset-to-first-match observations, not benchmarks, cold-reader deadlines or long-term/install/taskbar guarantees. No Mac source was compiled or run.</p>
+<table>
+<thead>
+<tr>
+<th>Runtime</th>
+<th>Settings</th>
+<th style="text-align: right;">FG reset</th>
+<th style="text-align: right;">BG reset</th>
+<th>Exit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C#</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1384ms</td>
+<td style="text-align: right;">781ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>AHK Basic 1.0</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1098ms</td>
+<td style="text-align: right;">632ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>AHK v1.1</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">2247ms</td>
+<td style="text-align: right;">667ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>AHK v2</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1056ms</td>
+<td style="text-align: right;">409ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>PowerShell 5.1</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">881ms</td>
+<td style="text-align: right;">794ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>PowerShell 7</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">342ms</td>
+<td style="text-align: right;">282ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>2/5 → 7/17 reopen → 2/5</td>
+<td style="text-align: right;">161ms</td>
+<td style="text-align: right;">379ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1018ms</td>
+<td style="text-align: right;">624ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1784ms</td>
+<td style="text-align: right;">448ms</td>
+<td>3 original generic captions</td>
+</tr>
+</tbody>
+</table>
+<p>Python's cold source sample still had a generic native caption; the later valid foreground-reset original-title fingerprint matched the independently observed source. Two earlier foreground guards did not inject a reset and remain preserved, not counted as product failures. Python combined separate launches of the same frozen executable; its final settings check verified disk values and exact reopened control text at 7/17, then restored 2/5 within one process. The earlier unexplained 33/10 observation is retained; it is not rewritten as a proven product defect. The earlier C# hidden-first-show defect remains historical evidence; the table uses the repaired final executable.</p>
+<!-- END TARGETED_WINDOWS_REAL --></body></html>

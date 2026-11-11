@@ -1,0 +1,7 @@
+[package]
+name = "chatgpt-titlesync-rust"
+version = "0.1.0"
+edition = "2021"
+[dependencies]
+[profile.release]
+panic = "unwind"

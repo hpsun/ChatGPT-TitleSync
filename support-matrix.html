@@ -1,0 +1,115 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="support-and-verification-matrix">Support and verification matrix</h1>
+<p><a href="support-matrix.zh-CN.md">简体中文</a> · <a href="support-matrix.json">Machine-readable status</a> · <a href="README.md">Project home</a></p>
+<p>Snapshot: 2026-11-11, Beijing time. User explicitly approved publication on 2026-11-11; normal repository-file publication is in progress. Earlier unpublished/approval-pending snapshots are historical. No project ZIP is uploaded and startup defaults on at current-user sign-in. Selected icon: 45. Eight languages, with three AHK runtimes listed separately.</p>
+<p>Current default-on startup sources are under fresh real Windows retesting; do not treat earlier nine-runtime timing/settings results as acceptance of this new revision. See the <a href="docs/startup.md">startup contract</a>. Mac startup is source-only Experimental.</p>
+<h2 id="current-source-status">Current source status</h2>
+<h2 id="current-candidate-verification">Current candidate verification</h2>
+<p>The current branding, startup and eight-theme sources passed the controlled checks below. Final targeted real-window retesting across nine Windows runtime cases remains in progress. C# named all three existing windows, but one independent four-second cold probe timed out; that strict case is not counted as passed. The candidate exited normally and original state was restored. Earlier live results do not substitute for this run.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Current controlled evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C#</td>
+<td>37 theme + 22 startup; modeless Cancel verified</td>
+</tr>
+<tr>
+<td>AHK Basic</td>
+<td>30 theme + 14 startup + 6 settings; source-only</td>
+</tr>
+<tr>
+<td>AHK v1.1 / v2</td>
+<td>Each: 30 theme + 14 startup + 11 settings; seven embedded frames</td>
+</tr>
+<tr>
+<td>PowerShell 5.1 / 7</td>
+<td>Each: 37 theme callback/transaction checks</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>35 theme + 14 startup + 17 settings; 18 public pure theme tests</td>
+</tr>
+<tr>
+<td>Go / Rust</td>
+<td>51 / 43 controlled checks; owned binary self-tests; seven embedded frames</td>
+</tr>
+<tr>
+<td>Swift / Objective-C / Go macOS / Rust macOS</td>
+<td>Experimental source; no native Mac build or runtime result</td>
+</tr>
+</tbody>
+</table>
+<h2 id="earlier-revision-record">Earlier revision record</h2>
+<p>The measurements below are retained for the earlier source revision; previous hashes and checks are recorded under previous_revision in JSON. They are not acceptance of all current changes.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Target</th>
+<th>Current evidence and limits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="windows/csharp/README.md">C#</a></td>
+<td>Windows</td>
+<td>41 policy + 13 helper/Job + 8 interval protocol + 12 settings and hidden-startup checks; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1384ms, BG 781ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+</tr>
+<tr>
+<td><a href="windows/ahk-v1.0/README.md">AutoHotkey v1.0 Basic</a></td>
+<td>Windows</td>
+<td>Basic 1.0.48.05 ANSI x86 source-only; no accepted Basic EXE. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1098ms, BG 632ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+</tr>
+<tr>
+<td><a href="windows/ahk-v1.1/README.md">AutoHotkey v1.1</a></td>
+<td>Windows</td>
+<td>Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 2247ms, BG 667ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+</tr>
+<tr>
+<td><a href="windows/ahk-v2/README.md">AutoHotkey v2</a></td>
+<td>Windows</td>
+<td>Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1056ms, BG 409ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+</tr>
+<tr>
+<td><a href="windows/powershell/README.md">PowerShell</a></td>
+<td>Windows</td>
+<td>PowerShell 5.1/7 targeted cases passed: 2/5 settings, save/reopen/restore, source/header/native agreement, FG reset 881/342ms, BG reset 794/282ms, three generic captions after each normal exit. Controlled 32+9 checks per host and hidden-startup regression remain separate.</td>
+</tr>
+<tr>
+<td><a href="windows/python/README.md">Python</a></td>
+<td>Windows</td>
+<td>Final executable passed source/header and later native-title agreement, FG reset 161ms, BG reset 379ms and three generic captions after exit. Two earlier guards skipped injection, not product failures. Settings recheck independently proved persisted/reopened 7/17 and restored 2/5 in one process; the earlier 33/10 ambiguity is preserved without a product-defect conclusion. No Mac validation.</td>
+</tr>
+<tr>
+<td><a href="macos/README.md">Swift</a></td>
+<td>macOS</td>
+<td>Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. Static review only; no Mac SDK build, preferences-runtime, real AX or GUI acceptance.</td>
+</tr>
+<tr>
+<td><a href="macos/README.md">Objective-C</a></td>
+<td>macOS</td>
+<td>Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. Static review only; no Mac SDK build, preferences-runtime, real AX or GUI acceptance.</td>
+</tr>
+<tr>
+<td><a href="rust/README.md">Rust</a></td>
+<td>Windows / macOS</td>
+<td>30 controlled checks; Windows x64 native tray. Mac companion Experimental/uncompiled. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1018ms, BG 624ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+</tr>
+<tr>
+<td><a href="go/README.md">Go</a></td>
+<td>Windows / macOS</td>
+<td>38 controlled checks; Windows x64 native tray. Mac companion Experimental/uncompiled. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1784ms, BG 448ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="protocol-and-interpretation">Protocol and interpretation</h2>
+<p>Native identity/caption checks: every second. Foreground fresh source default: 2 seconds. Background source default: 5 seconds per window, one serial worker. The foreground never substitutes cached source; a background generic reset can use a same-identity verified cache immediately. Protect non-generic external captions. Scheduling is not a cold-reader completion guarantee.</p>
+<p>Historical checks are retained separately in JSON with their revision scope. They do not prove the current source's real window-switch, long-running, installation or taskbar effects. Shared Mac models are not counted as native tests or multiplied per language. Every Mac backend remains Experimental: no Mac compilation/AX acceptance. Remote CI has not run.</p>
+<p>C#, AHK, PowerShell, Python, Go and Rust now have Windows tray/settings source. Actual menu acceptance is recorded separately per branch. Go/Rust retain an optional CLI and use the public osascript companion for their Experimental Mac menu. Swift/Objective-C native menus and all Mac backends remain uncompiled/AX-unverified. Basic retains ASCII launch/runtime/IPC and ANSI-x86 restrictions despite binary UTF-16 title handling.</p>
+<p>See <a href="docs/guides-index.md">guide requirements</a> and <a href="docs/release-readiness.md#local-validation">local validation</a>. Raw reports, caches, actual titles and identities are private and excluded from source delivery. <a href="source-sha256.txt">source-sha256.txt</a> records the final frozen source/build/workflow/test hashes. Caption labels do not alter Windows app grouping or the macOS Dock application name.</p>
+<p>A separate controlled case fixed restoration after a window becomes hidden. The integrated timings above preceded that guard; foreground and native-caption maintenance paths were unchanged.</p>
+<p>With a 15-second background setting, worker-attempt gaps across three windows were about 15.16s, 15.17s and 22.20s. Serial reading and foreground priority can delay attempts; strict per-window completion every 15 seconds is not promised. Normal --stop left no standalone process or owned foreground/background helper; original configuration bytes and conversation were restored. Timing samples preceded the hidden-lease guard; their timing paths were unchanged, and the final EXE includes that controlled fix. These are limited observations, not latency guarantees.</p></body></html>

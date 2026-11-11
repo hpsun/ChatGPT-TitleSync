@@ -1,0 +1,73 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>实现指南索引</title><style>body{max-width:1060px;margin:2rem auto;padding:0 1.5rem;font:16px/1.65 system-ui,sans-serif;color:#20242b}pre,code{background:#f3f5f7}pre{padding:1rem;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:.4rem .6rem}a{color:#075bc2}h1,h2,h3{line-height:1.25}</style><body><h1 id="_1">实现指南索引</h1>
+<p><a href="guides-index.md">English</a> · <a href="../README.zh-CN.md">项目说明</a> · <a href="release-notes-v0.1.0.zh-CN.md">v0.1.0发布说明</a> · <a href="roadmap.zh-CN.md">路线图</a></p>
+<p>各实现以英文为主指南，另有独立中文版；Markdown 与 HTML 由同一正文生成。</p>
+<table>
+<thead>
+<tr>
+<th>实现</th>
+<th>英文</th>
+<th>中文</th>
+<th>运行时／界面</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C#</td>
+<td><a href="../windows/csharp/README.md">MD</a> · <a href="../windows/csharp/README.html">HTML</a></td>
+<td><a href="../windows/csharp/README.zh-CN.md">MD</a> · <a href="../windows/csharp/README.zh-CN.html">HTML</a></td>
+<td>Windows 托盘；.NET Framework</td>
+</tr>
+<tr>
+<td>AHK Basic</td>
+<td><a href="../windows/ahk-v1.0/README.md">MD</a> · <a href="../windows/ahk-v1.0/README.html">HTML</a></td>
+<td><a href="../windows/ahk-v1.0/README.zh-CN.md">MD</a> · <a href="../windows/ahk-v1.0/README.zh-CN.html">HTML</a></td>
+<td>Basic 1.0.48.05 ANSI x86；启动／运行时／IPC 路径需 ASCII</td>
+</tr>
+<tr>
+<td>AHK v1.1</td>
+<td><a href="../windows/ahk-v1.1/README.md">MD</a> · <a href="../windows/ahk-v1.1/README.html">HTML</a></td>
+<td><a href="../windows/ahk-v1.1/README.zh-CN.md">MD</a> · <a href="../windows/ahk-v1.1/README.zh-CN.html">HTML</a></td>
+<td>Unicode v1.1.33+；x86/x64</td>
+</tr>
+<tr>
+<td>AHK v2</td>
+<td><a href="../windows/ahk-v2/README.md">MD</a> · <a href="../windows/ahk-v2/README.html">HTML</a></td>
+<td><a href="../windows/ahk-v2/README.zh-CN.md">MD</a> · <a href="../windows/ahk-v2/README.zh-CN.html">HTML</a></td>
+<td>v2.0+；x86/x64</td>
+</tr>
+<tr>
+<td>PowerShell</td>
+<td><a href="../windows/powershell/README.md">MD</a> · <a href="../windows/powershell/README.html">HTML</a></td>
+<td><a href="../windows/powershell/README.zh-CN.md">MD</a> · <a href="../windows/powershell/README.zh-CN.html">HTML</a></td>
+<td>Windows PowerShell 5.1／Windows PowerShell 7</td>
+</tr>
+<tr>
+<td>Python</td>
+<td><a href="../windows/python/README.md">MD</a> · <a href="../windows/python/README.html">HTML</a></td>
+<td><a href="../windows/python/README.zh-CN.md">MD</a> · <a href="../windows/python/README.zh-CN.html">HTML</a></td>
+<td>Windows Python 3；标准库</td>
+</tr>
+<tr>
+<td>Swift / Objective-C</td>
+<td><a href="../macos/README.md">MD</a> · <a href="../macos/README.html">HTML</a></td>
+<td><a href="../macos/README.zh-CN.md">MD</a> · <a href="../macos/README.zh-CN.html">HTML</a></td>
+<td>Experimental；未原生 Mac 构建／AX 实测</td>
+</tr>
+<tr>
+<td>Go</td>
+<td><a href="../go/README.md">MD</a> · <a href="../go/README.html">HTML</a></td>
+<td><a href="../go/README.zh-CN.md">MD</a> · <a href="../go/README.zh-CN.html">HTML</a></td>
+<td>Windows；Darwin cgo／AX 后端为实验源码</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td><a href="../rust/README.md">MD</a> · <a href="../rust/README.html">HTML</a></td>
+<td><a href="../rust/README.zh-CN.md">MD</a> · <a href="../rust/README.zh-CN.html">HTML</a></td>
+<td>Windows；macOS AX 后端为实验源码</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">指南覆盖与待验收项</h2>
+<p>各指南包含环境、构建或解释器运行、运行／停止／恢复、45 图标及当前三层策略，并说明各分支计时器／工作进程边界。前台缺省每2秒取新鲜来源，后台原生修复每秒一次，后台来源缺省每窗口 5 秒。每秒调度不等于冷 UIA 读取一秒完成。</p>
+<p><a href="../support-matrix.zh-CN.md">支持矩阵</a> 按实际验证范围记录；见<a href="release-readiness.zh-CN.md#local-validation">本地验证与发布待办</a>。源码测试和打包后 smoke 不是同一项。Swift／Objective-C／Go／Rust macOS 源码仍为 Experimental，须完成目标 SDK 构建和真实 AX 实测。本地结果不声明远程 CI 或发布已完成；实际记录以已确认仓库为准。</p>
+<p>正常恢复保留外部自定义标题。Windows 窗口标签不改变应用分组，macOS 窗口标题不重命名 Dock 应用。私有证据及对话名缓存不进入源码包。</p></body></html>

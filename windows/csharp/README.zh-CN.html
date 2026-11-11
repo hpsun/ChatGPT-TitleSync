@@ -1,0 +1,134 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="chatgpt-c">ChatGPT 标题同步助手 — C# 独立应用</h1>
+<p><a href="README.md">English</a> · <a href="README.zh-CN.html">HTML</a> · <a href="../../README.zh-CN.md">项目说明</a></p>
+<p><strong>ChatGPT 标题同步助手／ChatGPT-TitleSync</strong> 的 Windows 托盘应用，C# 5／.NET Framework 4.x。</p>
+<h2 id="_1">品牌与兼容性</h2>
+<p>正式名称为 <strong>ChatGPT 标题同步助手／ChatGPT-TitleSync</strong>。保留 <code>Local\TdxChatGptTitleStandalone</code> 及 <code>.Stop</code>／<code>.Settings</code> 事件，确保旧独立版不能同时写标题。现有 <code>%LOCALAPPDATA%\ChatGPT-title</code> 数据位置与设置字段保持兼容。C# 的 <code>chatgpt-title-cache.json</code>、私有工作目录 <code>chatgpt-title-readers</code> 和诊断结构标识 <code>chatgpt-title-probe-v1</code> 也保留，用于兼容既有数据。下方历史真实窗口观察早于品牌与自启动修改；本次自有／离线检查另行注明范围。</p>
+<h2 id="_2">图标主题——固定或定时随机</h2>
+<p>缺省为<strong>固定45号</strong>，随机周期保留为<strong>每日</strong>。已选设计采用奶油色圆角tile、大ChatGPT主体、右上覆盖的Title胶囊及粗等宽字形；八色保持同一布局。</p>
+<table>
+<thead>
+<tr>
+<th>编号</th>
+<th>胶囊／文字</th>
+<th>编号</th>
+<th>胶囊／文字</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>45</td>
+<td>蓝紫／白字</td>
+<td>49</td>
+<td>玫红／白字</td>
+</tr>
+<tr>
+<td>46</td>
+<td>湖蓝／黑字</td>
+<td>50</td>
+<td>天蓝／黑字</td>
+</tr>
+<tr>
+<td>47</td>
+<td>琥珀／黑字</td>
+<td>51</td>
+<td>浅紫／黑字</td>
+</tr>
+<tr>
+<td>48</td>
+<td>薄荷／黑字</td>
+<td>52</td>
+<td>珊瑚／黑字</td>
+</tr>
+</tbody>
+</table>
+<p><img src="../../assets/themes/45.png" alt="缺省45号" width="72"> <img src="../../assets/themes/47.png" alt="琥珀47号" width="72"> <img src="../../assets/themes/48.png" alt="薄荷48号" width="72"></p>
+<p>设置增加三个<strong>不可编辑下拉框</strong>，保留原两个数值输入和自启动复选框。固定／随机切换后，仅启用固定配色或随机周期中的对应一项，另一项变灰。随机周期为本地日历日、本地整点小时或五分钟时段；启用随机或更改周期时立即选一次，之后不连续重复前一色。同一时段内重启复用已保存的随机色。独立每秒做轻量时段检查，关闭标题监听后仍能换色，不为换图读取ChatGPT或启动读取器。</p>
+<p>Windows各实现仅共享 <code>HKCU\Software\ChatGPT-TitleSync</code> 下五项：<code>IconMode</code>、<code>IconPeriod</code>（<code>REG_SZ</code>），<code>FixedIcon</code>、<code>RandomIcon</code>（<code>DWORD</code>，45..52），<code>IconSlot</code>（<code>REG_SZ</code>）。每日slot为 <code>YYYYMMDD</code>，小时为 <code>YYYYMMDDHH±HHMM</code>，五分钟为 <code>YYYYMMDDHHbb±HHMM</code>，其中bb是分钟整除5，范围00..11；不替代 <code>AutoStartEnabled</code> 或原监测设置。</p>
+<p><strong>保存</strong>校验资源并与自启动／间隔一起提交；<strong>取消</strong>关闭并丢弃草稿。注册表、自启动或设置文件失败会恢复之前的已提交选择，不把部分修改当成功。轮换时缺少资源保留最后可用图标，同一slot限量记录诊断；非法旧偏好回退45并报告一次，不偷偷改写。只有正常常驻入口持久化主题，诊断／控制入口不写入。</p>
+<p>运行时主题只改变本产品托盘与自己的设置窗图标，不改EXE字节、固定快捷方式或ChatGPT应用图标。安装目录保留 <code>assets/themes/45..52.ico</code>；根图标别名与EXE资源仍是45。新图标替换后才释放旧自有句柄。控件名为 <code>IconMode</code>、<code>FixedIcon</code>、<code>IconPeriod</code>，原生窗口ID以当次运行实际值为准。</p>
+<p>本次通过37项C#注入时间／随机数／注册表／资源／事务检查及每个PowerShell主机37项实际回调检查，范围为自有键与从不显示的控件。2026-11-11记录的早期A1阶段专项仍按历史保留，不改称当前八色／实时换图验收；当前真实窗口复测由项目发布方另行记录。</p>
+<h2 id="_3">开机自启动——缺省已开</h2>
+<p>正常常驻模式缺省勾选 <strong>开机自启动 / Start at sign-in</strong>，在当前Windows用户登录时启动，并非登录前运行。托盘右键勾选立即生效；设置窗中的同项在<strong>保存</strong>后生效，<strong>取消</strong>不更改。任一入口成功更改后同步另一处，包含已经打开的设置窗。失败会显示错误，不把失败状态当成功；注册表写入失败时尝试恢复原值。</p>
+<p>Windows各实现共享 <code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code> 下固定值名 <strong>ChatGPT-TitleSync</strong>，及 <code>HKCU\Software\ChatGPT-TitleSync\AutoStartEnabled</code> DWORD偏好。缺项按开启处理；显式0会跨语言版本与重启保持关闭。只有取得原共享互斥体的正常常驻入口才读取偏好并注册自身；只读、工作进程、单次检查、设置／停止IPC入口不注册。关闭时只移除本产品的Run值，不使用管理员权限、服务或任务计划。启用命令超过Windows Run的260字符限制时会明确拒绝，不改启动项或共享偏好；仍可关闭。启动项与偏好已经一致时不重复写入。参见<a href="https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys">Microsoft Run文档</a>。</p>
+<p>注册命令仅包含当前 <code>ChatGPT-TitleSync.exe</code> 的带双引号绝对路径，不携带诊断或间隔参数；<code>ChatGPT-TitleSync.Reader.exe</code> 应与主程序相邻。</p>
+<p>菜单项与设置复选框的控件名均为 <code>AutoStartEnabled</code>。前台2秒／后台5秒缺省值、监测设置JSON字段及旧互斥身份保持兼容。本项已用从不显示的自有控件、临时当前用户注册表键验证，包含C#/PowerShell互读关闭偏好；这不等于新增真实Run／登录启动验收。</p>
+<h2 id="_4">构建与运行</h2>
+<p>Build.ps1 使用 Windows Framework64 编译器及 UIAutomation／WPF 引用，输出 AnyCPU EXE，不需要 MSVC。主程序及读取器两个 EXE 放在一起。保留仓库 assets 目录用于相对托盘图标；主 EXE 也会嵌入基准45。</p>
+<pre><code class="language-powershell">powershell.exe -NoProfile -File .\Build.ps1
+.\ChatGPT-TitleSync.exe --interval 2 --background-interval 5
+</code></pre>
+<p><code>--interval</code> 为前台来源间隔，有效 1～3600 秒。<code>--background-interval</code> 为每窗口后台来源间隔，有效 5～3600 秒，缺省 5；如需 15 秒可用 <code>--background-interval 15</code>。原生身份／标题维护独立地每秒执行。 watch读取器按设定间隔实际读取来源，心跳独立每秒发布；父程序每秒消费新来源序列，未变化的来源不作为新观察。</p>
+<p>托盘提供 <strong>Enable window titles</strong>、<strong>扫描间隔设置… / Scan intervals…</strong> 和 <strong>Exit and restore titles</strong>。启用选择与两个间隔保存在 <code>%LOCALAPPDATA%\ChatGPT-title\csharp\settings.json</code>，缺省启用当前用户登录自启动，见下文。</p>
+<h2 id="_5">文件</h2>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App.cs</td>
+<td>托盘、设置、单实例及正常退出</td>
+</tr>
+<tr>
+<td>TitleMonitor.cs</td>
+<td>三层调度、身份缓存、自有读取器生命周期及恢复</td>
+</tr>
+<tr>
+<td>TitleReader.cs</td>
+<td>隔离来源读取；正常监听只取文档根 Name</td>
+</tr>
+<tr>
+<td>Build.ps1</td>
+<td>构建 ChatGPT-TitleSync.exe 和 ChatGPT-TitleSync.Reader.exe</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_6">三层监听</h2>
+<ol>
+<li>每秒核对原生 ChatGPT 窗口身份／标题。已知后台窗口被改回通用 <code>ChatGPT</code> 时，直接用可信缓存修复，不为此重读来源。</li>
+<li>按前台来源间隔新鲜读取当前对话名，不用缓存兜底。前台改变会取消旧 watch。</li>
+<li>每后台窗口至多按设定间隔刷新一次，只有一个串行后台读取角色。未知后台窗口可由此取得首个可信名称。前台附着／处理优先，不同步等待后台读完。</li>
+</ol>
+<p>来源读取只沿有界原生壳路径到 <code>Document[RootWebArea].Name</code>，不读对话后代。缓存／写入绑定 HWND、PID、创建时刻、窗口类和程序路径。</p>
+<p>后台结果只有在身份相同、且当前为通用标题或仍由本实例持有时才能写入。非通用自定义标题保留。后台目标变前台时，旧后台结果被丢弃，由前台取得新鲜来源。</p>
+<h2 id="_7">只读检查</h2>
+<pre><code class="language-powershell">.\ChatGPT-TitleSync.exe --read-only --output .\read-only-results.json
+</code></pre>
+<p>枚举原生 ChatGPT 窗口，每窗口做一次有期限且不写标题的来源读取，保存 UTF-8 JSON 后退出，不启动长期 watch。只读每窗口期限为 4 秒；结果含标题及进程身份，应私有保存。</p>
+<h2 id="_8">停止与还原</h2>
+<pre><code class="language-powershell">.\ChatGPT-TitleSync.exe --stop
+</code></pre>
+<p>托盘退出和 --stop 均请求正常关闭。只有身份相同且当前标题等于最后写入值时还原，外部修改不覆盖。通用标题重置或明确关闭再启用功能可解除自定义标题保护；保护期间前台仍新鲜读取，只阻止写入。</p>
+<p>Windows 独立实现共用 <code>Local\TdxChatGptTitleStandalone</code> 及 <code>.Stop</code> 事件，应只运行一个写入者。设置菜单修改采样节拍，不改变单实例与停止机制。</p>
+<h2 id="_9">工作进程、计时及私有数据</h2>
+<p>前台保持一个绑定窗口及父进程身份的 --watch。它缓存 RootWebArea 元素而不是 Name 值，并原子发布心跳Seq／HeartbeatUtc和来源SourceSeq／ObservedUtc；父程序轮询不等待 UIA。</p>
+<p>冷附着期限为 <strong>10 秒</strong>，首个 ready 后心跳期限为 <strong>4 秒</strong>。独立每 500ms 检查快照，即使父程序设置慢间隔也不误杀正常发布中的读取器。先观察新数据再判断过期；pending、重复、过期或身份不符的结果不能写标题。</p>
+<p>后台快照有独立取消信号、输出文件、自有进程句柄及退出回收 Job，不会结束前台读取器或无关同名进程；目标转前台会取消后台角色。暂停／关闭功能／退出时会清理二者。</p>
+<p>每秒调度不代表冷读取一定在一秒内完成；提供方响应、原生元数据工作和系统调度都可能增加延迟。</p>
+<p><code>%LOCALAPPDATA%\ChatGPT-title\csharp</code> 保存设置、标题操作日志、工作快照及 <code>chatgpt-title-cache.json</code>。私有缓存为升级后维护现存后台窗口而明确保存可信名称及完整身份，是运行数据，不进入源码包。日志用错误短码／标题指纹，不记录对话正文。</p>
+<h2 id="_10">验证边界</h2>
+<p>当前组件证据：41 项三层策略／计时、13 项 watch／工作进程／Job 生命周期及 32 项既有修订回归。公开夹具复现同一组 41 项：</p>
+<pre><code class="language-powershell">powershell.exe -NoProfile -File ..\..\tools\test-csharp.ps1
+</code></pre>
+<p>fake／自有对象检查覆盖缓存重载与身份、通用回改、自定义标题、前台新鲜来源、取消、冷／稳态期限和恢复，不等于完整托盘、安装、长期驻留或任务栏视觉验收。见<a href="../../docs/release-readiness.zh-CN.md#local-validation">本地验证摘要</a>及<a href="../../support-matrix.zh-CN.md">支持矩阵</a>。C# 不面向 macOS。</p>
+<h2 id="_11">历史版本真实窗口观测</h2>
+<p>独立版已通过前台新鲜标题切换及后台通用回改修复；来源样本和原生标题样本均核对为前台。来源时间戳到首个原生标题样本观测 <strong>516ms</strong>，后台缓存修复观测 <strong>937ms</strong>。</p>
+<p>设置 --background-interval 15 后，三个窗口工作进程的尝试间隔约 <strong>15.16、15.17、22.20 秒</strong>。后台读取串行、前台优先，因此该间隔是调度下限，不保证每窗口严格每 15 秒读完。</p>
+<p>正常 --stop 已退出程序且其前后台 helper 均无残留；原对话和配置原字节已恢复。计时样本采于隐藏窗口 lease 保护修复前，前台／标题维护路径未变；最终 EXE 包含另外受控验证的隐藏保护修复。</p>
+<p>这些是有限专项观测，不是延迟保证，也不等于完整安装／托盘／长期／任务栏视觉验收。C# 不面向 macOS；尚未远程运行 CI 或公开发布。</p>
+<h2 id="_12">扫描间隔设置（补充）</h2>
+<p>托盘右键现在提供“扫描间隔设置…”。同一个非模态设置窗口支持输入前台来源扫描1至3600秒、后台来源刷新5至3600秒，缺省2秒和5秒；保存后立即生效，同时保存启用状态与两个间隔。下次启动自动读取设置，显式命令行参数优先。非法输入在窗口中显示错误，不会写入配置。后台已记忆标题的原生回改检测仍固定每1秒。</p>
+<p>前台间隔控制 helper 的实际来源读取；helper 的心跳仍每1秒发布，父程序每1秒消费新的来源序列。心跳 Seq/HeartbeatUtc 与来源 SourceSeq/ObservedUtc 分开，不能用未变化的来源冒充新读取。长间隔期间保留健康后台来源任务；目标变为前台时取消旧后台角色。</p>
+<p><code>ChatGPT-TitleSync.exe --settings</code> 通知已运行单实例打开同一个菜单设置处理器，不会启动第二个写入者；无兼容实例时退出码为4。<code>Build.ps1 -OutputDirectory PATH</code> 支持隔离构建。</p>
+<p><code>tools/test-csharp.ps1</code> 当前验证41项三层调度策略；<code>tools/test-tray-settings.ps1</code> 验证12项C#设置与持久化行为，以及两种PowerShell主机下的9项菜单回调。控件不显示、不激活，测试不触碰真实ChatGPT或共享停止事件。</p>
+<h2 id="_13">隐藏启动后的设置首显</h2>
+<p>Windows以STARTUPINFO的Hidden启动进程时，第一次普通Show可能被启动提示压制。设置入口现先使用SetWindowPos明确显示自有窗口，再请求激活；这是原生窗口可见性问题，与UI Automation来源读取分开。</p>
+<p>公开入口tools/test-tray-settings.ps1已加入独立自有WinExe回归：确认STARTF_USESHOWWINDOW和SW_HIDE，观察首次原生Show仍隐藏，再验证生产显示辅助方法与WinForms窗体确实可见。夹具位于屏幕外并使用WS_EX_NOACTIVATE，核验前台窗口不变；已分别在PowerShell5.1和7执行。它是受控首显验证，不冒充真实ChatGPT或系统托盘菜单整体验收。</p>
+<!-- BEGIN TARGETED_WINDOWS_REAL -->
+<h2 id="windows-2026-11-11">Windows真实窗口专项验收 — 2026-11-11</h2>
+<p>41策略＋13 helper/Job＋8间隔协议＋12设置及Hidden首显受控检查；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1384毫秒、BG781毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</p>
+<p>有效前台/后台重置各1次，复用同3个现存窗口并在退出后匹配原通用标题；原生设置/菜单处理器验证不等于系统托盘物理右键、长期驻留或安装验收。具体范围见项目支持矩阵。</p>
+<!-- END TARGETED_WINDOWS_REAL --></body></html>

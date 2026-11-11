@@ -1,0 +1,69 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync startup</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}img{max-width:100%;height:auto}a{color:#0766c5}</style><body><h1 id="_1">用户登录自启动</h1>
+<p><a href="startup.md">English</a> · <a href="startup.zh-CN.html">HTML</a> · <a href="../README.zh-CN.md">项目说明</a> · <a href="../support-matrix.zh-CN.md">支持矩阵</a></p>
+<p><strong>开机自启动缺省已开。</strong> 正常常驻程序首次成功运行时为当前用户登记所选实现，在该用户登录后启动，不是登录前运行的系统服务。本次Windows自启动修改正在重新实测；此前九条路线通过不代表本轮新版全部实测已完成。Mac自启动仍为Experimental源码，未在Mac编译或运行。</p>
+<h2 id="_2">目录</h2>
+<ul>
+<li><a href="#controls">切换方式</a></li>
+<li><a href="#windows">Windows：当前用户Run项</a></li>
+<li><a href="#macos">macOS：实验性逐用户LaunchAgent</a></li>
+<li><a href="#verification">验证边界</a></li>
+</ul>
+<p><a id="controls"></a></p>
+<h2 id="_3">切换方式</h2>
+<table>
+<thead>
+<tr>
+<th>入口</th>
+<th>生效时点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>托盘／菜单 <strong>开机自启动 / Start at sign-in</strong></td>
+<td>成功修改后立即生效</td>
+</tr>
+<tr>
+<td>设置复选框并点<strong>保存</strong></td>
+<td>提交选择，并同步托盘／菜单</td>
+</tr>
+<tr>
+<td>设置<strong>取消</strong></td>
+<td>不更改已保存选择</td>
+</tr>
+<tr>
+<td><strong>退出并恢复标题</strong></td>
+<td>只退出本次运行，不取消下次登录启动</td>
+</tr>
+</tbody>
+</table>
+<p>两处控件对应同一偏好，成功修改后互相同步，包含已经打开的设置窗；失败显示错误，不显示成已成功。偏好缺项按开启处理，明确保存的关闭选择跨重启及支持的语言版本保留。一次只运行一个正常常驻实现。只读探针、工作进程、单次检查及设置／停止控制命令不会注册；只有取得单实例归属的正常常驻入口才能注册。各实现提供的诊断／控制参数不完全相同。</p>
+<p><a id="windows"></a></p>
+<h2 id="windowsrun">Windows：当前用户Run项</h2>
+<p>Windows各实现使用相同固定值：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>位置／值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>登录命令</td>
+<td><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code> → <code>ChatGPT-TitleSync</code>（<code>REG_SZ</code>）</td>
+</tr>
+<tr>
+<td>共用偏好</td>
+<td><code>HKCU\Software\ChatGPT-TitleSync</code> → <code>AutoStartEnabled</code>（<code>DWORD</code>：1开启，0关闭）</td>
+</tr>
+</tbody>
+</table>
+<p>所选正常常驻程序按自身可运行方式登记绝对命令，正确引用可执行文件、解释器与脚本路径，不携带测试日志位置或间隔覆盖参数。C#读取器应与主程序相邻；解释脚本和冻结目录版本保留各指南要求的伴随文件。具体启动格式见相应实现指南。</p>
+<p>Run完整命令含引号与参数最多<strong>260字符</strong>。启用超长命令会在修改Run值及偏好前被拒绝，应将程序／脚本放到较短且稳定的位置；关闭仍然允许。命令和偏好已经一致时无需重复写入。失败会报告，并尝试保留／恢复原值，不能当作注册成功。无需管理员权限，不建立服务或任务计划；关闭只删除本产品的Run值。Windows可能延迟登录启动，不保证登录瞬间执行。参见<a href="https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys">Microsoft Run／RunOnce文档</a>。</p>
+<p><a id="macos"></a></p>
+<h2 id="macoslaunchagent">macOS：实验性逐用户LaunchAgent</h2>
+<p>Swift、Objective-C和Go／Rust菜单伴随源码共享 <code>NSUserDefaults</code> 域 <code>io.github.hpsun.ChatGPTTitleSync</code> 的 <code>AutoStartEnabled</code>，缺项按开启处理。草稿登记到 <code>~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist</code>，使用同名Label、<code>ProgramArguments</code>中的绝对可执行路径、<code>RunAtLoad=true</code>、<code>KeepAlive=false</code>。</p>
+<p>开启为下次登录准备所选程序，不立即bootstrap第二个常驻实例；关闭删除本产品plist。退出本次运行不取消登录选择。Go／Rust设置／菜单契约还保存 <code>autostart_enabled</code>。这些仅是源码设计，Mac SDK构建、登录行为、权限与AX／标题操作仍未实机验证。见<a href="../macos/README.zh-CN.md">Mac指南</a>、<a href="../go/README.zh-CN.md">Go指南</a>和<a href="../rust/README.zh-CN.md">Rust指南</a>。</p>
+<p><a id="verification"></a></p>
+<h2 id="_4">验证边界</h2>
+<p>Windows自有测试使用GUID临时注册表键和从不显示的控件，不写真实Run，检查默认开启、共享关闭偏好、取消、两处控件同步、超长拒绝及写入失败处理。本轮真实Windows复测仍在进行。重启登录后的行为、长期可靠性及Mac原生验收须单独记录，旧时延和源码夹具均不能代替这些结果。</p></body></html>

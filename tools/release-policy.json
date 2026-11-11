@@ -1,0 +1,593 @@
+{
+  "schema_version": 1,
+  "name": "source-only-review-boundary",
+  "license": "MIT",
+  "default_interval_seconds": 2,
+  "allow": [
+    ".gitignore",
+    ".gitattributes",
+    "LICENSE",
+    "README.md",
+    "README.html",
+    "README.zh-CN.md",
+    "README.zh-CN.html",
+    "support-matrix.json",
+    "support-matrix.md",
+    "source-sha256.txt",
+    ".github/workflows/*.yml",
+    ".github/workflows/*.yaml",
+    "tools/*.py",
+    "tools/*.ps1",
+    "tools/release-policy.json",
+    "tools/tests/*.py",
+    "tools/tests/*.cs",
+    "tools/tests/*.ps1",
+    "docs/*.md",
+    "docs/*.html",
+    "assets/chatgpt-titlesync-icon.png",
+    "assets/chatgpt-titlesync.ico",
+    "assets/chatgpt-titlesync.icns",
+    "assets/icon-selected.json",
+    "windows/csharp/*.cs",
+    "windows/csharp/*.ps1",
+    "windows/csharp/README*",
+    "windows/powershell/ChatGPT-TitleSync.ps1",
+    "windows/powershell/README*",
+    "windows/python/chatgpt_window_titles.py",
+    "windows/python/README*",
+    "windows/ahk-v1.0/chatgpt_window_titles_basic.ahk",
+    "windows/ahk-v1.0/README*",
+    "windows/ahk-v1.1/chatgpt_window_titles.ahk",
+    "windows/ahk-v1.1/README*",
+    "windows/ahk-v2/chatgpt_window_titles.ahk",
+    "windows/ahk-v2/README*",
+    "go/*.go",
+    "go/go.mod",
+    "go/build.ps1",
+    "go/README*",
+    "rust/Cargo.toml",
+    "rust/Cargo.lock",
+    "rust/build.ps1",
+    "rust/src/*.rs",
+    "rust/src/**/*.rs",
+    "rust/README*",
+    "macos/ChatGPTWindowTitles.swift",
+    "macos/ChatGPTWindowTitles.m",
+    "macos/README*",
+    "macos/macos_mock_backend.py",
+    "macos/test_macos_behavior.py",
+    "support-matrix.html",
+    "support-matrix.zh-CN.md",
+    "support-matrix.zh-CN.html",
+    "assets/chatgpt-titlesync-16-color-options.png",
+    "assets/chatgpt-titlesync-blue-green-combinations.png",
+    "assets/chatgpt-titlesync-blue-green-same-body.png",
+    "assets/chatgpt-titlesync-legacy.ico",
+    "macos/TraySettings.applescript",
+    "CHANGELOG.md",
+    "CHANGELOG.html",
+    "CHANGELOG.zh-CN.md",
+    "CHANGELOG.zh-CN.html",
+    "KNOWN_ISSUES.md",
+    "KNOWN_ISSUES.html",
+    "KNOWN_ISSUES.zh-CN.md",
+    "KNOWN_ISSUES.zh-CN.html",
+    "VERSION",
+    "docs/release-notes-v0.1.0.html",
+    "docs/release-notes-v0.1.0.md",
+    "docs/release-notes-v0.1.0.zh-CN.html",
+    "docs/release-notes-v0.1.0.zh-CN.md",
+    "docs/roadmap.html",
+    "docs/roadmap.md",
+    "docs/roadmap.zh-CN.html",
+    "docs/roadmap.zh-CN.md",
+    "docs/startup.md",
+    "docs/startup.html",
+    "docs/startup.zh-CN.md",
+    "docs/startup.zh-CN.html",
+    "assets/monitoring-flow.svg",
+    "assets/themes/45.png",
+    "assets/themes/45.ico",
+    "assets/themes/45-legacy.ico",
+    "assets/themes/46.png",
+    "assets/themes/46.ico",
+    "assets/themes/46-legacy.ico",
+    "assets/themes/47.png",
+    "assets/themes/47.ico",
+    "assets/themes/47-legacy.ico",
+    "assets/themes/48.png",
+    "assets/themes/48.ico",
+    "assets/themes/48-legacy.ico",
+    "assets/themes/49.png",
+    "assets/themes/49.ico",
+    "assets/themes/49-legacy.ico",
+    "assets/themes/50.png",
+    "assets/themes/50.ico",
+    "assets/themes/50-legacy.ico",
+    "assets/themes/51.png",
+    "assets/themes/51.ico",
+    "assets/themes/51-legacy.ico",
+    "assets/themes/52.png",
+    "assets/themes/52.ico",
+    "assets/themes/52-legacy.ico",
+    "windows/python/icon_preferences.py",
+    "windows/python/tests/test_icon_preferences.py",
+    "windows/ahk-v1.0/IconThemeBasic.ahk",
+    "windows/ahk-v1.1/IconTheme.ahk",
+    "windows/ahk-v2/IconTheme.ahk",
+    "rust/build.rs",
+    "tools/Make-IconResource.ps1",
+    "docs/icon-themes.md",
+    "docs/icon-themes.html",
+    "docs/icon-themes.zh-CN.md",
+    "docs/icon-themes.zh-CN.html",
+    "macos/test_icon_policy.py",
+    "assets/language-en.svg",
+    "assets/language-en-active.svg",
+    "assets/language-zh.svg",
+    "assets/language-zh-active.svg"
+  ],
+  "required": [
+    ".github/workflows/macos-experimental.yml",
+    ".gitattributes",
+    ".github/workflows/windows-checks.yml",
+    ".gitignore",
+    "LICENSE",
+    "README.html",
+    "README.md",
+    "README.zh-CN.html",
+    "README.zh-CN.md",
+    "assets/chatgpt-titlesync-icon.png",
+    "assets/chatgpt-titlesync.icns",
+    "assets/chatgpt-titlesync.ico",
+    "assets/icon-selected.json",
+    "docs/release-readiness.html",
+    "docs/release-readiness.md",
+    "docs/release-readiness.zh-CN.html",
+    "docs/release-readiness.zh-CN.md",
+    "go/README.html",
+    "go/README.md",
+    "go/README.zh-CN.html",
+    "go/README.zh-CN.md",
+    "go/lease.go",
+    "go/main.go",
+    "go/platform_darwin.go",
+    "go/platform_windows.go",
+    "macos/ChatGPTWindowTitles.m",
+    "macos/ChatGPTWindowTitles.swift",
+    "macos/README.html",
+    "macos/README.md",
+    "macos/README.zh-CN.html",
+    "macos/README.zh-CN.md",
+    "rust/README.html",
+    "rust/README.md",
+    "rust/README.zh-CN.html",
+    "rust/README.zh-CN.md",
+    "rust/src/lease.rs",
+    "rust/src/macos.rs",
+    "rust/src/main.rs",
+    "rust/src/windows.rs",
+    "tools/release-policy.json",
+    "tools/release_audit.py",
+    "tools/test-csharp.ps1",
+    "tools/test-powershell-active.ps1",
+    "tools/tests/csharp_active_fixture.cs",
+    "tools/tests/test_release_audit.py",
+    "windows/ahk-v1.0/README.html",
+    "windows/ahk-v1.0/README.md",
+    "windows/ahk-v1.0/README.zh-CN.html",
+    "windows/ahk-v1.0/README.zh-CN.md",
+    "windows/ahk-v1.0/chatgpt_window_titles_basic.ahk",
+    "windows/ahk-v1.1/README.html",
+    "windows/ahk-v1.1/README.md",
+    "windows/ahk-v1.1/README.zh-CN.html",
+    "windows/ahk-v1.1/README.zh-CN.md",
+    "windows/ahk-v1.1/chatgpt_window_titles.ahk",
+    "windows/ahk-v2/README.html",
+    "windows/ahk-v2/README.md",
+    "windows/ahk-v2/README.zh-CN.html",
+    "windows/ahk-v2/README.zh-CN.md",
+    "windows/ahk-v2/chatgpt_window_titles.ahk",
+    "windows/csharp/App.cs",
+    "windows/csharp/README.html",
+    "windows/csharp/README.md",
+    "windows/csharp/README.zh-CN.html",
+    "windows/csharp/README.zh-CN.md",
+    "windows/csharp/TitleMonitor.cs",
+    "windows/csharp/TitleReader.cs",
+    "windows/powershell/ChatGPT-TitleSync.ps1",
+    "windows/powershell/README.html",
+    "windows/powershell/README.md",
+    "windows/powershell/README.zh-CN.html",
+    "windows/powershell/README.zh-CN.md",
+    "windows/python/README.html",
+    "windows/python/README.md",
+    "windows/python/README.zh-CN.html",
+    "windows/python/README.zh-CN.md",
+    "windows/python/chatgpt_window_titles.py",
+    "go/three_layer.go",
+    "go/three_layer_test.go",
+    "rust/src/three_layer.rs",
+    "go/settings.go",
+    "go/settings_test.go",
+    "go/tray_windows.go",
+    "go/tray_windows_test.go",
+    "go/tray_darwin.go",
+    "rust/src/settings.rs",
+    "rust/src/tray_windows.rs",
+    "rust/src/tray_macos.rs",
+    "macos/TraySettings.applescript",
+    "tools/test-tray-settings.ps1",
+    "tools/tests/csharp_settings_fixture.cs",
+    "tools/tests/startup_hidden_fixture.cs",
+    "CHANGELOG.md",
+    "CHANGELOG.html",
+    "CHANGELOG.zh-CN.md",
+    "CHANGELOG.zh-CN.html",
+    "KNOWN_ISSUES.md",
+    "KNOWN_ISSUES.html",
+    "KNOWN_ISSUES.zh-CN.md",
+    "KNOWN_ISSUES.zh-CN.html",
+    "VERSION",
+    "docs/release-notes-v0.1.0.html",
+    "docs/release-notes-v0.1.0.md",
+    "docs/release-notes-v0.1.0.zh-CN.html",
+    "docs/release-notes-v0.1.0.zh-CN.md",
+    "docs/roadmap.html",
+    "docs/roadmap.md",
+    "docs/roadmap.zh-CN.html",
+    "docs/roadmap.zh-CN.md",
+    "docs/startup.md",
+    "docs/startup.html",
+    "docs/startup.zh-CN.md",
+    "docs/startup.zh-CN.html",
+    "assets/monitoring-flow.svg",
+    "assets/themes/45.png",
+    "assets/themes/45.ico",
+    "assets/themes/45-legacy.ico",
+    "assets/themes/46.png",
+    "assets/themes/46.ico",
+    "assets/themes/46-legacy.ico",
+    "assets/themes/47.png",
+    "assets/themes/47.ico",
+    "assets/themes/47-legacy.ico",
+    "assets/themes/48.png",
+    "assets/themes/48.ico",
+    "assets/themes/48-legacy.ico",
+    "assets/themes/49.png",
+    "assets/themes/49.ico",
+    "assets/themes/49-legacy.ico",
+    "assets/themes/50.png",
+    "assets/themes/50.ico",
+    "assets/themes/50-legacy.ico",
+    "assets/themes/51.png",
+    "assets/themes/51.ico",
+    "assets/themes/51-legacy.ico",
+    "assets/themes/52.png",
+    "assets/themes/52.ico",
+    "assets/themes/52-legacy.ico",
+    "assets/chatgpt-titlesync-legacy.ico",
+    "windows/python/icon_preferences.py",
+    "windows/python/tests/test_icon_preferences.py",
+    "windows/ahk-v1.0/IconThemeBasic.ahk",
+    "windows/ahk-v1.1/IconTheme.ahk",
+    "windows/ahk-v2/IconTheme.ahk",
+    "rust/build.rs",
+    "tools/Make-IconResource.ps1",
+    "docs/icon-themes.md",
+    "docs/icon-themes.html",
+    "docs/icon-themes.zh-CN.md",
+    "docs/icon-themes.zh-CN.html",
+    "macos/test_icon_policy.py",
+    "assets/language-en.svg",
+    "assets/language-en-active.svg",
+    "assets/language-zh.svg",
+    "assets/language-zh-active.svg"
+  ],
+  "source_rules": [
+    {
+      "name": "csharp-default-two-seconds",
+      "path": "windows/csharp/App.cs",
+      "pattern": "ChatGptTitlePollMilliseconds\\s*=\\s*2000\\b"
+    },
+    {
+      "name": "csharp-cli-default-two-seconds",
+      "path": "windows/csharp/App.cs",
+      "pattern": "Arg\\(args,\\s*\"--interval\",\\s*\"2\"\\)"
+    },
+    {
+      "name": "csharp-foreground",
+      "path": "windows/csharp/TitleMonitor.cs",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "python-default-two-seconds",
+      "path": "windows/python/chatgpt_window_titles.py",
+      "pattern": "add_argument\\(\"--interval\".{0,80}?default\\s*=\\s*2\\b"
+    },
+    {
+      "name": "python-foreground",
+      "path": "windows/python/chatgpt_window_titles.py",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "powershell-default-two-seconds",
+      "path": "windows/powershell/ChatGPT-TitleSync.ps1",
+      "pattern": "IntervalSeconds\\s*=\\s*2\\b"
+    },
+    {
+      "name": "powershell-foreground",
+      "path": "windows/powershell/ChatGPT-TitleSync.ps1",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "ahk-basic-default-two-seconds",
+      "path": "windows/ahk-v1.0/chatgpt_window_titles_basic.ahk",
+      "pattern": "^Interval\\s*:=\\s*2\\s*$"
+    },
+    {
+      "name": "ahk-basic-foreground",
+      "path": "windows/ahk-v1.0/chatgpt_window_titles_basic.ahk",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "ahk-v1.1-default-two-seconds",
+      "path": "windows/ahk-v1.1/chatgpt_window_titles.ahk",
+      "pattern": "Arg\\(\"--interval\",\\s*\"2\"\\)"
+    },
+    {
+      "name": "ahk-v1.1-foreground",
+      "path": "windows/ahk-v1.1/chatgpt_window_titles.ahk",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "ahk-v2-default-two-seconds",
+      "path": "windows/ahk-v2/chatgpt_window_titles.ahk",
+      "pattern": "Arg\\(\"--interval\",\\s*\"2\"\\)"
+    },
+    {
+      "name": "ahk-v2-foreground",
+      "path": "windows/ahk-v2/chatgpt_window_titles.ahk",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "go-default-two-seconds",
+      "path": "go/settings.go",
+      "pattern": "const\\s+defaultForegroundSeconds\\s*=\\s*2\\b"
+    },
+    {
+      "name": "go-foreground",
+      "path": "go/platform_windows.go",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "rust-default-two-seconds",
+      "path": "rust/src/settings.rs",
+      "pattern": "pub const DEFAULT_FOREGROUND:\\s*u64\\s*=\\s*2\\b"
+    },
+    {
+      "name": "rust-foreground",
+      "path": "rust/src/windows.rs",
+      "pattern": "GetForegroundWindow"
+    },
+    {
+      "name": "swift-default-two-seconds",
+      "path": "macos/ChatGPTWindowTitles.swift",
+      "pattern": "var\\s+interval:\\s*TimeInterval\\s*=\\s*\\{.{0,900}?return\\s+TimeInterval\\(\\(1\\.\\.\\.3600\\)\\.contains\\(saved\\)\\s*\\?\\s*saved\\s*:\\s*2\\)"
+    },
+    {
+      "name": "objc-default-two-seconds",
+      "path": "macos/ChatGPTWindowTitles.m",
+      "pattern": "_interval\\s*=\\s*2\\b"
+    },
+    {
+      "name": "go-mac-focused-application",
+      "path": "go/platform_darwin.go",
+      "pattern": "FocusedApplication"
+    },
+    {
+      "name": "go-mac-focused-window",
+      "path": "go/platform_darwin.go",
+      "pattern": "FocusedWindow"
+    },
+    {
+      "name": "go-mac-native-front-app-first",
+      "path": "go/platform_darwin.go",
+      "pattern": "frontmostApplication"
+    },
+    {
+      "name": "rust-mac-focused-application",
+      "path": "rust/src/macos.rs",
+      "pattern": "FocusedApplication"
+    },
+    {
+      "name": "rust-mac-focused-window",
+      "path": "rust/src/macos.rs",
+      "pattern": "FocusedWindow"
+    },
+    {
+      "name": "rust-mac-native-front-app-first",
+      "path": "rust/src/macos.rs",
+      "pattern": "frontmostApplication"
+    },
+    {
+      "name": "swift-mac-focused-application",
+      "path": "macos/ChatGPTWindowTitles.swift",
+      "pattern": "FocusedApplication"
+    },
+    {
+      "name": "swift-mac-focused-window",
+      "path": "macos/ChatGPTWindowTitles.swift",
+      "pattern": "FocusedWindow"
+    },
+    {
+      "name": "swift-mac-native-front-app-first",
+      "path": "macos/ChatGPTWindowTitles.swift",
+      "pattern": "frontmostApplication"
+    },
+    {
+      "name": "objc-mac-focused-application",
+      "path": "macos/ChatGPTWindowTitles.m",
+      "pattern": "FocusedApplication"
+    },
+    {
+      "name": "objc-mac-focused-window",
+      "path": "macos/ChatGPTWindowTitles.m",
+      "pattern": "FocusedWindow"
+    },
+    {
+      "name": "objc-mac-native-front-app-first",
+      "path": "macos/ChatGPTWindowTitles.m",
+      "pattern": "frontmostApplication"
+    },
+    {
+      "name": "csharp-background-default5",
+      "path": "windows/csharp/App.cs",
+      "pattern": "ChatGptTitleBackgroundRefreshSeconds\\s*=\\s*5\\b"
+    },
+    {
+      "name": "python-background-default5",
+      "path": "windows/python/chatgpt_window_titles.py",
+      "pattern": "add_argument\\(\"--background-interval\".{0,80}?default\\s*=\\s*5\\b"
+    },
+    {
+      "name": "powershell-background-default5",
+      "path": "windows/powershell/ChatGPT-TitleSync.ps1",
+      "pattern": "BackgroundIntervalSeconds\\s*=\\s*5\\b"
+    },
+    {
+      "name": "go-background-default5",
+      "path": "go/settings.go",
+      "pattern": "const\\s+defaultBackgroundSeconds\\s*=\\s*5\\b"
+    },
+    {
+      "name": "rust-background-default5",
+      "path": "rust/src/settings.rs",
+      "pattern": "pub const DEFAULT_BACKGROUND:\\s*u64\\s*=\\s*5\\b"
+    },
+    {
+      "name": "swift-background-default5",
+      "path": "macos/ChatGPTWindowTitles.swift",
+      "pattern": "var\\s+backgroundInterval:\\s*TimeInterval\\s*=\\s*\\{.{0,900}?return\\s+TimeInterval\\(\\(5\\.\\.\\.3600\\)\\.contains\\(saved\\)\\s*\\?\\s*saved\\s*:\\s*5\\)"
+    },
+    {
+      "name": "objc-background-default5",
+      "path": "macos/ChatGPTWindowTitles.m",
+      "pattern": "_backgroundInterval\\s*=\\s*5\\b"
+    },
+    {
+      "name": "ahk-basic-background-default5",
+      "path": "windows/ahk-v1.0/chatgpt_window_titles_basic.ahk",
+      "pattern": "^BackgroundInterval\\s*:=\\s*5\\s*$"
+    },
+    {
+      "name": "ahk11-background-default5",
+      "path": "windows/ahk-v1.1/chatgpt_window_titles.ahk",
+      "pattern": "Arg\\(\"--background-interval\",\\s*\"5\"\\)"
+    },
+    {
+      "name": "ahk2-background-default5",
+      "path": "windows/ahk-v2/chatgpt_window_titles.ahk",
+      "pattern": "Arg\\(\"--background-interval\",\\s*\"5\"\\)"
+    },
+    {
+      "name": "go-live-settings-range",
+      "path": "go/settings.go",
+      "pattern": "ForegroundSeconds\\s*<\\s*1.{0,180}?BackgroundSeconds\\s*<\\s*5"
+    },
+    {
+      "name": "go-windows-native-tray-settings",
+      "path": "go/tray_windows.go",
+      "pattern": "Shell_NotifyIconW.{0,10000}?扫描间隔设置"
+    },
+    {
+      "name": "go-macos-public-menu-companion",
+      "path": "go/tray_darwin.go",
+      "pattern": "TraySettings\\.applescript.{0,3000}?/usr/bin/osascript"
+    },
+    {
+      "name": "rust-live-settings-range",
+      "path": "rust/src/settings.rs",
+      "pattern": "\\(1\\.\\.=3600\\).{0,100}?\\(5\\.\\.=3600\\)"
+    },
+    {
+      "name": "rust-windows-native-tray-settings",
+      "path": "rust/src/tray_windows.rs",
+      "pattern": "Shell_NotifyIconW.{0,20000}?扫描间隔设置"
+    },
+    {
+      "name": "rust-macos-public-menu-companion",
+      "path": "rust/src/tray_macos.rs",
+      "pattern": "TraySettings\\.applescript.{0,3000}?/usr/bin/osascript"
+    },
+    {
+      "name": "public-macos-menu-settings-save",
+      "path": "macos/TraySettings.applescript",
+      "pattern": "on saveSettings:sender.{0,1800}?persistValues"
+    },
+    {
+      "name": "csharp-menu-settings-handler",
+      "path": "windows/csharp/App.cs",
+      "pattern": "Scan intervals.{0,3000}?ScanSettings\\.Apply"
+    },
+    {
+      "name": "powershell-menu-settings-handler",
+      "path": "windows/powershell/ChatGPT-TitleSync.ps1",
+      "pattern": "function Initialize-CgtTray.{0,2600}?扫描间隔设置"
+    },
+    {
+      "name": "go-cli-default-constant-bindings",
+      "path": "go/main.go",
+      "pattern": "Int\\(\"background-interval\",\\s*defaultBackgroundSeconds.{0,800}?Int\\(\"interval\",\\s*defaultForegroundSeconds"
+    },
+    {
+      "name": "rust-cli-default-constant-bindings",
+      "path": "rust/src/main.rs",
+      "pattern": "let interval\\b.{0,700}?settings::DEFAULT_FOREGROUND.{0,800}?let background\\b.{0,700}?settings::DEFAULT_BACKGROUND"
+    }
+  ],
+  "notes": [
+    "No runtime SDK, binary, execution log, validation artifact, snapshot, backup or private JSON is part of the source package.",
+    "Static source markers are review checks, not runtime acceptance tests.",
+    "Adding a public file requires an explicit policy review.",
+    "Local source candidate has controlled Windows protocol checks; macOS remains Experimental/uncompiled. User approval on 2026-11-11 authorizes the root publisher; audit success alone never grants authorization.",
+    "Targeted Windows settings/caption-repair receipts supplement controlled checks; they do not imply native Mac, physical shell click, installation, long-term acceptance or publication approval.",
+    "User explicitly requested normal repository directory/file publication, not a project ZIP upload; GitHub automatic source archives are platform-generated."
+  ],
+  "final_protocol_acceptance": "controlled-source-with-targeted-windows-cases-macos-experimental",
+  "remote_publication": "user-approved-2026-11-11-root-publisher-executes",
+  "default_background_interval_seconds": 5,
+  "publication_delivery": "normal-repository-files-no-project-zip-upload",
+  "upload_project_zip": false,
+  "selected_icon": "45",
+  "icon_sha256": {
+    "assets/themes/45.png": "d098fc7d41703ac0f806e0285486611158db843e2b72f05c7a8808f856ec6792",
+    "assets/themes/45.ico": "700cfe7a1ef6f3e72753441bcf9b5bea59362a54601e95a3e62a1babab986ccf",
+    "assets/themes/45-legacy.ico": "6b50e2989f3e306a9a989eec7f8bf4447bceeba2fb36b388e3e2e4b5ef167133",
+    "assets/themes/46.png": "5a8a98e6646ceabec3a22939b51e993d14f70d7c8bf0aa7eff98aae61e557164",
+    "assets/themes/46.ico": "eec1ba1213bf66bce18b21fd54fac0a00a2398f109de0069312b66140ef9e10d",
+    "assets/themes/46-legacy.ico": "36d1e163a8c3e4da916dbf7bd81a51e46cbc2cc5bf017ecb005b51c085f92359",
+    "assets/themes/47.png": "3336d4969e5ae906b7213b8c7534152ca5a3600e33bd15f6143e7cb5817521df",
+    "assets/themes/47.ico": "f2d20663f72006ff0acc09b5d135cf8b98a0e39734ba2baa67ba0322c372ad82",
+    "assets/themes/47-legacy.ico": "47c33394b4ac7b3032b258c97f1b29391a18f55abfa551c39a19a5a3009b6bd6",
+    "assets/themes/48.png": "f67011290ece50a14131e7946f4fe14c91e93a509c485d10bbe8737c8c7c2c72",
+    "assets/themes/48.ico": "a5ab9663cf6221a2748af6d1364ad43890b3a102b7acfcc282a2f5badfcda506",
+    "assets/themes/48-legacy.ico": "40aea310753be5e1d331d33c710aa03d397e115344a0c2b01e3f9d91bed965af",
+    "assets/themes/49.png": "d609ad976be9b6dd9e8f331b21e24ded93bbb1e499443651f1bce1b71cb7ee7b",
+    "assets/themes/49.ico": "7fb9ad48b15c882ba4ded10202153ea210c7f5828ac0cbec3bbdb50c8eb06c0a",
+    "assets/themes/49-legacy.ico": "beeeaf8e9b301e163cf0536b29db15b32f2cc976bd8ebeed062a50c4a141ed53",
+    "assets/themes/50.png": "f20d96ae5684d7a7dd1a7a65426caa1c1264c4cfc79843f8607146d0d7949dfe",
+    "assets/themes/50.ico": "298421ff79f0cca3067c05f82afb57e546642d26698f240b468ee48456390276",
+    "assets/themes/50-legacy.ico": "977e470bc00bb216c78b88ee23cdeb27d95f839d2017f478c4b3edd6202c9914",
+    "assets/themes/51.png": "82912688562f261f1af4c2cbd98379b9b20f84b9f9aecf13e15bef568a6d3576",
+    "assets/themes/51.ico": "4fd6f2f07b81eed02c654e992d08ef06bdbf76245333941d9f2edcc6f064011b",
+    "assets/themes/51-legacy.ico": "83c236f9a325db6243c69b78f31b633940b1b3396b18ac9bc50e048ebe3c4d60",
+    "assets/themes/52.png": "b7d6d515e36c5c4c34d3bf122116d68129a8e65b9cfb4b2bdfb28b5d0be45635",
+    "assets/themes/52.ico": "c1d67b9f84c4a3ffc7a65ecfdbb92788eeb5688a1a03ec2064551639cc3c985c",
+    "assets/themes/52-legacy.ico": "26eadbc004301ee1fcbe2c4c3a56b1c67a51d7f75a48a3323361e8496af232b1",
+    "assets/chatgpt-titlesync-icon.png": "d098fc7d41703ac0f806e0285486611158db843e2b72f05c7a8808f856ec6792",
+    "assets/chatgpt-titlesync.ico": "700cfe7a1ef6f3e72753441bcf9b5bea59362a54601e95a3e62a1babab986ccf",
+    "assets/chatgpt-titlesync-legacy.ico": "6b50e2989f3e306a9a989eec7f8bf4447bceeba2fb36b388e3e2e4b5ef167133",
+    "assets/chatgpt-titlesync.icns": "7517b1aa0efd865f09ca62ef01c0923c3297ea0f5e5dad52e74800de9a53c9e0"
+  }
+}

@@ -1,0 +1,68 @@
+name: Windows source checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-fake-tests:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      GOTOOLCHAIN: local
+      CGO_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Select the locally verified Rust release through official rustup
+        shell: pwsh
+        run: rustup toolchain install 1.82.0 --profile minimal
+      - name: Audit source package boundary
+        shell: pwsh
+        run: |
+          python -m unittest discover -s tools/tests -p "test_release_audit.py" -v
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/release_audit.py --no-zip --output-dir "$env:RUNNER_TEMP/source-audit"
+      - name: Go fake states, COM ABI and owned-window checks
+        working-directory: go
+        shell: pwsh
+        run: |
+          go test -v .
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & ./build.ps1
+          Copy-Item -LiteralPath ./chatgpt-titlesync-go.exe -Destination "$env:RUNNER_TEMP/chatgpt-titlesync-go.exe"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & "$env:RUNNER_TEMP/chatgpt-titlesync-go.exe" --self-test
+      - name: Rust fake states, COM ABI and owned-window checks
+        working-directory: rust
+        shell: pwsh
+        run: |
+          cargo +1.82.0 test --offline
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo +1.82.0 build --release --offline
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & ./target/release/chatgpt-titlesync-rust.exe --self-test
+      - name: C# application compile and fake foreground checks
+        shell: pwsh
+        run: |
+          & ./windows/csharp/Build.ps1
+          & ./tools/test-csharp.ps1 -OutputDirectory "$env:RUNNER_TEMP/csharp-fake"
+      - name: PowerShell parse, embedded native compile and fake foreground checks
+        shell: pwsh
+        run: |
+          & ./tools/test-powershell-active.ps1 -ReportPath "$env:RUNNER_TEMP/powershell7-fake.json"
+          & "$env:WINDIR/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -ExecutionPolicy Bypass -File ./tools/test-powershell-active.ps1 -ReportPath "$env:RUNNER_TEMP/powershell51-fake.json"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Modeless tray settings callbacks in PowerShell 7 and 5.1
+        shell: pwsh
+        run: |
+          & ./tools/test-tray-settings.ps1 -OutputDirectory "$env:RUNNER_TEMP/tray-settings-ps7"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & "$env:WINDIR/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -STA -ExecutionPolicy Bypass -File ./tools/test-tray-settings.ps1 -OutputDirectory "$env:RUNNER_TEMP/tray-settings-ps51"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }

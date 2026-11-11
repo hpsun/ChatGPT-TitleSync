@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync startup</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}img{max-width:100%;height:auto}a{color:#0766c5}</style><body><h1 id="start-at-sign-in">Start at sign-in</h1>
+<p><a href="startup.zh-CN.md">简体中文</a> · <a href="startup.html">HTML</a> · <a href="../README.md">Project home</a> · <a href="../support-matrix.md">Support matrix</a></p>
+<p><strong>Start at sign-in is on by default.</strong> A normal resident registers the current user's selected implementation when it first runs successfully. This means launch after that user signs in, not a system service before login. The current Windows startup revision is being retested; earlier nine-runtime results do not establish that this revision has completed all real cases. macOS startup source remains Experimental and has not been compiled or run on a Mac.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#controls">Change the choice</a></li>
+<li><a href="#windows">Windows: current-user Run entry</a></li>
+<li><a href="#macos">macOS: Experimental per-user LaunchAgent</a></li>
+<li><a href="#verification">Verification boundary</a></li>
+</ul>
+<p><a id="controls"></a></p>
+<h2 id="change-the-choice">Change the choice</h2>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>When it applies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tray/menu <strong>开机自启动 / Start at sign-in</strong></td>
+<td>Immediately after a successful change</td>
+</tr>
+<tr>
+<td>Settings checkbox with <strong>Save</strong></td>
+<td>Commits the choice; also updates an already-open tray/menu</td>
+</tr>
+<tr>
+<td>Settings <strong>Cancel</strong></td>
+<td>Leaves the saved choice unchanged</td>
+</tr>
+<tr>
+<td><strong>Exit and restore titles</strong></td>
+<td>Exits this run; does not cancel the next login launch</td>
+</tr>
+</tbody>
+</table>
+<p>The two controls represent the same preference and synchronize after successful changes, including an already-open settings window. A failed update reports an error rather than showing success. Missing preference means on; a stored off choice remains off across restarts and supported language variants. Keep one normal resident at a time. Read-only probes, workers, one-pass checks, and settings/stop control invocations do not register startup; only the normal resident after acquiring its singleton may do so. Supported diagnostic/control modes differ by branch.</p>
+<p><a id="windows"></a></p>
+<h2 id="windows-current-user-run-entry">Windows: current-user Run entry</h2>
+<p>All Windows implementations use these fixed shared values:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Location / value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Login command</td>
+<td><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code> → <code>ChatGPT-TitleSync</code> (<code>REG_SZ</code>)</td>
+</tr>
+<tr>
+<td>Shared preference</td>
+<td><code>HKCU\Software\ChatGPT-TitleSync</code> → <code>AutoStartEnabled</code> (<code>DWORD</code>: 1 on, 0 off)</td>
+</tr>
+</tbody>
+</table>
+<p>The selected normal resident writes its own runnable absolute command, quoting executable, interpreter and script paths as appropriate. It does not carry test log locations or interval overrides into the login command. C# keeps its reader beside the main executable; source/interpreted and frozen-directory implementations keep their documented companions. Each implementation guide provides its exact launch form.</p>
+<p>The complete Run command, including quotes and arguments, must be <strong>at most 260 characters</strong>. Enabling an overlong command is rejected before changing the Run value or preference; move the program/script to a shorter stable path. Turning it off is still allowed. When command and preference already match, no rewrite is needed. Failures attempt to retain/restore prior values, are reported, and do not count as successful registration. No administrator permission, service or scheduled task is involved; turning it off removes only this product's Run value. Windows may delay login startup; it is not an instant-response guarantee. See <a href="https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys">Microsoft's Run/RunOnce documentation</a>.</p>
+<p><a id="macos"></a></p>
+<h2 id="macos-experimental-per-user-launchagent">macOS: Experimental per-user LaunchAgent</h2>
+<p>The Swift, Objective-C and Go/Rust menu-companion sources share <code>NSUserDefaults</code> suite <code>io.github.hpsun.ChatGPTTitleSync</code>, key <code>AutoStartEnabled</code>. Missing means on. The draft registration is <code>~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist</code>, using the same label, an absolute executable in <code>ProgramArguments</code>, <code>RunAtLoad=true</code>, and <code>KeepAlive=false</code>.</p>
+<p>Enabling prepares the selected executable for the next login; it does not bootstrap another resident immediately. Disabling removes that product plist. Exiting the current app leaves the login choice intact. Go/Rust also expose <code>autostart_enabled</code> in their saved settings/menu contract. These are source-level designs only: actual Mac SDK compilation, login behavior, permissions and AX/title operation remain unverified. See the <a href="../macos/README.md">Mac guide</a>, <a href="../go/README.md">Go guide</a>, and <a href="../rust/README.md">Rust guide</a>.</p>
+<p><a id="verification"></a></p>
+<h2 id="verification-boundary">Verification boundary</h2>
+<p>Owned Windows tests use GUID registry keys and never-shown controls rather than the real Run entry. They check default on, shared off persistence, cancellation, two-control synchronization, overlong-command rejection and failed-write handling. Current real Windows retesting is in progress. Login-after-reboot behavior, long-term reliability and native Mac acceptance must be recorded separately; neither old timings nor a source fixture proves those results.</p></body></html>

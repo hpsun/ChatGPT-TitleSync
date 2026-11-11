@@ -1,0 +1,74 @@
+# Local binaries and compiler outputs
+*.exe
+*.dll
+*.pdb
+*.obj
+*.o
+*.a
+*.lib
+*.ilk
+*.exp
+*.dylib
+*.so
+*.dSYM/
+**/bin/
+**/obj/
+**/target/
+**/.build/
+macos/ChatGPTWindowTitlesSwift
+macos/ChatGPTWindowTitlesObjC
+go/ChatGPT-TitleSync
+go/chatgpt-titlesync
+
+# Private execution evidence, logs, IPC and reports
+**/validation/
+**/logs/
+*.log
+*.jsonl
+*.tmp
+*.bin
+*.reader.json*
+*.worker.json*
+**/worker*.json
+**/read-only*.json*
+**/read_only*.json*
+**/check*.json
+**/self-test*.json
+**/*selftest*result*.txt
+**/*probe*result*.txt
+**/*stdout*
+**/*stderr*
+**/*fixture*packet*
+**/*_probe.ahk
+**/ahk-validation*.json
+macos/macos_mock_results.json
+macos/macos_draft_manifest.json
+macos/261110_*
+assets/*-check.json
+
+# Local runtimes, caches and OS metadata
+*.zip
+*.7z
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
+Thumbs.db
+Desktop.ini
+# Additional local generated diagnostic snapshots
+**/*validation*.json
+**/*manifest*.json
+**/*fixture*.json
+**/chatgpt-title-readers/
+*.identity.json
+
+# Private verified-title cache
+**/chatgpt-title-cache.json*
+
+# Local release audit and candidate outputs
+**/.local/
+
+# Continue ignoring legacy private build outputs.
+go/ChatGPT-title
+go/chatgpt-title

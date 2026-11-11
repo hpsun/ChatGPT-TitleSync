@@ -1,0 +1,1284 @@
+{
+  "schema_version": 3,
+  "snapshot_date_beijing": "2026-11-11",
+  "project": "ChatGPT-TitleSync",
+  "project_state": "public_repository_file_publication_in_progress_user_approved_2026_11_11",
+  "remote_repository_created": true,
+  "published": false,
+  "autostart_configured": null,
+  "icon_state": "baseline_45_with_eight_runtime_palettes",
+  "language_count": 8,
+  "implementations": [
+    {
+      "id": "csharp",
+      "language": "C#",
+      "platforms": [
+        "Windows"
+      ],
+      "source": "windows/csharp/README.md",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": ".NET Framework 4.x；本机构建脚本使用64位编译器，输出AnyCPU",
+      "interface": "Windows native tray; modeless scan settings; --settings opens existing instance",
+      "historical_checks": [
+        {
+          "kind": "native_build",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "real_read_only",
+          "platform": "Windows",
+          "result": "passed",
+          "passed": 5,
+          "total": 5
+        },
+        {
+          "kind": "standalone_app_acceptance",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "adapted_regressions",
+          "passed": 32,
+          "total": 32,
+          "revision_scope": "Earlier source before tray scan settings and independent source/heartbeat cadence; preserved evidence, not new acceptance."
+        },
+        {
+          "kind": "standalone_real_foreground_title_transition",
+          "result": "passed",
+          "foreground_verified_at_source_and_native_samples": true,
+          "observed_source_to_caption_ms": 516.0528,
+          "revision_scope": "Earlier source before tray scan settings and independent source/heartbeat cadence; preserved evidence, not new acceptance."
+        },
+        {
+          "kind": "standalone_real_background_generic_reset",
+          "result": "passed",
+          "observed_repair_ms": 937,
+          "revision_scope": "Earlier source before tray scan settings and independent source/heartbeat cadence; preserved evidence, not new acceptance."
+        },
+        {
+          "kind": "standalone_real_background_schedule",
+          "result": "passed",
+          "configured_interval_seconds": 15,
+          "observed_attempt_gap_seconds": [
+            15.163158,
+            15.168867,
+            22.195999
+          ],
+          "completion_at_exact_interval_guaranteed": false,
+          "revision_scope": "Earlier source before tray scan settings and independent source/heartbeat cadence; preserved evidence, not new acceptance."
+        },
+        {
+          "kind": "standalone_real_normal_stop_and_owned_helper_cleanup",
+          "result": "passed",
+          "standalone_processes_remaining": 0,
+          "former_standalone_helpers_remaining": 0,
+          "revision_scope": "Earlier source before tray scan settings and independent source/heartbeat cadence; preserved evidence, not new acceptance."
+        },
+        {
+          "kind": "standalone_real_test_cleanup",
+          "result": "passed",
+          "original_conversation_restored": true,
+          "config_original_bytes_restored": true,
+          "revision_scope": "Earlier source before tray scan settings and independent source/heartbeat cadence; preserved evidence, not new acceptance."
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "theme_checks": 37,
+        "startup_checks": 22,
+        "modeless_cancel": "Both Show/PerformClick and native BM_CLICK close the window; zero save callbacks."
+      },
+      "code_entry": "windows/csharp/TitleMonitor.cs",
+      "current_source_frozen": true,
+      "hidden_same_identity_on_exit_restoration": "Controlled before/after test failed before the guard and passed after; public policy fixture includes this case.",
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "C#",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": "22026D9F53B485D9FB17AAD1C69CAE48139007353D6A234E16590B93CF5C36CA",
+          "source_sha256": null,
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 1384,
+          "background_reset_observed_ms": 781,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "41 policy + 13 helper/Job + 8 interval protocol + 12 settings and hidden-startup checks; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1384ms, BG 781ms; three original generic captions after normal exit. Single observations, not a benchmark.",
+        "summary_zh": "41策略＋13 helper/Job＋8间隔协议＋12设置及Hidden首显受控检查；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1384毫秒、BG781毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。",
+        "current_checks": [
+          {
+            "kind": "three_layer_policy",
+            "passed": 41,
+            "total": 41
+          },
+          {
+            "kind": "watch_helper_lifecycle",
+            "passed": 13,
+            "total": 13
+          },
+          {
+            "kind": "source_interval_and_independent_heartbeat_protocol",
+            "passed": 8,
+            "total": 8
+          },
+          {
+            "kind": "never_shown_settings_controls_and_persistence",
+            "passed": 12,
+            "total": 12
+          },
+          {
+            "kind": "public_policy_fixture",
+            "passed": 41,
+            "total": 41,
+            "duplicates_policy_set": true
+          },
+          {
+            "kind": "owned_STARTUPINFO_hidden_first_show_reveal",
+            "result": "passed",
+            "scope": "Owned offscreen no-activate native/WinForms fixture only; actual STARTF_USESHOWWINDOW/SW_HIDE",
+            "foreground_unchanged": true,
+            "powershell_hosts": [
+              "5.1",
+              "7"
+            ]
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "9e8da9cc92ee5d233ebfda39b0c83cf68ce27523df18282ae4ff23bc1262c332",
+        "windows_artifact_sha256": "22026D9F53B485D9FB17AAD1C69CAE48139007353D6A234E16590B93CF5C36CA"
+      }
+    },
+    {
+      "id": "ahk-basic",
+      "language": "AutoHotkey v1.0 Basic",
+      "platforms": [
+        "Windows"
+      ],
+      "source": "windows/ahk-v1.0/chatgpt_window_titles_basic.ahk",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "仅ANSI x86；脚本、解释器和IPC需ASCII路径，托盘文字ASCII；不等同现代Unicode GUI",
+      "interface": "Windows tray (ASCII labels)",
+      "historical_checks": [
+        {
+          "kind": "native_runtime",
+          "platform": "Windows",
+          "result": "passed",
+          "runtime": "1.0.48.05 ANSI x86"
+        },
+        {
+          "kind": "owned_window_unicode_restore",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "worker_ipc_timeout_and_job_cleanup",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "real_read_only",
+          "platform": "Windows",
+          "result": "passed",
+          "runs": 1
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "theme_checks": 30,
+        "startup_checks": 14,
+        "settings_checks": 6,
+        "compiled_executable_provided": false
+      },
+      "current_source_frozen": true,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "AHK Basic 1.0",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": null,
+          "source_sha256": "A267D89D1E9AB6995B30657688346ED44C553F8EDE9BFE8791755771C4F2F12F",
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 1098,
+          "background_reset_observed_ms": 632,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "Basic 1.0.48.05 ANSI x86 source-only; no accepted Basic EXE. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1098ms, BG 632ms; three original generic captions after normal exit. Single observations, not a benchmark.",
+        "summary_zh": "Basic1.0.48.05 ANSI x86，仅源码路线，没有已验收Basic EXE；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1098毫秒、BG632毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。",
+        "current_checks": [
+          {
+            "kind": "controlled_three_layer",
+            "passed": 11,
+            "total": 11
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "a267d89d1e9ab6995b30657688346ed44c553f8ede9bfe8791755771c4f2f12f"
+      }
+    },
+    {
+      "id": "ahk-v1.1",
+      "language": "AutoHotkey v1.1",
+      "platforms": [
+        "Windows"
+      ],
+      "source": "windows/ahk-v1.1/README.md",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "Unicode v1.1.33+；本地测试1.1.37.02 U32/U64；ANSI解释器拒绝运行",
+      "interface": "Windows tray",
+      "code_entry": "windows/ahk-v1.1/chatgpt_window_titles.ahk",
+      "historical_checks": [
+        {
+          "kind": "parse_and_owned_window",
+          "platform": "Windows",
+          "result": "passed",
+          "architectures": [
+            "x86",
+            "x64"
+          ],
+          "runtime": "1.1.37.02 Unicode"
+        },
+        {
+          "kind": "real_read_only",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "parse_after_tray_icon_reference_only",
+          "platform": "Windows",
+          "result": "passed",
+          "architectures": [
+            "x86",
+            "x64"
+          ],
+          "worker_and_self_test_paths_changed": false
+        },
+        {
+          "kind": "current_normal_shared_stop",
+          "result": "not_retested",
+          "revision_scope": "Earlier owned-fixture phase before the targeted real Windows run."
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "theme_checks": 30,
+        "startup_checks": 14,
+        "settings_checks": 11,
+        "embedded_baseline_frames": 7
+      },
+      "current_source_frozen": true,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "AHK v1.1",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": "771A104E2C97CD1D5348E41FB0815B1198AC890A043F2061C51770E930AE376D",
+          "source_sha256": null,
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 2247,
+          "background_reset_observed_ms": 667,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 2247ms, BG 667ms; three original generic captions after normal exit. Single observations, not a benchmark.",
+        "summary_zh": "当前x64包；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原2247毫秒、BG667毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。",
+        "current_checks": [
+          {
+            "kind": "controlled_three_layer",
+            "passed": 11,
+            "total": 11
+          },
+          {
+            "kind": "packaged_owned_unicode_worker_smoke",
+            "result": "passed"
+          },
+          {
+            "kind": "a1_seven_frame_resource",
+            "result": "passed"
+          },
+          {
+            "kind": "private_event_fg_bg_cleanup",
+            "result": "passed"
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "a71eda60e4aff584dd236fc3468ebe548e67eeeb1b808d42d9fdb09059701d30",
+        "windows_artifact_sha256": "771A104E2C97CD1D5348E41FB0815B1198AC890A043F2061C51770E930AE376D"
+      }
+    },
+    {
+      "id": "ahk-v2",
+      "language": "AutoHotkey v2",
+      "platforms": [
+        "Windows"
+      ],
+      "source": "windows/ahk-v2/README.md",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "v2.0+；本地测试2.0.15 x86/x64",
+      "interface": "Windows tray",
+      "code_entry": "windows/ahk-v2/chatgpt_window_titles.ahk",
+      "historical_checks": [
+        {
+          "kind": "parse_and_owned_window",
+          "platform": "Windows",
+          "result": "passed",
+          "architectures": [
+            "x86",
+            "x64"
+          ],
+          "runtime": "2.0.15"
+        },
+        {
+          "kind": "real_read_only",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "parse_after_tray_icon_reference_only",
+          "platform": "Windows",
+          "result": "passed",
+          "architectures": [
+            "x86",
+            "x64"
+          ],
+          "worker_and_self_test_paths_changed": false
+        },
+        {
+          "kind": "current_normal_shared_stop",
+          "result": "not_retested",
+          "revision_scope": "Earlier owned-fixture phase before the targeted real Windows run."
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "theme_checks": 30,
+        "startup_checks": 14,
+        "settings_checks": 11,
+        "embedded_baseline_frames": 7
+      },
+      "current_source_frozen": true,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "AHK v2",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": "E1D749704E86C5C9FDD88D3A79C5C2BD85D333F0C1A94BD5549048A1A119C35C",
+          "source_sha256": null,
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 1056,
+          "background_reset_observed_ms": 409,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1056ms, BG 409ms; three original generic captions after normal exit. Single observations, not a benchmark.",
+        "summary_zh": "当前x64包；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1056毫秒、BG409毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。",
+        "current_checks": [
+          {
+            "kind": "controlled_three_layer",
+            "passed": 11,
+            "total": 11
+          },
+          {
+            "kind": "packaged_owned_unicode_worker_smoke",
+            "result": "passed"
+          },
+          {
+            "kind": "a1_seven_frame_resource",
+            "result": "passed"
+          },
+          {
+            "kind": "private_event_fg_bg_cleanup",
+            "result": "passed"
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "3c7b0d8fdedd6fd6bf232e17a465939c52584170f158770f2814e9be4b3539c6",
+        "windows_artifact_sha256": "E1D749704E86C5C9FDD88D3A79C5C2BD85D333F0C1A94BD5549048A1A119C35C"
+      }
+    },
+    {
+      "id": "powershell",
+      "language": "PowerShell",
+      "platforms": [
+        "Windows"
+      ],
+      "source": "windows/powershell/README.md",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "Windows PowerShell 5.1及系统.NET/UIAutomation；Add-Type为内存FFI桥，无外部C# EXE依赖",
+      "interface": "Windows native tray; modeless scan settings; -Settings opens existing instance",
+      "code_entry": "windows/powershell/ChatGPT-TitleSync.ps1",
+      "historical_checks": [
+        {
+          "kind": "parse_bridge_and_owned_window",
+          "platform": "Windows",
+          "result": "passed",
+          "runtime": "Windows PowerShell 5.1 x64"
+        },
+        {
+          "kind": "real_read_only",
+          "platform": "Windows",
+          "result": "passed",
+          "runs": 1,
+          "elapsed_ms": 5675,
+          "scope_note": "只读之后的报告输出与所有权保护修改未重复真实UIA"
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "retained_child_handle_identity_alias_and_bystander_guard",
+          "platform": "Windows",
+          "result": "passed"
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "theme_checks_per_host": 37,
+        "hosts": [
+          "Windows PowerShell 5.1",
+          "PowerShell 7"
+        ]
+      },
+      "current_source_frozen": true,
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "PowerShell 5.1",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": null,
+          "source_sha256": "E59EDF3EC58263E05AE4E2491197D120EC3BA348F79286948C7BC5CD662A4E02",
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 881,
+          "background_reset_observed_ms": 794,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        },
+        {
+          "runtime": "PowerShell 7",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": null,
+          "source_sha256": "E59EDF3EC58263E05AE4E2491197D120EC3BA348F79286948C7BC5CD662A4E02",
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 342,
+          "background_reset_observed_ms": 282,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "PowerShell 5.1/7 targeted cases passed: 2/5 settings, save/reopen/restore, source/header/native agreement, FG reset 881/342ms, BG reset 794/282ms, three generic captions after each normal exit. Controlled 32+9 checks per host and hidden-startup regression remain separate.",
+        "summary_zh": "PowerShell5.1/7专项实测通过：2/5设置、保存重开还原、来源/页头/原生标题一致；FG复原881/342毫秒、BG794/282毫秒，各次正常退出后3窗为原通用标题。每主机32+9项受控及Hidden首显回归单列。",
+        "current_checks": [
+          {
+            "kind": "controlled_three_layer_and_regressions",
+            "runtime": "Windows PowerShell 5.1",
+            "passed": 32,
+            "total": 32
+          },
+          {
+            "kind": "controlled_three_layer_and_regressions",
+            "runtime": "PowerShell 7",
+            "passed": 32,
+            "total": 32
+          },
+          {
+            "kind": "never_shown_tray_settings_callbacks_and_repeated_save",
+            "runtime": "Windows PowerShell 5.1",
+            "passed": 9,
+            "total": 9
+          },
+          {
+            "kind": "never_shown_tray_settings_callbacks_and_repeated_save",
+            "runtime": "PowerShell 7",
+            "passed": 9,
+            "total": 9
+          },
+          {
+            "kind": "owned_STARTUPINFO_hidden_first_show_reveal",
+            "result": "passed",
+            "scope": "Owned offscreen no-activate native/WinForms fixture only; actual STARTF_USESHOWWINDOW/SW_HIDE",
+            "foreground_unchanged": true,
+            "powershell_hosts": [
+              "5.1",
+              "7"
+            ]
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "e59edf3ec58263e05ae4e2491197d120ec3ba348f79286948c7bc5cd662a4e02",
+        "windows_artifact_sha256": null
+      }
+    },
+    {
+      "id": "python",
+      "language": "Python",
+      "platforms": [
+        "Windows"
+      ],
+      "source": "windows/python/chatgpt_window_titles.py",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "Windows Python 3；标准库ctypes直接调用COM/Win32",
+      "interface": "Windows native tray with scan settings; optional --no-tray CLI",
+      "historical_checks": [
+        {
+          "kind": "py_compile",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "owned_window_unicode_restore",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "real_read_only",
+          "platform": "Windows",
+          "result": "passed",
+          "runs": 1,
+          "elapsed_ms": 2984
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "writer_state_owned_fixture_followup",
+          "platform": "Windows",
+          "result": "passed",
+          "passed": 6,
+          "total": 6,
+          "real_uia_repeated": false
+        },
+        {
+          "kind": "current_normal_shared_stop",
+          "result": "not_retested",
+          "revision_scope": "Earlier owned-fixture phase before the targeted real Windows run."
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "theme_checks": 35,
+        "startup_checks": 14,
+        "settings_checks": 17,
+        "public_pure_theme_tests": 18,
+        "embedded_baseline_frames": 7,
+        "portable_files": 68
+      },
+      "current_source_frozen": true,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "Python",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": "3E0D9EC8F70FDC82AE1989B6748F82D0DB86B498A58D18A1DD2F61034C508B0B",
+          "source_sha256": null,
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "later_native_hash_match_after_cold_sample",
+          "foreground_reset_observed_ms": 161,
+          "background_reset_observed_ms": 379,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "Final executable passed source/header and later native-title agreement, FG reset 161ms, BG reset 379ms and three generic captions after exit. Two earlier guards skipped injection, not product failures. Settings recheck independently proved persisted/reopened 7/17 and restored 2/5 in one process; the earlier 33/10 ambiguity is preserved without a product-defect conclusion. No Mac validation.",
+        "summary_zh": "最终EXE来源/页头及稍后原生标题一致，FG复原161毫秒、BG379毫秒，退出后3窗为原通用标题。此前两次守卫未注入，不当产品失败；独立设置补证同进程精确持久化/重开7/17并还原2/5；原33/10歧义保留，不下产品缺陷结论，未Mac验证。",
+        "current_checks": [
+          {
+            "kind": "controlled_three_layer",
+            "passed": 12,
+            "total": 12
+          },
+          {
+            "kind": "packaged_owned_unicode_worker_smoke",
+            "result": "passed"
+          },
+          {
+            "kind": "a1_seven_frame_resource",
+            "result": "passed"
+          },
+          {
+            "kind": "private_event_fg_bg_cleanup",
+            "result": "passed"
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "9f759a178d77ae97e8daa9b4aec12e627f9fe84e4a2c07c788443f6e85042d33",
+        "windows_artifact_sha256": "3E0D9EC8F70FDC82AE1989B6748F82D0DB86B498A58D18A1DD2F61034C508B0B"
+      }
+    },
+    {
+      "id": "swift",
+      "language": "Swift",
+      "platforms": [
+        "macOS"
+      ],
+      "source": "macos/ChatGPTWindowTitles.swift",
+      "state": "experimental_uncompiled_on_macos",
+      "summary": "Experimental native source; no Mac build or real AX acceptance.",
+      "requirements": "目标Mac上的Swift/Xcode命令行工具与AppKit/ApplicationServices；AX权限及标题可写性待实测",
+      "interface": "Experimental macOS menu bar and modeless scan settings; no native Mac validation",
+      "historical_checks": [
+        {
+          "kind": "shared_behavior_mock",
+          "platform": "model_only",
+          "result": "passed",
+          "passed": 13,
+          "total": 13,
+          "shared_with": "Objective-C"
+        },
+        {
+          "kind": "shared_interaction_mock",
+          "platform": "model_only",
+          "result": "passed",
+          "passed": 15,
+          "total": 15,
+          "shared_with": "Objective-C"
+        },
+        {
+          "kind": "native_build",
+          "platform": "macOS",
+          "result": "not_performed"
+        },
+        {
+          "kind": "real_ax_read_write",
+          "platform": "macOS",
+          "result": "not_performed"
+        }
+      ],
+      "summary_zh": "实验源码；未Mac构建或真实AX验收。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "code_entry": "macos/ChatGPTWindowTitles.swift",
+      "current_source_frozen": false,
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "experimental_static_only",
+        "summary": "Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. Static review only; no Mac SDK build, preferences-runtime, real AX or GUI acceptance.",
+        "summary_zh": "原生三层/菜单设置源码草稿，使用独立UserDefaults域及热更新代次重置；仅静态复核，未Mac SDK编译、偏好运行、真实AX或界面验收。",
+        "source_sha256": "0143bcb31c0ac5e117a9cb56b2fc86c11bb1d0a339fe2aafe1048e8d952365b9"
+      },
+      "current_checks": {
+        "native_mac_build": "not_performed",
+        "native_mac_runtime": "not_performed"
+      }
+    },
+    {
+      "id": "objc",
+      "language": "Objective-C",
+      "platforms": [
+        "macOS"
+      ],
+      "source": "macos/ChatGPTWindowTitles.m",
+      "state": "experimental_uncompiled_on_macos",
+      "summary": "Experimental native source; no Mac build or real AX acceptance.",
+      "requirements": "目标Mac的clang/Xcode命令行工具与Cocoa/ApplicationServices；权限和AXTitle可写性待实测",
+      "interface": "Experimental macOS menu bar and modeless scan settings; no native Mac validation",
+      "historical_checks": [
+        {
+          "kind": "shared_behavior_mock",
+          "platform": "model_only",
+          "result": "passed",
+          "passed": 13,
+          "total": 13,
+          "shared_with": "Swift"
+        },
+        {
+          "kind": "shared_interaction_mock",
+          "platform": "model_only",
+          "result": "passed",
+          "passed": 15,
+          "total": 15,
+          "shared_with": "Swift"
+        },
+        {
+          "kind": "native_build",
+          "platform": "macOS",
+          "result": "not_performed"
+        },
+        {
+          "kind": "real_ax_read_write",
+          "platform": "macOS",
+          "result": "not_performed"
+        }
+      ],
+      "summary_zh": "实验源码；未Mac构建或真实AX验收。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "code_entry": "macos/ChatGPTWindowTitles.m",
+      "current_source_frozen": false,
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "experimental_static_only",
+        "summary": "Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. Static review only; no Mac SDK build, preferences-runtime, real AX or GUI acceptance.",
+        "summary_zh": "原生三层/菜单设置源码草稿，使用独立UserDefaults域及热更新代次重置；仅静态复核，未Mac SDK编译、偏好运行、真实AX或界面验收。",
+        "source_sha256": "4b895504da6a6376cfb1c0052083ef598adf4b63ba9ce469f0910aa389131e06"
+      },
+      "current_checks": {
+        "native_mac_build": "not_performed",
+        "native_mac_runtime": "not_performed"
+      }
+    },
+    {
+      "id": "rust",
+      "language": "Rust",
+      "platforms": [
+        "Windows",
+        "macOS"
+      ],
+      "source": "rust/src/main.rs",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "Windows Rust工具链与平台链接器/SDK；Mac还需目标SDK，不能以rustfmt代替Mac构建",
+      "interface": "Windows native tray and modeless scan settings; --no-tray CLI; macOS Experimental public osascript menu companion",
+      "historical_checks": [
+        {
+          "kind": "native_build",
+          "platform": "Windows",
+          "result": "passed",
+          "configuration": "x64 Release"
+        },
+        {
+          "kind": "ownership_state_model",
+          "platform": "model_only",
+          "result": "passed",
+          "passed": 8,
+          "total": 8
+        },
+        {
+          "kind": "native_com_abi_condition_creation_without_tree_read",
+          "platform": "Windows",
+          "result": "passed",
+          "passed": 1,
+          "total": 1
+        },
+        {
+          "kind": "owned_window_write_restore_identity_guard",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "source_format_parse",
+          "platform": "macOS_source_only",
+          "result": "passed",
+          "tool": "rustfmt"
+        },
+        {
+          "kind": "native_build",
+          "platform": "macOS",
+          "result": "not_performed"
+        },
+        {
+          "kind": "real_chatgpt_read_write",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "real_ax_read_write",
+          "platform": "macOS",
+          "result": "not_performed"
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "controlled_checks": 43,
+        "owned_binary_self_test": true,
+        "embedded_baseline_frames": 7
+      },
+      "code_entry": "rust/src/main.rs",
+      "current_source_frozen": true,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "Rust",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": "D416201249CF97067157B5D0AAC7B8974697926F018564162A6CC8C9D4BFE405",
+          "source_sha256": null,
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 1018,
+          "background_reset_observed_ms": 624,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "30 controlled checks; Windows x64 native tray. Mac companion Experimental/uncompiled. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1018ms, BG 624ms; three original generic captions after normal exit. Single observations, not a benchmark.",
+        "summary_zh": "30项受控通过，Windows x64原生托盘；Mac伴随源码仍Experimental/未编译；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1018毫秒、BG624毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。",
+        "current_checks": [
+          {
+            "kind": "controlled_policy_and_native_settings",
+            "passed": 30,
+            "total": 30
+          },
+          {
+            "kind": "owned_native_binary_self_test",
+            "result": "passed"
+          },
+          {
+            "kind": "settings_window_discovery_guards",
+            "result": "passed",
+            "ownerless": true,
+            "ws_ex_appwindow": true
+          },
+          {
+            "kind": "new_real_chatgpt_acceptance",
+            "result": "passed_targeted_scope"
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "574de0d7149d6d88d7805bd827ba1624437ef426a71018440487734828d0c0c4",
+        "windows_artifact_sha256": "D416201249CF97067157B5D0AAC7B8974697926F018564162A6CC8C9D4BFE405"
+      }
+    },
+    {
+      "id": "go",
+      "language": "Go",
+      "platforms": [
+        "Windows",
+        "macOS"
+      ],
+      "source": "go/main.go",
+      "state": "current_controlled_checks_passed_targeted_real_retest_in_progress",
+      "summary": "Current controlled checks passed; final targeted real retest is in progress. Earlier live measurements belong to previous_revision.",
+      "requirements": "Windows Go工具链；Mac需目标SDK及原生cgo编译器/AX/CF/libproc，未Mac构建",
+      "interface": "Windows native tray and modeless scan settings; --no-tray CLI; macOS Experimental public osascript menu companion",
+      "historical_checks": [
+        {
+          "kind": "native_build",
+          "platform": "Windows",
+          "result": "passed",
+          "configuration": "x64"
+        },
+        {
+          "kind": "ownership_state_model",
+          "platform": "model_only",
+          "result": "passed",
+          "passed": 15,
+          "total": 15
+        },
+        {
+          "kind": "native_com_abi_condition_creation_without_tree_read",
+          "platform": "Windows",
+          "result": "passed",
+          "passed": 1,
+          "total": 1
+        },
+        {
+          "kind": "owned_window_write_restore_identity_guard",
+          "platform": "Windows",
+          "result": "passed"
+        },
+        {
+          "kind": "source_written",
+          "platform": "macOS",
+          "result": "completed_uncompiled"
+        },
+        {
+          "kind": "native_build",
+          "platform": "macOS",
+          "result": "not_performed"
+        },
+        {
+          "kind": "real_chatgpt_read_write",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "real_ax_read_write",
+          "platform": "macOS",
+          "result": "not_performed"
+        },
+        {
+          "kind": "long_running_resident",
+          "platform": "Windows",
+          "result": "not_performed"
+        },
+        {
+          "kind": "windows_build_after_darwin_source_added",
+          "platform": "Windows",
+          "result": "passed",
+          "state_and_native_tests_repeated": false
+        }
+      ],
+      "summary_zh": "当前受控检查通过；最终真实窗口复测进行中，旧实测归于previous_revision。",
+      "historical_checks_scope": "Earlier revisions only; do not count as acceptance of current three-layer source.",
+      "current_checks": {
+        "controlled_checks": 51,
+        "owned_binary_self_test": true,
+        "embedded_baseline_frames": 7
+      },
+      "code_entry": "go/main.go",
+      "current_source_frozen": true,
+      "targeted_real_windows_cases": [
+        {
+          "runtime": "Go",
+          "date_beijing": "2026-11-11",
+          "result": "passed",
+          "executable_sha256": "8829C21A19D8E0BF5BF5C89E32A33B833C3A07CF636E6681AC85F4EDFBC0DA84",
+          "source_sha256": null,
+          "settings_default_foreground_seconds": 2,
+          "settings_default_background_seconds": 5,
+          "settings_save_reopen_restore": "passed",
+          "source_header_same_identity_verified": true,
+          "native_source_check": "same_sample",
+          "foreground_reset_observed_ms": 1784,
+          "background_reset_observed_ms": 448,
+          "post_exit_original_generic_windows": 3,
+          "physical_shell_right_click_claimed": false,
+          "latencies_are_single_observations_not_benchmarks": true
+        }
+      ],
+      "default_foreground_seconds": 2,
+      "default_background_seconds": 5,
+      "previous_revision": {
+        "state": "targeted_real_windows_settings_and_caption_repair_passed",
+        "summary": "38 controlled checks; Windows x64 native tray. Mac companion Experimental/uncompiled. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1784ms, BG 448ms; three original generic captions after normal exit. Single observations, not a benchmark.",
+        "summary_zh": "38项受控通过，Windows x64原生托盘；Mac伴随源码仍Experimental/未编译；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1784毫秒、BG448毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。",
+        "current_checks": [
+          {
+            "kind": "controlled_policy_and_native_settings",
+            "passed": 38,
+            "total": 38
+          },
+          {
+            "kind": "owned_native_binary_self_test",
+            "result": "passed"
+          },
+          {
+            "kind": "settings_window_discovery_guards",
+            "result": "passed",
+            "ownerless": true,
+            "ws_ex_appwindow": true
+          },
+          {
+            "kind": "new_real_chatgpt_acceptance",
+            "result": "passed_targeted_scope"
+          },
+          {
+            "kind": "targeted_real_normal_exit_three_original_generic_captions",
+            "result": "passed",
+            "windows_per_runtime_case": 3,
+            "scope": "Same three existing windows reused across cases; separate from long-term/install/shell-click acceptance."
+          }
+        ],
+        "source_sha256": "145a2fb38551f1dcb627ae11190309be591f87000376482db3c360c83720e6e2",
+        "windows_artifact_sha256": "8829C21A19D8E0BF5BF5C89E32A33B833C3A07CF636E6681AC85F4EDFBC0DA84",
+        "publication_candidate": {
+          "artifact_sha256": "69E9ED0CAACE56D7A723CE2F316B0983F7C483DB4E5FA48C5149350919940188",
+          "trimpath": true,
+          "unchanged_product_source_files": 14,
+          "controlled_checks_passed": 38,
+          "owned_binary_check_passed": true,
+          "quick_real_source_recheck": "pending root observation",
+          "prior_full_targeted_artifact_sha256": "8829C21A19D8E0BF5BF5C89E32A33B833C3A07CF636E6681AC85F4EDFBC0DA84"
+        }
+      }
+    }
+  ],
+  "verification_rules": [
+    "Read-only success is not write acceptance.",
+    "Owned-window/fake tests are not complete ChatGPT integration acceptance.",
+    "Shared model counts are not duplicated per language and do not prove native compilation.",
+    "Component/host checks are not standalone application acceptance.",
+    "Native captions do not change Windows app grouping or the macOS Dock app name."
+  ],
+  "evidence_policy": "Private raw reports, conversation names and process identities remain local; only de-identified scope is public.",
+  "icon_selection": {
+    "id": "45",
+    "layout": "17 upper-right overlap;20 bold monospace;24 large text;26 rounded pill;13B no outer frame",
+    "default_mode": "fixed",
+    "default_palette": 45,
+    "palettes": [
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52
+    ],
+    "random_periods": [
+      "day",
+      "hour",
+      "5min"
+    ],
+    "png": "assets/chatgpt-titlesync-icon.png",
+    "ico": "assets/chatgpt-titlesync.ico",
+    "icns": "assets/chatgpt-titlesync.icns",
+    "guide": "docs/icon-themes.md"
+  },
+  "source_manifest": "source-sha256.txt",
+  "product_name_zh": "ChatGPT 标题同步助手",
+  "protocol": {
+    "native_metadata_seconds": 1,
+    "foreground_source_default_seconds": 2,
+    "background_source_default_seconds": 5,
+    "foreground_uses_cache_fallback": false,
+    "background_generic_reset_uses_identity_cache": true,
+    "custom_captions_preserved": true
+  },
+  "historical_integration_observation": {
+    "scope": "existing resident host integration, not standalone App acceptance",
+    "duration_minutes_more_than": 10,
+    "windows_caption_hashes_matched": 5,
+    "reader_errors": 0,
+    "reader_timeouts": 0,
+    "leftover_readers": 0,
+    "counts_as_standalone_acceptance": false,
+    "revision_scope": "Historical held-handle integration revision; not current three-layer acceptance."
+  },
+  "current_integrated_host_observation": {
+    "background_generic_reset_restored_seconds": 1.116,
+    "same_window_route_header_document_native_equal": true,
+    "source_observed_to_first_native_caption_ms": 547.5457,
+    "navigation_request_to_caption_seconds_approx": 12,
+    "navigation_total_includes_application_route_and_source_availability_wait": true,
+    "navigation_total_cannot_be_attributed_entirely_to_application_or_monitor": true,
+    "counts_as_standalone_acceptance": false,
+    "timings_are_single_observations_not_latency_guarantees": true,
+    "tested_production_source_sha256": "9d2d7490382564f49edf33a57d48bf3bf7e3db2a0fc90844859e2bf48a5c6efa",
+    "caption_maintenance_and_foreground_timing_unchanged_by_hidden_lease_guard": true
+  },
+  "final_source_manifest": "source-sha256.txt",
+  "current_standalone_observation": {
+    "foreground_verified_at_source_and_native_samples": true,
+    "source_observed_to_first_native_caption_ms": 516.0528,
+    "background_generic_reset_restored_ms": 937,
+    "configured_background_interval_seconds": 15,
+    "observed_background_worker_attempt_gap_seconds": [
+      15.163158,
+      15.168867,
+      22.195999
+    ],
+    "background_readers_serial_with_foreground_priority": true,
+    "strict_per_window_completion_at_interval_guaranteed": false,
+    "normal_stop_passed": true,
+    "standalone_processes_remaining": 0,
+    "former_standalone_helpers_remaining": 0,
+    "original_conversation_restored": true,
+    "config_original_bytes_restored": true,
+    "timings_are_single_observations_not_latency_guarantees": true,
+    "timing_sample_precedes_hidden_lease_guard": true,
+    "foreground_and_caption_maintenance_timing_paths_unchanged_by_hidden_lease_guard": true,
+    "final_executable_includes_controlled_hidden_lease_fix": true,
+    "targeted_real_checks_not_complete_install_tray_long_term_or_taskbar_visual_acceptance": true
+  },
+  "final_integrated_host_closeout": {
+    "single_resident_running": true,
+    "binary_matches_final_source_build": true,
+    "test_config_original_bytes_restored": true,
+    "standalone_not_left_running": true
+  },
+  "settings_menu_default_ranges": {
+    "foreground_seconds": [
+      1,
+      3600
+    ],
+    "background_seconds": [
+      5,
+      3600
+    ],
+    "native_caption_maintenance_seconds": 1,
+    "persistence": "Per implementation; explicit startup CLI intervals override saved values. See branch guides.",
+    "default_foreground_seconds": 2,
+    "default_background_seconds": 5
+  },
+  "real_windows_acceptance_scope": {
+    "runtime_cases": 9,
+    "same_existing_windows_reused": 3,
+    "accepted_foreground_reset_trials_per_case": 1,
+    "accepted_background_reset_trials_per_case": 1,
+    "source_header_comparison_targets_per_case": 1,
+    "physical_tray_shell_click_verified": false,
+    "long_term_installation_or_taskbar_complete_acceptance": false,
+    "macos_native_verification": false,
+    "all_targeted_runtime_cases_passed": true,
+    "revision_scope": "Historical nine-runtime targeted run before current startup-source revision; new retest in progress"
+  },
+  "historical_publication_snapshots": [
+    {
+      "scope": "Before user approval on 2026-11-11",
+      "project_state": "local_source_candidate_ready_pending_publication_approval",
+      "remote_repository_created": false,
+      "published": false
+    }
+  ],
+  "publication_approval": {
+    "explicit": true,
+    "date_beijing": "2026-11-11",
+    "scope": "Normal public repository files, no project ZIP upload"
+  },
+  "publication_delivery": {
+    "mode": "individual_repository_files",
+    "upload_project_zip": false,
+    "source_acquisition": "git clone or individual language-directory files with documented dependencies",
+    "automatic_github_source_archives": "Platform-generated, not project-uploaded ZIP assets",
+    "repository_url": "https://github.com/hpsun/ChatGPT-TitleSync"
+  },
+  "historical_autostart_configuration": [
+    {
+      "scope": "Earlier snapshot before default-on startup feature",
+      "autostart_configured": false
+    }
+  ],
+  "autostart_default_enabled": true,
+  "current_revision_windows_retest": {
+    "status": "in_progress",
+    "scope": "Final TitleSync branding, default-on startup and eight icon themes",
+    "prior_nine_runtime_results": "Historical sources; cannot substitute for this revision",
+    "latest_observation": "C# named all three existing windows; independent four-second cold source probe timed out on one window, so the strict case did not complete. Candidate exited normally and original state was restored."
+  },
+  "startup_contract": {
+    "guide": "docs/startup.md",
+    "windows_run_value": "ChatGPT-TitleSync",
+    "windows_preference_key": "HKCU\\Software\\ChatGPT-TitleSync",
+    "windows_preference_value": "AutoStartEnabled",
+    "missing_default": 1,
+    "explicit_zero_retained": true,
+    "windows_max_command_characters": 260,
+    "macos": "Experimental source; NSUserDefaults io.github.hpsun.ChatGPTTitleSync/AutoStartEnabled and same-label per-user LaunchAgent; not native-verified"
+  }
+}

@@ -1,0 +1,52 @@
+name: Experimental macOS compile only
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  experimental-compile:
+    name: Experimental compile - ${{ matrix.language }}
+    runs-on: macos-14
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [swift, objective-c, rust, go]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v7
+        if: matrix.language == 'go'
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Select Rust through official rustup
+        if: matrix.language == 'rust'
+        run: rustup toolchain install 1.82.0 --profile minimal
+      - name: Compile the shared menu script without launching it
+        if: matrix.language == 'swift'
+        run: osacompile -o "$RUNNER_TEMP/TitleSyncTray.scpt" macos/TraySettings.applescript
+      - name: Compile only - never launch the AX monitor
+        shell: bash
+        env:
+          TITLE_BUILD_LANGUAGE: ${{ matrix.language }}
+          GOTOOLCHAIN: local
+        run: |
+          set -euo pipefail
+          case "$TITLE_BUILD_LANGUAGE" in
+            swift)
+              swiftc macos/ChatGPTWindowTitles.swift -framework AppKit -framework ApplicationServices -o "$RUNNER_TEMP/chatgpt-titlesync-swift"
+              ;;
+            objective-c)
+              clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices macos/ChatGPTWindowTitles.m -o "$RUNNER_TEMP/chatgpt-titlesync-objc"
+              ;;
+            rust)
+              cargo +1.82.0 build --manifest-path rust/Cargo.toml --release --offline
+              ;;
+            go)
+              (cd go && CGO_ENABLED=1 go build -trimpath -o "$RUNNER_TEMP/chatgpt-titlesync-go" .)
+              ;;
+          esac

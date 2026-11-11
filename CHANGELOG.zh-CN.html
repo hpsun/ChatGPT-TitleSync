@@ -1,0 +1,66 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync Changelog</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px;vertical-align:top}a{color:#0766c5}</style><body><h1 id="_1">变更记录</h1>
+<p><a href="CHANGELOG.md">English</a> · <a href="CHANGELOG.zh-CN.html">HTML</a> · <a href="KNOWN_ISSUES.zh-CN.md">已知问题</a> · <a href="README.zh-CN.md">项目主页</a></p>
+<p>以下记录首次公开源码发布前的真实本地开发与验证日期，统一为<strong>北京时间</strong>，不冒充历史Git提交日期、版本标签或虚构GitHub Issue编号。后续公开修复应在实际Issue、提交或Release建立后引用真实链接。</p>
+<h2 id="2026-11-11-windows">2026-11-11 — 发布候选与Windows实测</h2>
+<h3 id="_2">新增与调整</h3>
+<ul>
+<li>共享45图标；C#、AHK Basic/v1.1/v2、PowerShell、Python、Go、Rust、Swift、Objective-C各自实现，配英中文构建运行指南。</li>
+<li>首次运行缺省<strong>前台来源2秒、各后台来源5秒</strong>。已有合法保存值继续有效，显式启动参数覆盖对应保存值；原生缓存标题维护仍独立每1秒调度。</li>
+<li>托盘/菜单设置保存前后台间隔，并在现有驻留控制器中重排调度，旧设置代次的结果不再提交。前台使用新来源；已知后台通用标题回改可由同身份缓存修复。</li>
+<li>Windows工作流加入PowerShell5.1/7下的<a href="tools/test-tray-settings.ps1">设置与隐藏启动回归</a>；<a href="tools/release_audit.py">源码审计</a>将缓存、日志、私有诊断、下载工具链及二进制排除在源码包外。</li>
+</ul>
+<h3 id="_3">已修复</h3>
+<table>
+<thead>
+<tr>
+<th>实际问题</th>
+<th>原因与修正</th>
+<th>验证及公开依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hidden启动后，第一次设置窗口可能已有完整控件却仍不可见。</td>
+<td>STARTUPINFO.wShowWindow可覆盖首次普通ShowWindow请求。Go、Rust、C#、PowerShell设置路径使用SetWindowPos显式显示自有窗口，不再仅依赖第一次Show；C#/PS另行请求激活。这是原生可见性问题，不能据此认定UI Automation无法定位控件。</td>
+<td>自有WinExe确认真实Hidden启动标记、初始原生Show隐藏、显式显示成功且前台不变；最终运行程序设置闭环通过。见<a href="windows/csharp/App.cs">C#</a>、<a href="windows/powershell/ChatGPT-TitleSync.ps1">PS</a>、<a href="go/tray_windows.go">Go</a>、<a href="rust/src/tray_windows.rs">Rust</a>、<a href="tools/tests/startup_hidden_fixture.cs">回归夹具</a>。</td>
+</tr>
+<tr>
+<td>C#较慢来源间隔可能被误认为读者无响应；父程序只按同一间隔消费时也可能错过新鲜快照。</td>
+<td>来源观察序列/时间与1秒心跳序列/时间分开。Helper按用户间隔实际读取，父程序按原生维护节拍消费新观察；健康来源间隙不反复取消独立后台角色。</td>
+<td>冷附着、长间隔、新序列、角色变化及旧观察拒绝的受控检查。见<a href="windows/csharp/TitleMonitor.cs">监听器</a>、<a href="windows/csharp/TitleReader.cs">读取器</a>。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_4">实测及边界</h3>
+<p>Windows九种运行方式均已真实运行：C#、AHK Basic、AHK v1.1、AHK v2、PowerShell5.1、PowerShell7、Python、Go、Rust。各次复用同3个现存窗口，完成有效前台/后台通用标题重置、设置保存重开还原、来源/页头对照及正常退出观察。Python最终设置补证使用7/17秒，其余使用3/10，最后均还原2/5。</p>
+<p>复原毫秒数只是单次观测，<strong>不是基准或性能排名</strong>。实测调用绑定原生设置/同一菜单处理器，不冒称逐版完成了系统托盘物理右键、长期驻留、安装流程或所有ChatGPT版本验收。详见<a href="support-matrix.zh-CN.md">支持矩阵</a>与<a href="docs/release-readiness.zh-CN.md#local-validation">验证说明</a>。</p>
+<p>Mac四分支——Swift、Objective-C、Go/Darwin、Rust/macOS——仍为<strong>Experimental，未Mac SDK原生编译或真实AX运行</strong>。本文冻结时远端CI未运行；发布后须查看GitHub Actions实际状态，不能从本地检查推定。</p>
+<h2 id="2026-11-10">2026-11-10 — 保存与失败路径修复</h2>
+<table>
+<thead>
+<tr>
+<th>实际问题</th>
+<th>原因与修正</th>
+<th>验证及公开依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PowerShell初次保存后，覆盖已有设置文件可能报“The path is empty”。</td>
+<td>File.Replace第三参数的$null可能被PowerShell转为空字符串；现用[NullString]::Value传入真正null备份路径。</td>
+<td>PS5.1与7均通过首次/重复保存、持久化和启用开关保留间隔检查。见<a href="windows/powershell/ChatGPT-TitleSync.ps1">源码</a>、<a href="tools/test-tray-settings.ps1">夹具</a>。</td>
+</tr>
+<tr>
+<td>PowerShell菜单经GetNewClosure后可能找不到辅助函数。</td>
+<td>动态闭包作用域未保留预期函数查找；现显式捕获可调用scriptblock，并将保存动作传给设置窗。</td>
+<td>两主机设置打开、保存、重开及退出回调通过。见<a href="windows/powershell/ChatGPT-TitleSync.ps1">源码</a>。</td>
+</tr>
+<tr>
+<td>AHK首次保存时父目录不存在会失败；输出写入失败还需保证清理，避免未处理错误窗。</td>
+<td>写入前建立设置/输出父目录；现代AHK emit/save捕获预期失败、输出诊断并在finally清除临时输出，提交失败不替换当前生效设置。</td>
+<td>分支自有测试覆盖首次/替换保存、缺目录、非法输入、失败回滚及临时清理。见<a href="windows/ahk-v1.0/README.zh-CN.md">Basic指南</a>、<a href="windows/ahk-v1.1/chatgpt_window_titles.ahk">v1.1源码</a>、<a href="windows/ahk-v2/chatgpt_window_titles.ahk">v2源码</a>。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_5">作为限制保留的事件实验</h2>
+<p>一次Windows60秒实验中，两次导航已由来源/页头确认，而单次Document.NameProperty、TreeScope.Element订阅收到<strong>0条回调</strong>；原生前台/名称变化元数据事件有到达。本次未订阅页头文本，也不重绑文档，不能据此断言所有ChatGPT事件路径不可用。未采用纯事件监听，保留2/5秒来源兜底。见<a href="KNOWN_ISSUES.zh-CN.md#event-only-monitoring-is-not-implemented">已知问题</a>。</p></body></html>

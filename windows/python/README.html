@@ -1,0 +1,156 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync</title><style>body{max-width:1000px;margin:2rem auto;padding:0 1.5rem;font:16px/1.65 system-ui,sans-serif}pre,code{background:#f3f5f7}pre{padding:1rem;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:.4rem}</style><body><h1 id="chatgpt-titlesync-python">ChatGPT-TitleSync — Python</h1>
+<h2 id="compatibility-after-the-rename">Compatibility after the rename</h2>
+<p>The UI labels are fixed rather than selected from the Windows UI language. Python uses Chinese/English labels.</p>
+<p>The product is now <strong>ChatGPT-TitleSync / ChatGPT 标题同步助手</strong>. Legacy IPC names (<code>Local\TdxChatGptTitleStandalone</code> and <code>.Stop</code>), the existing <code>%LOCALAPPDATA%\ChatGPT-title\...</code> settings locations, and <code>TdxChatGptTitles</code> log locations are intentionally retained. This preserves user preferences and prevents the old and renamed controllers from writing concurrently. Internal class identifiers and the descriptive source filenames are also retained. The rename was checked with syntax/build and isolated owned fixtures; earlier real-window results remain evidence for the unchanged title policy, rather than a new live test of the renamed UI.</p>
+<p><strong>Default-interval candidate update (2026-11-10).</strong> Fresh installations now use foreground <strong>2 seconds</strong> and background <strong>5 seconds</strong>. Existing valid user settings are preserved; explicit CLI arguments still override their corresponding saved values. Python and modern AHK candidates were rebuilt; Basic remains source-only. Branch-local fixture tests do not establish real ChatGPT or shell-menu acceptance, which is recorded separately.</p>
+<p><a href="README.zh-CN.md">简体中文</a> · <a href="README.html">HTML</a></p>
+<p>Source execution and the console/onedir candidate are described below. This remains an unpublished pre-release candidate.</p>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>Windows and a Python 3 interpreter. The script uses only the standard library: ctypes, subprocess, pathlib, and related modules.</li>
+<li>Windows UI Automation and Win32 APIs supplied by the OS.</li>
+<li>No pythonnet, external COM package, C# helper, or model/API connection.</li>
+</ul>
+<p>Keep a python.exe next to pythonw.exe when using the latter: the source-mode worker chooses the console interpreter to capture its JSON output.</p>
+<h2 id="run-from-source">Run from source</h2>
+<p>From this directory:</p>
+<pre><code>python chatgpt_window_titles.py
+python chatgpt_window_titles.py --interval 2
+python chatgpt_window_titles.py --read-only --once
+python chatgpt_window_titles.py --read-only --once --hwnd 123456
+</code></pre>
+<p>The optional HWND filter limits both foreground and background handling to that current native window. <code>--once</code> performs one foreground read and exits; it does not start the background refresh loop.</p>
+<p>For a quiet source-mode process, pythonw may be used instead of python. The standard-library Win32 tray now provides scan settings and normal exit; --no-tray keeps a console-only deployment. Normal resident launch enables per-user sign-in startup by default; isolated modes do not register it.</p>
+<h2 id="stop">Stop</h2>
+<pre><code>python chatgpt_window_titles.py --stop
+</code></pre>
+<p>Ctrl+C is the console exit path. Stop/cancellation also cleans up the owned reader process.</p>
+<h2 id="syntax-check-build-and-packaging">Syntax check, build, and packaging</h2>
+<p>Source execution needs no compilation. Bytecode checking is not a standalone EXE:</p>
+<pre><code>python -m py_compile chatgpt_window_titles.py
+python chatgpt_window_titles.py --self-test
+</code></pre>
+<p>The worker now distinguishes source mode from a frozen executable: source mode launches interpreter + source file; frozen mode launches the same EXE directly with internal worker arguments. The self-test verifies an owned child dispatch and Unicode reply without reading ChatGPT.</p>
+<h3 id="tested-windows-x64-build">Tested Windows x64 build</h3>
+<p>Tested tools: CPython 3.12.14 x64, PyInstaller 6.22.3, hooks 2026.10. Build dependencies were installed only in a validation-local directory. The tested package is <strong>console + onedir</strong>, not windowed or one-file.</p>
+<p>Equivalent PowerShell steps, from this directory, with a Python interpreter you have chosen:</p>
+<pre><code>$tools = Join-Path $PWD ".build-tools"
+python -m pip install --target "$tools" pyinstaller==6.22.3
+$env:PYTHONPATH = $tools
+$themeRoot = (Resolve-Path "..\..\assets\themes").Path
+$themeData = @(); foreach ($id in 45..52) { $themeData += @("--add-data", ((Join-Path $themeRoot "$id.ico") + ";assets\themes")) }
+python -m PyInstaller --noconfirm --onedir --console --noupx --name ChatGPTTitleSyncPython --icon "..\..\assets\chatgpt-titlesync.ico" --distpath ".\build\dist" --workpath ".\build\work" --specpath ".\build" @themeData ".\chatgpt_window_titles.py"
+.\build\dist\ChatGPTTitleSyncPython\ChatGPTTitleSyncPython.exe --self-test
+</code></pre>
+<p>Keep the <strong>entire</strong> ChatGPTTitleSyncPython directory, including _internal; the EXE alone is not a portable package. Use --console for this verified recipe: the worker uses redirected standard output. A --windowed/--noconsole or one-file variant needs its own acceptance and is not claimed here.</p>
+<p>Run and stop the built candidate:</p>
+<pre><code>.\build\dist\ChatGPTTitleSyncPython\ChatGPTTitleSyncPython.exe --interval 2 --log "$env:LOCALAPPDATA\ChatGPTTitle\python.jsonl"
+.\build\dist\ChatGPTTitleSyncPython\ChatGPTTitleSyncPython.exe --stop
+</code></pre>
+<p>The explicit per-user --log path avoids treating a bundle-internal path as durable logging. The environment variable above affects only that PowerShell session; no global Python environment is installed by this guide.</p>
+<p>The actual validation candidate passed frozen=true, owned Unicode write/restore, external-caption protection, self-worker dispatch. The earlier packaging baseline verified --stop using a test-owned shared event; the current source-level private-namespace stop fixture verified that both reader roles are reclaimed without signalling an existing controller. That earlier A1 resource contained all seven input frames; the theme candidate uses baseline 45. These are build/smoke results, not a real ChatGPT switching or long-running acceptance test. See the <a href="https://pyinstaller.org/en/stable/runtime-information.html">official PyInstaller runtime guide</a>.</p>
+<h2 id="start-at-sign-in-default-enabled">Start at sign-in (default enabled)</h2>
+<p>Normal resident launch first obtains the existing shared controller mutex, then reads the shared startup preference. A missing preference means <strong>enabled</strong>. The tray's <strong>开机自启动 / Start at sign-in</strong> item shows a check mark and applies a toggle immediately. The settings window has the <strong>same 开机自启动 / Start at sign-in</strong> checkbox; its changes apply only on Save, and Cancel leaves startup unchanged. A menu change also updates an already-open settings checkbox. Save updates the same live menu state. Failures show an error and retain or restore the previous registration rather than reporting success.</p>
+<p>All Windows implementations share these per-user registry values:</p>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code></td>
+<td><code>ChatGPT-TitleSync</code> (REG_SZ)</td>
+<td>The current variant's accurately quoted absolute launch command</td>
+</tr>
+<tr>
+<td><code>HKCU\Software\ChatGPT-TitleSync</code></td>
+<td><code>AutoStartEnabled</code> (DWORD)</td>
+<td>Missing = 1; 1 = enabled; explicit 0 = disabled across implementations and restarts</td>
+</tr>
+</tbody>
+</table>
+<p>Turning the switch off removes only this product's Run value and retains DWORD 0. A later launch or another implementation does not force it back on. When enabled, a normal launch updates the command only when needed; identical commands/preferences are not rewritten. No administrator rights, Windows service or scheduled task is used.</p>
+<p>The startup command contains only the compiled executable, or the matching interpreter plus the source script. It never copies test log/settings locations, explicit intervals or other testing arguments. Keep a frozen Python runtime directory complete and keep source/runtime files at stable locations. Enabling rejects a command longer than Windows Run's <strong>260-character</strong> limit without changing Run or the preference. Disabling remains available even if the current command is too long. See the <a href="https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys">official Run-key limit</a>.</p>
+<p>Read-only sessions, worker roles, stop commands, one-shot/check modes and self-tests do not register production startup. The autostart self-test uses injected temporary HKCU subkeys and hidden owned controls only:</p>
+<pre><code>python chatgpt_window_titles.py --autostart-self-test
+</code></pre>
+<p>The private test covers default-on, cross-launch explicit-off persistence, exact source/frozen quoting, repeated no-op registration, 260/261-character source commands, failure rollback, menu/checkbox synchronization, Save and Cancel. It does not claim that an actual sign-in/reboot was performed.</p>
+<h2 id="tray-scan-interval-settings">Tray scan interval settings</h2>
+<p>Right-click the tray icon and select <strong>扫描间隔设置…</strong>. The two inputs are foreground source checks (default <strong>2 seconds</strong>, range <strong>1–3600 seconds</strong>) and per-window background source refresh (default <strong>5 seconds</strong>, range <strong>5–3600 seconds</strong>). Decimals are accepted within these ranges. Save applies both values without restarting; Cancel leaves them unchanged. Invalid input or a failed settings write leaves the current configuration unchanged.</p>
+<p>Settings are stored as JSON at <code>%LOCALAPPDATA%\ChatGPT-title\python\settings.json</code>. The parent directory is created on first save; subsequent saves replace the same file. On startup, explicitly supplied <code>--interval</code> / <code>--background-interval</code> values override the corresponding persisted value. A tray save establishes the new persisted values for subsequent starts. The foreground and background owned readers are cancelled and rescheduled after a change, so a result from the previous settings revision cannot be applied.</p>
+<p>The lightweight native window/cached-caption repair still runs every <strong>1 second</strong>, independently of these two settings. These inputs do not change UIA watchdogs, the stop-event check or every internal timer. The right-click <strong>Exit and restore</strong> action remains a normal cleanup path. The per-user startup switch is described above; global environment settings are not changed.</p>
+<p>The 2026-11-10 interval tests used only isolated fixtures: Python passed 17 settings/native-window checks; AHK Basic passed 6 settings checks; Unicode AHK v1.1 and v2 each passed 11 settings checks. The modern AHK tests include hidden settings-window values, hot timer rescheduling, nonexistent parent directories, first and replacement saves, invalid input, failed-save rollback and temporary-file cleanup. Expected output failures are captured as diagnostics, not displayed as unhandled error windows. These checks do not establish real ChatGPT source-provider or shell-menu acceptance; that is recorded separately.</p>
+<h2 id="scheduling-policy">Scheduling policy</h2>
+<p>Foreground ChatGPT windows use a fresh title read on the default 2-second schedule (<code>--interval</code>, minimum 1 second). A foreground failure never falls back to the cached title. Focus and full native identity are checked before reading, after reading and before writing.</p>
+<p>Every 1 second, lightweight native metadata/caption checks maintain known background windows. If the application changes an owned/known caption back to the generic <code>ChatGPT</code>, the most recently verified conversation name is restored from memory immediately; this repair does not start a new UIA read. An unchanged last-written caption is left alone. Custom external captions are preserved, and HWND/PID/process-creation/class/path mismatch invalidates the cached identity.</p>
+<p>Background source refresh uses a separate owned reader role, serially visiting eligible background windows every 5 seconds per window by default. Use <code>--background-interval 15</code> or <code>--background-interval 5</code> (accepted range 5–3600 seconds). Native enumeration only discovers ChatGPT window metadata; title sources follow the verified direct RawView path to <code>Document[RootWebArea].Name</code>, never chat-body descendants. Unknown background windows may establish their first name through this low-frequency refresh. A fresh background result updates the native caption only when it is still generic or still owned; custom captions remain protected.</p>
+<p>At most one foreground reader and one serial background reader may coexist, with separate owned handles/output. A background target becoming active cancels/discards that background result, and the foreground uses a new read. A background read taking longer than 1 second is not cancelled merely because a foreground tick is due. Readers target a 4-second watchdog; only owned helper processes are terminated. AHK uses cooperative timer threads: processing a background completion or timeout may wait for a foreground callback to return. Queueing, startup and UIA can delay a complete read: <strong>a 2-second foreground schedule is not a guarantee that source reading finishes within 2 seconds, and 5 seconds is a per-window due interval rather than a hard all-window completion deadline.</strong></p>
+<p>Generic home pages are handled without constructing <code>ChatGPT — ChatGPT</code>. Normal exit restores only captions still owned by this run and matching identity plus last-written value. No private database, browser-debugging endpoint, Explorer tree or taskbar tree is read. Startup registration is limited to the per-user contract below; taskbar grouping is not changed.</p>
+<h2 id="stop-and-coexistence">Stop and coexistence</h2>
+<p>Use the normal stop command below or the supplied exit control. Forced termination cannot execute caption restoration. Only the script's own reader process is terminated on a timeout or focus loss; ChatGPT is not terminated.</p>
+<p>The standalone Windows versions share the mutex Local\TdxChatGptTitleStandalone and the manual-reset event Local\TdxChatGptTitleStandalone.Stop. Run one title controller at a time; do not run it alongside the resident assistant's built-in title feature.</p>
+<p>Normal resident launch manages the per-user sign-in entry below. It does not install a service, scheduled task, file association or taskbar-grouping change.</p>
+<h2 id="runtime-icon-themes-baseline-45">Runtime icon themes (baseline 45)</h2>
+<p>The selected baseline is <strong>45</strong>. The base EXE resource and root <a href="../../assets/chatgpt-titlesync.ico">ICO</a> stay 45. Settings now include three <strong>noneditable dropdowns</strong>: Fixed/Random, a fixed palette <strong>45–52</strong>, and Daily/Hourly/Every 5 minutes. Fixed enables the palette and disables the period; Random does the reverse. Save applies together with intervals/start-at-sign-in; Cancel preserves committed values. A validation or persistence failure rolls back the changed icon/startup state and retains the old usable icon. There are still only two numeric Edit controls.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Palette</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>45</td>
+<td>Blue-violet / white</td>
+</tr>
+<tr>
+<td>46</td>
+<td>Cyan / black</td>
+</tr>
+<tr>
+<td>47</td>
+<td>Amber / black</td>
+</tr>
+<tr>
+<td>48</td>
+<td>Mint / black</td>
+</tr>
+<tr>
+<td>49</td>
+<td>Rose / white</td>
+</tr>
+<tr>
+<td>50</td>
+<td>Sky blue / black</td>
+</tr>
+<tr>
+<td>51</td>
+<td>Lavender / black</td>
+</tr>
+<tr>
+<td>52</td>
+<td>Coral / black</td>
+</tr>
+</tbody>
+</table>
+<p>Windows variants share only these icon values under <strong>HKCU\Software\ChatGPT-TitleSync</strong>: <code>IconMode</code> REG_SZ (<code>fixed</code>/<code>random</code>), <code>FixedIcon</code> REG_DWORD (45..52), <code>IconPeriod</code> REG_SZ (<code>day</code>/<code>hour</code>/<code>5min</code>), <code>RandomIcon</code> REG_DWORD (45..52), and <code>IconSlot</code> REG_SZ. Defaults are fixed/45/day; missing preferences are not written by reading them. The startup preference is a separate named value. Read-only/worker/once/check/control/self-test modes do not register production icon preferences. Invalid saved preferences report bounded metadata and use baseline 45 without silently overwriting the saved data.</p>
+<p>Random chooses once on enabling or changing period and avoids adjacent random repeats. Same-slot restart reuses the persisted choice. Exact shared local-time slots are <code>YYYYMMDD</code> for day, <code>YYYYMMDDHH±HHMM</code> for hour, and <code>YYYYMMDDHHbb±HHMM</code> for five minutes, with <code>bb=minute//5</code> padded to 00..11. The existing metadata timer checks the slot; it does not read ChatGPT or start another helper. Missing/invalid assets or a failed rotation preserve the last usable icon and report at most once per failed slot. Pausing title work does not stop this timer. Runtime changes apply to the tray and this product's own windows; EXEs and pinned shortcuts are never rewritten.</p>
+<p>Runtime sources are <a href="chatgpt_window_titles.py">chatgpt_window_titles.py</a> plus <strong><a href="icon_preferences.py">icon_preferences.py</a></strong> in this same directory. Keep the helper with source-mode deployments. PyInstaller includes the imported helper automatically. The frozen package recipe above includes the eight normal ICOs in <code>_internal/assets/themes</code>; keep the complete onedir directory. Normal Windows variants use <code>45.ico</code> through <code>52.ico</code>.</p>
+<p>Isolated theme checks:</p>
+<pre><code class="language-powershell">python -B tests/test_icon_preferences.py
+python chatgpt_window_titles.py --icon-self-test
+</code></pre>
+<p>The public 18 policy unit tests use fake persistence/assets and an injected clock; an additional controlled fixture passed 35 checks including hidden native Save/Cancel, full five-value rollback, interval/startup rollback and icon-handle liveness. These are isolated results; they do not claim a new real ChatGPT, shell-menu or sign-in acceptance for the theme build. Product version remains 0.1.0.</p>
+<h2 id="validation-boundary">Validation boundary</h2>
+<p>The current policy was checked with owned native windows, fake foreground/title sources and owned child processes, including a background source slower than 1 second while foreground ticks continue. Private-namespace stop fixtures also verified cleanup of both reader roles without touching the normal shared stop event. Python passed 12 checks; each AHK branch passed 11, covering cache repair, custom-caption protection, generic home restore, unknown background discovery, target activation and identity invalidation. Source adapters in the fixtures replace only target/source discovery; they do not claim to validate current ChatGPT UIA-provider behavior.</p>
+<p>Before the icon-theme update, the three x64 candidates were rebuilt with the previous A1 icon resources from the then-current Python/AHK v1.1/v2 sources; packaged hidden-window/self-worker smoke passed. Basic is source-only because its tested legacy compiler failed and a modern compiler/base attempt timed out; crash remnants are excluded. Real ChatGPT switching, long-running monitoring and shell presentation remain separate acceptance items. Windows results do not establish macOS compilation or AX compatibility. See the repository <a href="../../support-matrix.md">support matrix</a>.</p>
+<!-- BEGIN TARGETED_WINDOWS_REAL -->
+<h2 id="targeted-real-windows-acceptance-2026-11-11">Targeted real Windows acceptance — 2026-11-11</h2>
+<p>Final executable passed source/header and later native-title agreement, FG reset 161ms, BG reset 379ms and three generic captions after exit. Two earlier guards skipped injection, not product failures. Settings recheck independently proved persisted/reopened 7/17 and restored 2/5 in one process; the earlier 33/10 ambiguity is preserved without a product-defect conclusion. No Mac validation.</p>
+<p>One accepted FG and one BG reset; the same three existing windows were reused and matched their original generic captions after exit. Native settings/menu-handler checks do not establish physical shell right-click, long-term use or installation acceptance. See the project support matrix for the precise scope.</p>
+<!-- END TARGETED_WINDOWS_REAL --></body></html>

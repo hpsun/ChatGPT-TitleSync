@@ -1,0 +1,45 @@
+name: Initial approved preview release
+on:
+  workflow_run:
+    workflows: [Windows source checks]
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  initial-preview:
+    if: >-
+      github.repository == 'hpsun/ChatGPT-TitleSync' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - name: Publish the user-approved initial source preview once
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Approval covers this first preview only. Later versions require approval.
+          version="$(tr -d '\r\n' < VERSION)"
+          if [ "$version" != "0.1.0" ]; then
+            echo "Skipping: automatic approval is restricted to v0.1.0."
+            exit 0
+          fi
+          if gh release view v0.1.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "v0.1.0 already exists; its target and notes are left unchanged."
+            exit 0
+          fi
+          gh release create v0.1.0 --repo "$GITHUB_REPOSITORY" \
+            --target "$SOURCE_SHA" --prerelease \
+            --title "ChatGPT-TitleSync v0.1.0 (Public preview)" \
+            --notes-file docs/release-notes-v0.1.0.md

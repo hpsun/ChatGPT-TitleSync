@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync roadmap</title><style>body{max-width:1060px;margin:2rem auto;padding:0 1.5rem;font:16px/1.65 system-ui,sans-serif;color:#20242b}pre,code{background:#f3f5f7}pre{padding:1rem;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:.4rem .6rem}a{color:#075bc2}h1,h2,h3{line-height:1.25}img{max-width:100%;height:auto}</style><body><h1 id="chatgpt-titlesync-roadmap">ChatGPT-TitleSync roadmap</h1>
+<p><a href="roadmap.zh-CN.md">简体中文</a> · <a href="roadmap.html">HTML</a> · <a href="../README.md">Project home</a> · <a href="../KNOWN_ISSUES.md">Known issues</a> · <a href="../CHANGELOG.md">Changelog</a></p>
+<p>This roadmap describes work <strong>after v0.1.0</strong>, the initial public preview of <strong>ChatGPT-TitleSync / ChatGPT 标题同步助手</strong>. Planned items below are not implemented features and do not have a committed release date or version.</p>
+<h2 id="current-sign-in-startup-addition">Current sign-in startup addition</h2>
+<p>Start at sign-in is part of this revision and <strong>defaults on</strong>, with a direct tray/menu check and a Save/Cancel settings checkbox. It is not deferred language work. Windows shares one current-user Run value and DWORD preference across implementations; overlong enable commands are rejected, and Exit does not cancel next-login registration. See the <a href="startup.md">startup guide</a>. Current real Windows retesting is <strong>in progress</strong>; the earlier nine-runtime table is historical, not acceptance of these new startup sources. macOS LaunchAgent/preferences source is Experimental and has not been compiled or run on a Mac.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#current">Current v0.1.0 boundary</a></li>
+<li><a href="#planned">Planned work</a></li>
+<li><a href="#acceptance">Checks before a future release</a></li>
+<li><a href="#references">Related records</a></li>
+</ul>
+<p><a id="current"></a></p>
+<h2 id="current-v010-boundary">Current v0.1.0 boundary</h2>
+<p>Runtime UI labels are fixed by implementation. The program does not currently choose its UI language from the system language, and it has no implemented manual language selector. English and Chinese documentation are separate static guides, not evidence of automatic runtime localization. Basic retains an English/ASCII UI for compatibility.</p>
+<p><strong>Palette 45</strong> is the selected baseline, with seven alternative palettes and fixed/random controls in the current candidate. The default policy remains fresh foreground sources every <strong>2 seconds</strong>, background sources every <strong>5 seconds per window</strong>, and lightweight background cached-caption repair every <strong>1 second</strong>. Valid saved settings and shared legacy IPC/state identities are preserved.</p>
+<p><a id="planned"></a></p>
+<h2 id="planned-work">Planned work</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+<th>Intended scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Select the runtime UI language automatically</td>
+<td>Later release; not implemented in v0.1.0</td>
+<td>Read the system's preferred UI language, select an available translation, and define a consistent fallback. This applies to program UI text, not ChatGPT conversation contents.</td>
+</tr>
+<tr>
+<td>Manual language override</td>
+<td>Later release; not implemented in v0.1.0</td>
+<td>Let the user explicitly choose a supported UI language and retain that choice across restarts; an explicit choice should take priority over automatic selection. The exact settings interface remains to be designed.</td>
+</tr>
+<tr>
+<td>Icon customization</td>
+<td>Included in the current candidate</td>
+<td>Baseline 45 plus palettes 46–52; fixed or random rotation daily, hourly or every five minutes. See <a href="icon-themes.md">icon settings</a> for the validation boundary.</td>
+</tr>
+<tr>
+<td>Native macOS validation</td>
+<td>Pending</td>
+<td>Build Swift, Objective-C, Go/Darwin and Rust/macOS on an actual Mac. Check native menus, AX permission/provider behavior, title writeability, foreground ownership, restoration and timing before expanding support claims.</td>
+</tr>
+</tbody>
+</table>
+<p><a id="acceptance"></a></p>
+<h2 id="checks-before-a-future-release">Checks before a future release</h2>
+<p>Language work needs checks under supported system-language settings and with a persisted manual override. Labels, tooltips and settings should remain consistent without changing monitoring cadence, state compatibility or title ownership rules. Basic's ASCII/source constraints require an explicit compatibility decision before changing its UI representation.</p>
+<p>The selected artwork has PNG/ICO/ICNS exports and a Basic-compatible uncompressed ICO representation. Mac source review, Windows-side models and local Windows checks cannot replace native Mac builds and targeted AX tests. Remote CI results must be observed from actual runs rather than inferred from workflow files.</p>
+<p><a id="references"></a></p>
+<h2 id="related-records">Related records</h2>
+<ul>
+<li><a href="release-notes-v0.1.0.md">v0.1.0 release notes</a>: current content and distribution choices.</li>
+<li><a href="../KNOWN_ISSUES.md">Known issues</a>: present limits, including Experimental macOS and event-only monitoring.</li>
+<li><a href="../CHANGELOG.md">Changelog</a>: verified fixes and development history.</li>
+<li><a href="guides-index.md">Implementation guides</a>: current build/run instructions and per-branch boundaries.</li>
+</ul></body></html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="320" viewBox="0 0 1040 320" role="img" aria-labelledby="title desc">
+<title id="title">ChatGPT-TitleSync monitoring flow</title><desc id="desc">Foreground sources default to two seconds. Background sources refresh an identity-bound cache every five seconds per window. One-second native caption checks can restore a generic reset from that cache. These are scheduling cadences, not completion guarantees.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#52617b"/></marker></defs>
+<rect width="1040" height="320" rx="18" fill="#f7f9fc"/>
+<g font-family="system-ui,Segoe UI,sans-serif" font-size="17" text-anchor="middle" fill="#17263d">
+<rect x="24" y="32" width="260" height="78" rx="13" fill="#e4efff" stroke="#4779ce"/><text x="154" y="62" font-weight="700">Foreground ChatGPT</text><text x="154" y="88">Fresh source · default 2s</text>
+<rect x="24" y="176" width="260" height="78" rx="13" fill="#e3f5ed" stroke="#418b6d"/><text x="154" y="206" font-weight="700">Background ChatGPT</text><text x="154" y="232">Source · 5s per window</text>
+<rect x="386" y="176" width="260" height="78" rx="13" fill="#fff1d7" stroke="#b48b3e"/><text x="516" y="206" font-weight="700">Verified title cache</text><text x="516" y="232">Bound to window identity</text>
+<rect x="750" y="73" width="266" height="124" rx="13" fill="#eee8ff" stroke="#8064bf"/><text x="883" y="104" font-weight="700">Native caption</text><text x="883" y="132">Identity + ownership guards</text><text x="883" y="160">Check / cache repair · 1s</text>
+<text x="520" y="295" font-size="15" fill="#52617b">Scheduling cadences, not end-to-end response or cold-reader completion guarantees</text></g>
+<g fill="none" stroke="#52617b" stroke-width="2.5" marker-end="url(#arrow)"><path d="M284 71H685Q710 71 710 96V118H750"/><path d="M284 215H386"/><path d="M646 215H704Q720 215 720 194V173H750"/></g>
+</svg>

@@ -1,0 +1,61 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync 路线图</title><style>body{max-width:1060px;margin:2rem auto;padding:0 1.5rem;font:16px/1.65 system-ui,sans-serif;color:#20242b}pre,code{background:#f3f5f7}pre{padding:1rem;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:.4rem .6rem}a{color:#075bc2}h1,h2,h3{line-height:1.25}img{max-width:100%;height:auto}</style><body><h1 id="chatgpt-titlesync">ChatGPT-TitleSync 路线图</h1>
+<p><a href="roadmap.md">English</a> · <a href="roadmap.zh-CN.html">HTML</a> · <a href="../README.zh-CN.md">项目说明</a> · <a href="../KNOWN_ISSUES.zh-CN.md">已知问题</a> · <a href="../CHANGELOG.zh-CN.md">修改记录</a></p>
+<p>本路线图记录 <strong>ChatGPT-TitleSync / ChatGPT 标题同步助手</strong>首次公开预览 <strong>v0.1.0 之后</strong>的计划。下面的计划不是已实现功能，暂不承诺具体发布日期或版本号。</p>
+<h2 id="_1">本次加入登录自启动</h2>
+<p>登录自启动已纳入本次修订，<strong>缺省已开</strong>；托盘／菜单可直接勾选，设置中同项按保存提交、取消不改。这不是延后版的语言功能。Windows各实现共用当前用户Run值和DWORD偏好；启用超长命令会被拒绝，退出不取消下次登录登记。见<a href="startup.zh-CN.md">启动说明</a>。当前真实Windows复测<strong>正在进行</strong>，此前九路线表是历史记录，不能替代新启动源码的验收。Mac LaunchAgent及偏好仅为Experimental源码，未在Mac编译或运行。</p>
+<h2 id="_2">目录</h2>
+<ul>
+<li><a href="#current">v0.1.0 当前边界</a></li>
+<li><a href="#planned">后续计划</a></li>
+<li><a href="#acceptance">后续版本发布前的检查</a></li>
+<li><a href="#references">相关记录</a></li>
+</ul>
+<p><a id="current"></a></p>
+<h2 id="v010">v0.1.0 当前边界</h2>
+<p>各实现的界面文字目前固定，尚未根据系统语言自动选择界面语言，也未实现手工语言选择器。英文、中文文档是两份静态指南，不代表程序运行时已经自动切换语言。Basic 为兼容性保留英文／ASCII 界面。</p>
+<p><strong>45号为用户选定基准</strong>，当前候选已纳入另七种配色及固定／随机设置。前台来源缺省每 <strong>2秒</strong>重新读取，后台来源缺省每窗口 <strong>5秒</strong>刷新，轻量级后台缓存标题恢复每 <strong>1秒</strong>检查；已有合法设置及共用旧 IPC／状态身份保留。</p>
+<p><a id="planned"></a></p>
+<h2 id="_3">后续计划</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+<th>计划范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>按系统语言自动选择运行界面语言</td>
+<td>放到后续版；v0.1.0 未实现</td>
+<td>读取系统偏好的界面语言，从已有翻译中选择，并明确一致的回退规则。改变的是程序界面文字，不翻译 ChatGPT 对话内容。</td>
+</tr>
+<tr>
+<td>用户手工覆盖语言选择</td>
+<td>放到后续版；v0.1.0 未实现</td>
+<td>用户可明确选择支持的语言，并在重启后保留；手工选择应优先于自动识别。具体设置界面仍待设计。</td>
+</tr>
+<tr>
+<td>图标定制</td>
+<td>已纳入当前候选</td>
+<td>45号为基准，可固定45—52任一配色，或每日／每小时／每5分钟随机更换；验证边界见<a href="icon-themes.zh-CN.md">图标设置</a>。</td>
+</tr>
+<tr>
+<td>macOS 原生验证</td>
+<td>待做</td>
+<td>在真实 Mac 上构建 Swift、Objective-C、Go/Darwin、Rust/macOS，检查原生菜单、AX 权限及提供器、标题可写性、前台归属、恢复和时序，再扩大支持声明。</td>
+</tr>
+</tbody>
+</table>
+<p><a id="acceptance"></a></p>
+<h2 id="_4">后续版本发布前的检查</h2>
+<p>语言功能需要覆盖支持的系统语言环境、手工覆盖及其持久化。菜单、提示和设置文字应保持一致，同时不改变监听间隔、状态兼容性及标题归属规则。Basic 的 ASCII／源码限制需要先明确兼容方案，再修改其界面文字表示方式。</p>
+<p>所选图标已导出PNG／ICO／ICNS及Basic兼容的非压缩ICO。Mac 源码审阅、Windows 上的模型与本地检查不能替代真实 Mac 构建和 AX 实测。远程 CI 结果须来自实际运行，不能由工作流文件推断。</p>
+<p><a id="references"></a></p>
+<h2 id="_5">相关记录</h2>
+<ul>
+<li><a href="release-notes-v0.1.0.zh-CN.md">v0.1.0 发布说明</a>：本版内容与分发方式。</li>
+<li><a href="../KNOWN_ISSUES.zh-CN.md">已知问题</a>：当前限制，包括 macOS 实验状态及事件监听边界。</li>
+<li><a href="../CHANGELOG.zh-CN.md">修改记录</a>：已核实修复与开发沿革。</li>
+<li><a href="guides-index.zh-CN.md">实现指南</a>：当前构建、运行方式及分支边界。</li>
+</ul></body></html>

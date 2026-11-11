@@ -1,0 +1,250 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync</title><style>body{max-width:1060px;margin:2rem auto;padding:0 1.5rem;font:16px/1.65 system-ui,sans-serif;color:#20242b}pre,code{background:#f3f5f7}pre{padding:1rem;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:.4rem .6rem}a{color:#075bc2}h1,h2,h3{line-height:1.25}img{max-width:100%;height:auto}</style><body><p><a href="README.md"><img src="assets/language-en-active.svg" alt="English" width="112" height="34"></a><a href="README.zh-CN.md"><img src="assets/language-zh.svg" alt="简体中文" width="112" height="34"></a></p>
+
+<p><img src="assets/chatgpt-titlesync-icon.png" alt="Selected icon" width="96"></p>
+
+<h1 id="chatgpt-titlesync-chatgpt">ChatGPT-TitleSync · ChatGPT 标题同步助手</h1>
+<p><a href="README.zh-CN.md">简体中文</a> · <a href="README.html">HTML</a> · <a href="support-matrix.md">Support matrix</a> · <a href="docs/guides-index.md">Guide index</a> · <a href="docs/release-notes-v0.1.0.md">v0.1.0 notes</a> · <a href="docs/roadmap.md">Roadmap</a></p>
+<p>Label native ChatGPT windows with their conversation names. Initial public preview: v0.1.0. Chinese product name: <strong>ChatGPT 标题同步助手</strong>. The foreground source interval defaults to <strong>2 seconds</strong>, background native-caption maintenance to <strong>1 second</strong>, and source refresh to <strong>5 seconds per background window</strong>.</p>
+<p>The user approved public publication on <strong>2026-11-11</strong>. Confirmed repository: <a href="https://github.com/hpsun/ChatGPT-TitleSync">ChatGPT-TitleSync</a>. Start at sign-in is enabled by default; see the <a href="docs/startup.md">startup guide</a>. Verification coverage differs by implementation.</p>
+<h2 id="getting-the-files">Getting the files</h2>
+<p>This publication pushes normal repository files under each language directory, plus shared documentation and assets. <strong>No project-produced ZIP is uploaded or offered as the project download.</strong> Obtain the directory tree with Git, then follow the chosen <a href="docs/guides-index.md">implementation guide</a>:</p>
+<pre><code class="language-sh">git clone https://github.com/hpsun/ChatGPT-TitleSync.git
+cd ChatGPT-TitleSync
+</code></pre>
+<p>The repository URL above is confirmed. Individual source files can also be opened or downloaded from their language directory. Keep the required companion files, icons and interpreter/runtime dependencies described by that guide; a Python frozen deployment is not an EXE-only installation. GitHub's automatically generated source archives, if displayed by the platform, are not ZIP files uploaded by this project.</p>
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#scope">What changes</a></li>
+<li><a href="#implementations">Choose an implementation</a></li>
+<li><a href="#quick-start">Windows C# quick start</a></li>
+<li><a href="docs/startup.md">Start at sign-in</a></li>
+<li><a href="#behavior">Monitoring and ownership</a></li>
+<li><a href="#validation">Validation status</a></li>
+<li><a href="#icon">Selected icon</a></li>
+<li><a href="#layout">Project layout</a></li>
+</ul>
+<h2 id="scope">What changes</h2>
+
+<p>The intended native caption is <code>Conversation name — ChatGPT</code>. This labels a local window; it does not rename the conversation stored in ChatGPT.</p>
+<p>On Windows, native captions can supply individual taskbar labels. This project does not change application grouping, application identity, or the name of a pinned shortcut. On macOS, a window title is separate from the application's Dock name; no Dock application rename is performed. Native macOS title writeability and visual effects remain unverified.</p>
+<p>“Active” means the foreground native window on Windows. Metadata work checks ChatGPT identities and native captions; it does not inspect other applications' accessibility content. Source reads of background ChatGPT windows are scheduled separately. The experimental macOS designs still need native validation.</p>
+<h2 id="implementations">Choose an implementation</h2>
+
+<p>Each language implements its own monitoring and title logic. These are alternatives, not wrappers around the C# executable. AutoHotkey has separate runtime-specific sources.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Target and runtime</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C#</td>
+<td>Windows, .NET Framework 4.x</td>
+<td><a href="windows/csharp/README.md">C# application</a></td>
+</tr>
+<tr>
+<td>AutoHotkey Basic</td>
+<td>Windows, Basic 1.0.48.05 ANSI x86; ASCII launch/runtime/IPC paths</td>
+<td><a href="windows/ahk-v1.0/README.md">Basic compatibility</a></td>
+</tr>
+<tr>
+<td>AutoHotkey v1.1</td>
+<td>Windows, Unicode v1.1.33+, x86/x64</td>
+<td><a href="windows/ahk-v1.1/README.md">AHK v1.1</a></td>
+</tr>
+<tr>
+<td>AutoHotkey v2</td>
+<td>Windows, v2.0+, x86/x64</td>
+<td><a href="windows/ahk-v2/README.md">AHK v2</a></td>
+</tr>
+<tr>
+<td>PowerShell</td>
+<td>Windows PowerShell / PowerShell on Windows; see tested versions</td>
+<td><a href="windows/powershell/README.md">PowerShell</a></td>
+</tr>
+<tr>
+<td>Python</td>
+<td>Windows, Python 3, standard library</td>
+<td><a href="windows/python/README.md">Python</a></td>
+</tr>
+<tr>
+<td>Swift</td>
+<td>macOS, <strong>Experimental</strong> native source</td>
+<td><a href="macos/README.md">Swift / Objective-C</a></td>
+</tr>
+<tr>
+<td>Objective-C</td>
+<td>macOS, <strong>Experimental</strong> native source</td>
+<td><a href="macos/README.md">Swift / Objective-C</a></td>
+</tr>
+<tr>
+<td>Rust</td>
+<td>Windows; experimental macOS AX source</td>
+<td><a href="rust/README.md">Rust</a></td>
+</tr>
+<tr>
+<td>Go</td>
+<td>Windows; experimental macOS cgo/AX source</td>
+<td><a href="go/README.md">Go</a></td>
+</tr>
+</tbody>
+</table>
+<p>Windows branches provide tray scan settings; Go/Rust and Python also offer optional CLI operation. Swift/Objective-C native menus and the public Go/Rust macOS osascript companion remain Experimental and have not been compiled or exercised on a Mac.</p>
+<h2 id="quick-start">Windows C# quick start</h2>
+
+<p>Build both local executables, then run the application:</p>
+<pre><code class="language-powershell">cd windows/csharp
+powershell.exe -NoProfile -File .\Build.ps1
+.\ChatGPT-TitleSync.exe
+</code></pre>
+<p>Activate a native ChatGPT window to start observing it. Use the tray's <strong>Exit and restore titles</strong>, or <code>ChatGPT-TitleSync.exe --stop</code>, to exit normally. Detailed options and a non-writing check are in the <a href="windows/csharp/README.md">C# guide</a>.</p>
+<p>Choose one implementation at a time. Windows standalone implementations share a mutex and stop event. Avoid concurrently enabling another title-changing tool for the same windows.</p>
+<p>Existing valid saved settings stay in effect; explicit command-line values override them for the launch. Fresh installations without settings default to foreground 2s and background 5s.</p>
+<h2 id="behavior">Monitoring and ownership</h2>
+
+<p><img alt="Monitoring flow: foreground2s, background5s, cache repair1s" src="assets/monitoring-flow.svg" /></p>
+<p>These are scheduling cadences, not end-to-end response or cold-reader completion guarantees.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Default cadence</th>
+<th>Work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Native metadata</td>
+<td>1 second</td>
+<td>Check ChatGPT identities/captions and repair background generic resets from a verified identity-bound cache</td>
+</tr>
+<tr>
+<td>Foreground source</td>
+<td>2 seconds</td>
+<td>Fresh current conversation name; never substitute a cached source value</td>
+</tr>
+<tr>
+<td>Background source</td>
+<td>5 seconds per window</td>
+<td>One serial bounded source worker; foreground work has priority</td>
+</tr>
+</tbody>
+</table>
+<p><code>--interval</code> controls foreground source checks; <code>--background-interval 15</code> is an example of a custom background refresh. See each guide for ranges and timer limitations. A one-second schedule does not guarantee that a cold accessibility reader finishes in one second.</p>
+<p>Windows binds HWND, PID, creation identity, class and executable path. Normal source reads follow a bounded native accessibility shell to <code>Document[RootWebArea].Name</code>; they do not traverse the conversation body or guess from the sidebar.</p>
+<p>Background repair and refreshed source results can write only for the same identity and a generic <code>ChatGPT</code> caption or a caption still owned by this writer. Non-generic external captions are preserved. Unknown background windows get no invented cache; a successful low-frequency source read can establish one. The foreground always obtains fresh source results.</p>
+<p>C# uses a persistent foreground watch with independent atomic heartbeat <code>Seq</code>/<code>HeartbeatUtc</code> and source <code>SourceSeq</code>/<code>ObservedUtc</code> snapshots, plus an independent background source role. Output files, cancellation signals, owned process handles and private kill-on-close Jobs are separated. Its private identity cache lets an upgrade resume background repair for the same still-existing window.</p>
+<p>Normal exit restores only an identity-matching window whose current caption equals the last write. External changes are preserved. All language implementations have their own monitoring logic; PowerShell's in-memory Add-Type bridge is standard FFI, not an external C# executable dependency.</p>
+<h2 id="validation">Validation status</h2>
+
+<p><strong>Current revision:</strong> real Windows retesting of default-on startup is in progress. The nine-runtime record below belongs to earlier sources and does not establish that this revision has completed all cases. Mac startup/native runtime remains unverified.</p>
+<p>The <a href="support-matrix.md">support matrix</a> distinguishes current controlled fixtures, historical read-only checks and unverified targets. Earlier C# component checks included <strong>41 policy/timing cases, 13 watch/helper lifecycle cases, 8 source-interval protocol cases and 12 settings checks</strong>. The public policy fixture duplicates that same 41-case set.</p>
+<p>Fake or self-owned-window evidence is not full standalone tray, installation, long-term or taskbar visual acceptance. Current live acceptance and release gates are tracked in the <a href="docs/release-readiness.md#local-validation">local validation summary</a>.</p>
+<p>Swift, Objective-C and macOS Go/Rust remain <strong>Experimental: no Mac build or real AX/window-title acceptance</strong>. Shared models are not native Mac tests. Remote CI definitions are not remote CI results.</p>
+<p>Private caches, diagnostics and snapshots can contain conversation names and process identities. Keep them local. Generated binaries, SDK/runtime downloads, logs and validation evidence are excluded from the source package. See the <a href="docs/guides-index.md">guide index</a>.</p>
+<p>Earlier targeted real-window checks passed for the preceding C# revision: foreground title transitions, background reset repair, configurable background scheduling, and normal stop/helper cleanup. Single observations were about 0.516s from the source timestamp to the first native-caption sample and 0.937s for background repair. These do not establish long-term, installation, complete tray or taskbar visual acceptance.</p>
+<h2 id="icon">Selected icon</h2>
+
+<p><strong>Palette 45 is the baseline:</strong> a large ChatGPT motif with a blue-violet Title pill at the upper right, bold monospace lettering, and no outer blue frame. PNG, ICO and ICNS exports share this design; <a href="assets/icon-selected.json">selection metadata</a> records the resource hashes. <a href="docs/icon-themes.md">Icon settings</a> provide fixed palettes 45–52 or time-based random rotation.</p>
+<p>Historical artwork remains available: <a href="assets/chatgpt-titlesync-16-color-options.png">16 palettes</a>, <a href="assets/chatgpt-titlesync-blue-green-combinations.png">blue/green combinations</a>, and <a href="assets/chatgpt-titlesync-blue-green-same-body.png">same-body candidates</a>.</p>
+<h2 id="layout">Project layout</h2>
+
+<pre><code class="language-text">assets/                  Baseline 45, eight themes and historical candidates
+windows/csharp/          C# application and isolated title reader
+windows/ahk-v1.0/         AutoHotkey Basic ANSI x86 source
+windows/ahk-v1.1/         AutoHotkey Unicode v1.1 source
+windows/ahk-v2/           AutoHotkey v2 source
+windows/powershell/      Self-contained PowerShell script
+windows/python/          Standard-library Python script
+macos/                   Experimental Swift and Objective-C sources
+rust/                    Rust Windows and experimental macOS backends
+go/                      Go Windows and experimental macOS backends
+docs/guides-index.md     Guide coverage and remaining validation
+support-matrix.json      Machine-readable verification status
+source-sha256.txt        Relative-path source/build-file hashes
+</code></pre>
+<p>The source uses the <a href="LICENSE">MIT license</a>. See the <a href="docs/release-notes-v0.1.0.md">v0.1.0 notes</a>, <a href="docs/roadmap.md">roadmap</a> and <a href="docs/release-readiness.md">release readiness</a>.</p>
+<!-- BEGIN TARGETED_WINDOWS_REAL -->
+<h2 id="targeted-real-windows-acceptance-earlier-revision-2026-11-11">Targeted real Windows acceptance — earlier revision, 2026-11-11</h2>
+<p>Nine Windows runtime cases used the same three existing ChatGPT windows, reused across runs. Each case compared one source/header target, exercised one foreground generic-caption reset and one background reset, and checked three original generic captions after normal exit. Settings were invoked through the bound native command/same menu handler; this is not a physical shell-right-click claim. The numbers below are individual reset-to-first-match observations, not benchmarks, cold-reader deadlines or long-term/install/taskbar guarantees. No Mac source was compiled or run.</p>
+<table>
+<thead>
+<tr>
+<th>Runtime</th>
+<th>Settings</th>
+<th style="text-align: right;">FG reset</th>
+<th style="text-align: right;">BG reset</th>
+<th>Exit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C#</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1384ms</td>
+<td style="text-align: right;">781ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>AHK Basic 1.0</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1098ms</td>
+<td style="text-align: right;">632ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>AHK v1.1</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">2247ms</td>
+<td style="text-align: right;">667ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>AHK v2</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1056ms</td>
+<td style="text-align: right;">409ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>PowerShell 5.1</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">881ms</td>
+<td style="text-align: right;">794ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>PowerShell 7</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">342ms</td>
+<td style="text-align: right;">282ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>2/5 → 7/17 reopen → 2/5</td>
+<td style="text-align: right;">161ms</td>
+<td style="text-align: right;">379ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1018ms</td>
+<td style="text-align: right;">624ms</td>
+<td>3 original generic captions</td>
+</tr>
+<tr>
+<td>Go</td>
+<td>2/5 → 3/10 reopen → 2/5</td>
+<td style="text-align: right;">1784ms</td>
+<td style="text-align: right;">448ms</td>
+<td>3 original generic captions</td>
+</tr>
+</tbody>
+</table>
+<p>Python's cold source sample still had a generic native caption; the later valid foreground-reset original-title fingerprint matched the independently observed source. Two earlier foreground guards did not inject a reset and remain preserved, not counted as product failures. Python combined separate launches of the same frozen executable; its final settings check verified disk values and exact reopened control text at 7/17, then restored 2/5 within one process. The earlier unexplained 33/10 observation is retained; it is not rewritten as a proven product defect. The earlier C# hidden-first-show defect remains historical evidence; the table uses the repaired final executable.</p>
+<!-- END TARGETED_WINDOWS_REAL --></body></html>

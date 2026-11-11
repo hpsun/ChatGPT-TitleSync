@@ -1,0 +1,167 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="swift-objective-c-and-applescript-experimental-macos-frontends">Swift, Objective-C and AppleScript: Experimental macOS frontends</h1>
+<p><a href="README.zh-CN.md">简体中文</a> · <a href="../README.md">Project home</a></p>
+<p><strong>Experimental: Swift, Objective-C and the AppleScript companion have not been natively compiled or run on a Mac.</strong> Source review and Windows-side models do not establish native Mac compatibility, AX behavior, pixel appearance or timing.</p>
+<h2 id="requirements-and-build">Requirements and build</h2>
+<p>A Mac with Xcode Command Line Tools and the macOS SDK is required. The expected target bundle identifier is com.openai.chat; verify it on the target Mac or override --bundle-id.</p>
+<h3 id="swift">Swift</h3>
+<pre><code class="language-sh">swiftc ChatGPTWindowTitles.swift -framework AppKit -framework ApplicationServices -o chatgpt-titlesync-swift
+./chatgpt-titlesync-swift --interval 2 --background-interval 5 --bundle-id com.openai.chat
+</code></pre>
+<h3 id="objective-c">Objective-C</h3>
+<pre><code class="language-sh">clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices ChatGPTWindowTitles.m -o chatgpt-titlesync-objc
+./chatgpt-titlesync-objc --interval 2 --background-interval 5 --bundle-id com.openai.chat
+</code></pre>
+<p>These are build instructions, not successful native-build results.</p>
+<h2 id="three-layer-maintenance">Three-layer maintenance</h2>
+<p>The metadata maintenance timer runs once per second. --interval controls foreground source reads (default 2, range 1..3600 seconds). --background-interval controls each inactive window's source refresh (default 5, range 5..3600 seconds); use 15 for a 15-second refresh.</p>
+<ol>
+<li>The foreground ChatGPT window reads its current conversation name directly. A remembered title never substitutes for a fresh foreground source read.</li>
+<li>An identified inactive window resetting to generic ChatGPT immediately receives its remembered title, without starting a source read for that repair.</li>
+<li>An independent serial background source queue periodically refreshes inactive names and establishes caches for unknown inactive windows. It does not block the foreground source queue or cancel just because another one-second foreground tick occurs.</li>
+</ol>
+<p>Only the target bundle's AXWindows metadata is enumerated. NSWorkspace is checked before focused AX access; other applications' content is not read. The bounded native envelope finds one AXWebArea and reads its title. Web-area children and chat messages are never traversed.</p>
+<p>Cache identity includes PID, app launch date and AX window identity. Results are discarded when identity, foreground/background role or the pause/settings revision changes. A background result cannot overwrite the foreground result after activation. Non-generic custom captions remain protected; a generic reset permits normal maintenance. AXTitle must be writable and successful writes require matching readback.</p>
+<p>The two drafts use in-memory caches. Restarting rebuilds them. Two seconds and 5 seconds are source scheduling intervals, not source-completion guarantees. Several due windows can complete later because background reads are serialized and AX calls have nonzero latency.</p>
+<h2 id="scan-interval-menu-and-saved-preferences">Scan interval menu and saved preferences</h2>
+<p>Open the menu-bar item and choose <strong>扫描间隔设置…</strong> (Scan intervals…). The modeless panel contains foreground and background source interval fields, <strong>保存</strong> (Save), and <strong>取消</strong> (Cancel). It remains a separate settings panel; normal scheduling continues while it is open.</p>
+<p>The menu accepts whole seconds: foreground <strong>1..3600</strong>, background <strong>5..3600</strong>. Defaults are <strong>2 seconds</strong> and <strong>5 seconds</strong>. Invalid or fractional input displays an inline error and does not change the current settings. Cancel leaves them unchanged. Background native-caption repair remains on the independent one-second metadata schedule; these fields change actual source-read scheduling, not that maintenance tick.</p>
+<p>Save updates both intervals under one timing lock. It advances the main-thread generation, then queues a state-queue revision/deadline reset for every known window. Pending completions are checked against the new generation and per-window revision before applying their result; the next eligible scan uses the new intervals without restarting. An AX call or commit already in progress is not forcibly interrupted. A commit that passed its last guard before Save may finish while the queued state reset is waiting. A busy reader or state queue can delay the next new observation, so hot application is not a strict response-time guarantee.</p>
+<p>Each implementation stores <code>ScanIntervals</code> in its own <code>UserDefaults</code> suite:</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Preferences suite</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Swift</td>
+<td><code>org.chatgpt-title.swift</code></td>
+<td><code>ForegroundSeconds</code>, <code>BackgroundSeconds</code></td>
+</tr>
+<tr>
+<td>Objective-C</td>
+<td><code>org.chatgpt-title.objc</code></td>
+<td><code>ForegroundSeconds</code>, <code>BackgroundSeconds</code></td>
+</tr>
+</tbody>
+</table>
+<p>Only these source-read interval values remain separate from each other and the Go/Rust AppleScript settings bridge; icon/startup preferences use the shared suite described below. At startup, valid explicit <code>--interval</code> / <code>--background-interval</code> values override saved values for that launch; an omitted parameter uses its valid saved value or the default. A later menu Save applies and persists the newly entered pair. The startup checkbox and icon controls are committed with Save as described below. Interval settings do not persist conversation-title caches or change Accessibility permissions.</p>
+<p>The new panel, input handling, preferences, locking and generation checks received static source review only. The Swift <code>application.run()</code> and Objective-C <code>main</code> / <code>[application run]</code> entry points remain present. These observations are not native compilation, GUI appearance, preferences-runtime or AX timing acceptance; those checks still require a real Mac.</p>
+<h2 id="experimental-sign-in-startup-default-on">Experimental sign-in startup — default on</h2>
+<p>The source now includes a direct <strong>开机自启动 / Start at sign-in</strong> menu check and the same checkbox in settings. Menu changes apply immediately; Save commits the settings choice and Cancel leaves it unchanged. Successful changes synchronize both controls. Exit stops the current process without clearing the next-login choice.</p>
+<p>All four Mac implementations share <code>NSUserDefaults</code> suite <code>io.github.hpsun.ChatGPTTitleSync</code>, key <code>AutoStartEnabled</code> (missing defaults on), and <code>~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist</code>. The draft uses an absolute executable argument, <code>RunAtLoad=true</code>, <code>KeepAlive=false</code>; it prepares the next login rather than bootstrapping a second resident immediately. Swift/Objective-C retain their separate <code>ScanIntervals</code> suites above. The Go/Rust menu companion also persists <code>autostart_enabled</code>; its internal launch contract now has <strong>11 arguments</strong>, adding the autostart boolean and executable path. Use the current branch launcher, not an older nine-argument companion invocation.</p>
+<p>This addition is <strong>source-only Experimental</strong>. It has not been compiled or run on a Mac, and does not establish login, permission or AX acceptance. See the <a href="../docs/startup.md">startup guide</a>.</p>
+<h2 id="pause-quit-and-permissions">Pause, quit and permissions</h2>
+<p>Use the menu-bar Pause and restore, Resume, Quit and restore, and Check/request Accessibility permission controls. The drafts do not implement a --stop CLI flag. Normal exit restores only still-matching titles owned by that instance. Forced termination can prevent restoration. Accessibility permission is decided by the user; no privacy setting is changed automatically.</p>
+<h2 id="icon-themes-baseline-45-and-eight-palettes">Icon themes: baseline 45 and eight palettes</h2>
+<p>The current baseline is <strong>45</strong>. The settings panel adds three <strong>noneditable pop-up lists</strong>: Fixed/Random mode, fixed palette <strong>45–52</strong>, and Daily/Hourly/Every 5 minutes. Fixed enables the palette list and disables the period list; Random does the reverse. Cancel preserves committed settings. Save validates the selected resources before attempting startup, theme and interval writes. On failure, the code attempts to restore the prior five icon values, startup preference/LaunchAgent and interval configuration; a rollback failure is reported rather than presented as success.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Palette</th>
+<th>Runtime PNG</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>45</td>
+<td>Blue-violet / white</td>
+<td><a href="../assets/themes/45.png">45.png</a></td>
+</tr>
+<tr>
+<td>46</td>
+<td>Cyan / black</td>
+<td><a href="../assets/themes/46.png">46.png</a></td>
+</tr>
+<tr>
+<td>47</td>
+<td>Amber / black</td>
+<td><a href="../assets/themes/47.png">47.png</a></td>
+</tr>
+<tr>
+<td>48</td>
+<td>Mint / black</td>
+<td><a href="../assets/themes/48.png">48.png</a></td>
+</tr>
+<tr>
+<td>49</td>
+<td>Rose / white</td>
+<td><a href="../assets/themes/49.png">49.png</a></td>
+</tr>
+<tr>
+<td>50</td>
+<td>Sky blue / black</td>
+<td><a href="../assets/themes/50.png">50.png</a></td>
+</tr>
+<tr>
+<td>51</td>
+<td>Lavender / black</td>
+<td><a href="../assets/themes/51.png">51.png</a></td>
+</tr>
+<tr>
+<td>52</td>
+<td>Coral / black</td>
+<td><a href="../assets/themes/52.png">52.png</a></td>
+</tr>
+</tbody>
+</table>
+<p>All four Mac implementations share the icon values below in <code>NSUserDefaults</code> suite <strong><code>io.github.hpsun.ChatGPTTitleSync</code></strong>. Their separate source-read interval stores remain unchanged.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Values / meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IconMode</code></td>
+<td>String <code>fixed</code> or <code>random</code>; default <code>fixed</code></td>
+</tr>
+<tr>
+<td><code>FixedIcon</code></td>
+<td>Integer 45..52; default 45</td>
+</tr>
+<tr>
+<td><code>IconPeriod</code></td>
+<td>String <code>day</code>, <code>hour</code> or <code>5min</code>; default <code>day</code></td>
+</tr>
+<tr>
+<td><code>RandomIcon</code></td>
+<td>Last chosen integer 45..52</td>
+</tr>
+<tr>
+<td><code>IconSlot</code></td>
+<td>Persisted local-time slot of that random choice</td>
+</tr>
+</tbody>
+</table>
+<p>Missing icon preferences are read as fixed/45/day without writing defaults. Invalid stored preferences retain their saved data, report bounded metadata and use baseline 45 where its resource is available. Random mode selects once immediately when enabled or its period changes, avoids adjacent random repeats, and reuses the persisted choice on a same-slot restart. Exact shared slots are <code>YYYYMMDD</code>, <code>YYYYMMDDHH±HHMM</code>, and <code>YYYYMMDDHHbb±HHMM</code>; for five minutes, <code>bb=minute//5</code>, padded to 00..11. Hour/five-minute offsets distinguish repeated local hours.</p>
+<p>Swift/Objective-C check the slot on their existing one-second metadata timer. The AppleScript companion previously had no UI timer, so it now has one one-second AppKit timer dedicated to this slot check. It performs no ChatGPT/AX/source read and starts no additional helper. Pausing title work leaves icon rotation active. Scheduling is not a strict display-time guarantee. Missing assets or a failed rotation keep the last usable image and report at most once per failed slot; an initial missing image can leave a textual <code>GPT</code> fallback. Runtime changes affect this product's menu-bar/application image, without rewriting executable files or pinned shortcuts.</p>
+<h3 id="resource-layout-and-packaging">Resource layout and packaging</h3>
+<p>Keep all eight PNGs. A source build placed in <code>macos/</code> finds <code>../assets/themes</code>. A relocated binary can keep <code>assets/themes</code> beside itself. For an <code>.app</code> bundle, use <code>Contents/Resources/themes</code> (or <code>Contents/Resources/assets/themes</code>). The native drafts check those bundle resource locations, then binary-sibling <code>assets/themes</code>, then <code>../assets/themes</code>; avoid an empty earlier directory shadowing a complete later one.</p>
+<pre><code class="language-text">ChatGPT-TitleSync/
+  assets/
+    chatgpt-titlesync-icon.png
+    themes/45.png ... 52.png
+  macos/
+    ChatGPTWindowTitles.swift
+    ChatGPTWindowTitles.m
+    TraySettings.applescript
+    chatgpt-titlesync-swift   # locally compiled example
+</code></pre>
+<p>The Go/Rust companion keeps its <strong>11-argument interface unchanged</strong>. It derives <code>themes</code> from the containing directory of argument 8, the base PNG path. Use the current Go/Rust launcher and retain that asset layout; no twelfth theme argument is introduced. Icon preferences are not added to the existing Go/Rust interval-file schema.</p>
+<p>The build commands above produce executables, not signed <code>.app</code> bundles, and do not embed the PNG set. A separately prepared bundle may use the current <a href="../assets/chatgpt-titlesync.icns">baseline-45 ICNS</a> through <code>CFBundleIconFile</code>, with the runtime PNGs retained as described above. Packaging, signing, notarization and per-window Dock naming remain unverified.</p>
+<p><strong>Historical A1 record.</strong> Earlier pre-theme instructions described a textual menu-bar item and optional A1 bundle-icon packaging; the CLI build did not embed A1. That remains historical evidence. The current root PNG/ICO/ICNS aliases now represent 45, and the source now implements runtime image selection. No successful native Mac rendering is inferred from either the old A1 record or the new resources.</p>
+<h2 id="validation">Validation</h2>
+<p>See the <a href="../docs/release-readiness.md#local-validation">release validation summary</a>. The historical <strong>13-case title behavior model</strong> predates the three-layer implementation and remains model evidence only. The new <a href="test_icon_policy.py">23-case icon contract model</a> passed with fake preferences/assets, injected time/random selection, same-slot restart, period boundaries, no repeats, Save/Cancel and startup/interval/theme rollback. The retained 13-case title model also passed when imported without generating source-tree receipts.</p>
+<pre><code class="language-sh">python3 -B test_icon_policy.py
+python3 -B -m unittest discover -s . -p test_macos_behavior.py
+</code></pre>
+<p>Static comparison found the existing AX/title algorithm bodies unchanged. The Swift <code>application.run()</code> and Objective-C <code>main</code> / <code>[application run]</code> entry points remain present, and the AppleScript 11-argument boundary remains intact. Lexical delimiter/handler checks and the state models are <strong>not native compiler or runtime tests</strong>.</p>
+<p>In this round, native Swift/Objective-C compilation, <code>osacompile</code>, the AppleScriptObjC bridge, AppKit controls/images and ARC/lifetime behavior, real <code>UserDefaults</code> persistence and rollback, LaunchAgent/login behavior, Accessibility permission, the actual ChatGPT AX hierarchy/writable title, pixels, focus/pause timing and packaging were not verified on a Mac. Product version remains <strong>0.1.0</strong>, with these Mac frontends marked <strong>Experimental</strong>. A Mac SDK build and controlled native acceptance are still required before claiming support.</p>
+<p>Static review also retains each window's state-queue-only source revision, advanced for new reads and observed foreground/background transitions. A completion must match that revision and the pause/exit generation. External caption changes release the old write lease while retaining the verified title cache. A closed window is retired only after a successful, uncapped AXWindows snapshot for the same PID and launch identity; failed/capped enumeration preserves prior records conservatively. The shared state queue may delay commits during metadata AX calls; separate source queues do not provide a hard timing guarantee.</p></body></html>

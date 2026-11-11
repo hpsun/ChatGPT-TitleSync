@@ -1,0 +1,73 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Implementation guides</title><style>body{max-width:1060px;margin:2rem auto;padding:0 1.5rem;font:16px/1.65 system-ui,sans-serif;color:#20242b}pre,code{background:#f3f5f7}pre{padding:1rem;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccc;padding:.4rem .6rem}a{color:#075bc2}h1,h2,h3{line-height:1.25}</style><body><h1 id="implementation-guides">Implementation guides</h1>
+<p><a href="guides-index.zh-CN.md">简体中文</a> · <a href="../README.md">Project home</a> · <a href="release-notes-v0.1.0.md">v0.1.0 notes</a> · <a href="roadmap.md">Roadmap</a></p>
+<p>Each implementation has an English primary guide and an independent Chinese guide. Markdown and HTML are generated from the same body.</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>English</th>
+<th>Chinese</th>
+<th>Runtime / interface</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C#</td>
+<td><a href="../windows/csharp/README.md">MD</a> · <a href="../windows/csharp/README.html">HTML</a></td>
+<td><a href="../windows/csharp/README.zh-CN.md">MD</a> · <a href="../windows/csharp/README.zh-CN.html">HTML</a></td>
+<td>Windows tray; .NET Framework</td>
+</tr>
+<tr>
+<td>AHK Basic</td>
+<td><a href="../windows/ahk-v1.0/README.md">MD</a> · <a href="../windows/ahk-v1.0/README.html">HTML</a></td>
+<td><a href="../windows/ahk-v1.0/README.zh-CN.md">MD</a> · <a href="../windows/ahk-v1.0/README.zh-CN.html">HTML</a></td>
+<td>Basic 1.0.48.05 ANSI x86; ASCII launch/runtime/IPC paths</td>
+</tr>
+<tr>
+<td>AHK v1.1</td>
+<td><a href="../windows/ahk-v1.1/README.md">MD</a> · <a href="../windows/ahk-v1.1/README.html">HTML</a></td>
+<td><a href="../windows/ahk-v1.1/README.zh-CN.md">MD</a> · <a href="../windows/ahk-v1.1/README.zh-CN.html">HTML</a></td>
+<td>Unicode v1.1.33+; x86/x64</td>
+</tr>
+<tr>
+<td>AHK v2</td>
+<td><a href="../windows/ahk-v2/README.md">MD</a> · <a href="../windows/ahk-v2/README.html">HTML</a></td>
+<td><a href="../windows/ahk-v2/README.zh-CN.md">MD</a> · <a href="../windows/ahk-v2/README.zh-CN.html">HTML</a></td>
+<td>v2.0+; x86/x64</td>
+</tr>
+<tr>
+<td>PowerShell</td>
+<td><a href="../windows/powershell/README.md">MD</a> · <a href="../windows/powershell/README.html">HTML</a></td>
+<td><a href="../windows/powershell/README.zh-CN.md">MD</a> · <a href="../windows/powershell/README.zh-CN.html">HTML</a></td>
+<td>Windows PowerShell 5.1 / PowerShell 7 on Windows</td>
+</tr>
+<tr>
+<td>Python</td>
+<td><a href="../windows/python/README.md">MD</a> · <a href="../windows/python/README.html">HTML</a></td>
+<td><a href="../windows/python/README.zh-CN.md">MD</a> · <a href="../windows/python/README.zh-CN.html">HTML</a></td>
+<td>Windows Python 3; standard library</td>
+</tr>
+<tr>
+<td>Swift / Objective-C</td>
+<td><a href="../macos/README.md">MD</a> · <a href="../macos/README.html">HTML</a></td>
+<td><a href="../macos/README.zh-CN.md">MD</a> · <a href="../macos/README.zh-CN.html">HTML</a></td>
+<td>Experimental; native Mac build/AX testing pending</td>
+</tr>
+<tr>
+<td>Go</td>
+<td><a href="../go/README.md">MD</a> · <a href="../go/README.html">HTML</a></td>
+<td><a href="../go/README.zh-CN.md">MD</a> · <a href="../go/README.zh-CN.html">HTML</a></td>
+<td>Windows; experimental Darwin cgo/AX backend</td>
+</tr>
+<tr>
+<td>Rust</td>
+<td><a href="../rust/README.md">MD</a> · <a href="../rust/README.html">HTML</a></td>
+<td><a href="../rust/README.zh-CN.md">MD</a> · <a href="../rust/README.zh-CN.html">HTML</a></td>
+<td>Windows; experimental macOS AX backend</td>
+</tr>
+</tbody>
+</table>
+<h2 id="coverage-and-remaining-acceptance">Coverage and remaining acceptance</h2>
+<p>Guides cover requirements, build or interpreter invocation, run/stop/restore, 45 icon use and the current three-layer policy. Per-branch timer/worker limitations are stated in its guide. Foreground default: 2 seconds fresh source; native background repair: 1 second; background source default: 5 seconds per window. A one-second schedule is not a one-second cold UIA deadline.</p>
+<p>The <a href="../support-matrix.md">support matrix</a> records actual verification scope. See <a href="release-readiness.md#local-validation">local validation and remaining release work</a>. Current source tests and packaged smoke checks are distinct. Swift/Objective-C/Go/Rust macOS code remains Experimental until target-SDK build and real AX testing succeed. Local results do not assert remote CI or release completion; check the confirmed repository for actual records.</p>
+<p>Normal restoration protects external custom captions. Windows caption labels do not change taskbar application grouping; macOS titles do not rename the Dock application. Private evidence and source-title caches stay outside the source package.</p></body></html>

@@ -1,0 +1,66 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync Changelog</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px;vertical-align:top}a{color:#0766c5}</style><body><h1 id="changelog">Changelog</h1>
+<p><a href="CHANGELOG.zh-CN.md">简体中文</a> · <a href="CHANGELOG.html">HTML</a> · <a href="KNOWN_ISSUES.md">Known issues</a> · <a href="README.md">Project home</a></p>
+<p>These entries record local development and verification dates in <strong>Beijing time</strong> before the first public source publication. They are not historical Git commit dates, version tags, or invented GitHub issue numbers. Future published fixes should link the real issue, commit or release after it exists.</p>
+<h2 id="2026-11-11-publication-candidate-and-windows-acceptance">2026-11-11 — Publication candidate and Windows acceptance</h2>
+<h3 id="added-and-changed">Added and changed</h3>
+<ul>
+<li>Shared 45 artwork and independent implementations in C#, AutoHotkey Basic/v1.1/v2, PowerShell, Python, Go, Rust, Swift and Objective-C. Each branch has English and Chinese build/run guides.</li>
+<li>Fresh-install defaults are <strong>2 seconds for foreground source reads</strong> and <strong>5 seconds per background source</strong>. Existing valid saved settings remain effective; explicit startup arguments override the corresponding saved values. Native cached-caption maintenance remains independently scheduled at one second.</li>
+<li>Tray/menu settings save the foreground/background pair and reschedule the existing controller. Source results from an earlier settings generation are rejected. Foreground reads use fresh source data; known inactive generic-caption resets can be repaired from the same-identity cache.</li>
+<li>Windows source checks now include the public <a href="tools/test-tray-settings.ps1">settings callback and hidden-startup fixtures</a> in PowerShell 5.1 and 7. The <a href="tools/release_audit.py">source audit</a> excludes runtime caches, logs, private diagnostics, downloaded toolchains and binaries from the source package.</li>
+</ul>
+<h3 id="fixed">Fixed</h3>
+<table>
+<thead>
+<tr>
+<th>Observed problem</th>
+<th>Cause and correction</th>
+<th>Verification / public source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The first settings window could contain complete controls but remain invisible after launching the process Hidden.</td>
+<td><code>STARTUPINFO.wShowWindow</code> can override the first ordinary <code>ShowWindow</code> request. Go, Rust, C# and PowerShell display paths now explicitly reveal their owned settings windows with <code>SetWindowPos</code> rather than relying on that first Show. C#/PowerShell request activation separately. This was a native visibility issue, not evidence that UI Automation could not locate the controls.</td>
+<td>A separate owned WinExe confirms actual Hidden startup flags, an initially hidden native Show, explicit reveal, and unchanged foreground focus. Final running-app settings checks passed. See <a href="windows/csharp/App.cs">C#</a>, <a href="windows/powershell/ChatGPT-TitleSync.ps1">PowerShell</a>, <a href="go/tray_windows.go">Go</a>, <a href="rust/src/tray_windows.rs">Rust</a>, and <a href="tools/tests/startup_hidden_fixture.cs">fixture</a>.</td>
+</tr>
+<tr>
+<td>A slow foreground source interval could be confused with an unresponsive C# reader, and consuming only on that interval could miss a fresh source snapshot.</td>
+<td>Source observation sequence/time and one-second heartbeat sequence/time are separate. The helper reads on the configured source interval; the parent consumes new observations on the native maintenance tick. A healthy source gap does not repeatedly cancel the independent background role.</td>
+<td>Controlled cold-attach, long-interval, new-sequence, role-change and old-observation rejection checks; <a href="windows/csharp/TitleMonitor.cs">monitor</a> and <a href="windows/csharp/TitleReader.cs">reader</a>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="verified-with-explicit-limits">Verified, with explicit limits</h3>
+<p>Nine Windows runtime routes were actually run: C#, AHK Basic, AHK v1.1, AHK v2, Windows PowerShell 5.1, PowerShell 7, Python, Go and Rust. The same three existing windows were reused. Each route completed a valid foreground generic-caption reset, a background reset, settings save/reopen/restore, source/header comparison and normal exit observations. Python's final settings recheck used 7/17 seconds; the other routes used 3/10 before restoring 2/5.</p>
+<p>The recorded reset times are single observations, <strong>not benchmarks or a performance ranking</strong>. A bound native settings/menu handler was exercised; this does not claim a physical shell right-click test for every implementation, long-term monitoring, installation acceptance, or all ChatGPT versions. See the <a href="support-matrix.md">support matrix</a> and <a href="docs/release-readiness.md#local-validation">validation details</a>.</p>
+<p>The macOS Swift, Objective-C, Go/Darwin and Rust/macOS branches remain <strong>Experimental: no native Mac SDK build or real AX run</strong>. Remote CI had not run at this documentation freeze. Its actual status must be observed in GitHub Actions after publication, not inferred from local checks.</p>
+<h2 id="2026-11-10-settings-save-and-failure-path-fixes">2026-11-10 — Settings save and failure-path fixes</h2>
+<table>
+<thead>
+<tr>
+<th>Observed problem</th>
+<th>Cause and correction</th>
+<th>Verification / public source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PowerShell replacement saves could fail with “The path is empty” after an initial settings file already existed.</td>
+<td>PowerShell could coerce the third <code>File.Replace</code> argument from <code>$null</code> to an empty string. The backup argument now uses <code>[NullString]::Value</code> to pass a true null.</td>
+<td>First and repeated saves, persistence and enable-toggle preservation passed in Windows PowerShell 5.1 and PowerShell 7; <a href="windows/powershell/ChatGPT-TitleSync.ps1">source</a>, <a href="tools/test-tray-settings.ps1">fixture</a>.</td>
+</tr>
+<tr>
+<td>PowerShell menu callbacks could fail to find a helper function after <code>GetNewClosure()</code>.</td>
+<td>The closure's dynamic scope did not retain the expected function lookup. Callbacks now capture callable scriptblocks explicitly and pass the save action into the settings form.</td>
+<td>Settings open/save/reopen/exit callbacks passed in both hosts; <a href="windows/powershell/ChatGPT-TitleSync.ps1">source</a>.</td>
+</tr>
+<tr>
+<td>AHK first saves could fail when the destination parent directory did not exist. Output-write failures also needed bounded cleanup rather than an unhandled error window.</td>
+<td>Create the settings/output parent before writing. Modern AHK emit/save paths catch expected write failures, report diagnostics, and remove temporary output in <code>finally</code>; failed settings commits do not replace the current live values.</td>
+<td>Branch-owned first/replacement save, missing-directory, invalid-input, failed-save rollback and temporary cleanup fixtures. See <a href="windows/ahk-v1.0/README.md">Basic guide</a>, <a href="windows/ahk-v1.1/chatgpt_window_titles.ahk">v1.1 source</a>, <a href="windows/ahk-v2/chatgpt_window_titles.ahk">v2 source</a>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="event-experiment-retained-as-a-limitation">Event experiment retained as a limitation</h2>
+<p>In one 60-second Windows experiment with two confirmed conversation navigations, a single <code>Document.NameProperty</code> / <code>TreeScope.Element</code> subscription received <strong>zero callbacks</strong>, although source/header observations showed the changes and native foreground/name-change metadata events arrived. Header-text events were not subscribed and the document locator was not rebound. This does not prove every possible ChatGPT event route is unavailable. Event-only monitoring was not adopted; the 2/5-second source fallback remains. See <a href="KNOWN_ISSUES.md#event-only-monitoring-is-not-implemented">known issues</a>.</p></body></html>

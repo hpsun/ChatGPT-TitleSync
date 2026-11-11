@@ -1,0 +1,131 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="chatgpt-titlesync-c-standalone-application">ChatGPT-TitleSync — C# standalone application</h1>
+<p><a href="README.zh-CN.md">简体中文</a> · <a href="README.html">HTML</a> · <a href="../../README.md">Project home</a></p>
+<p>Windows tray application for <strong>ChatGPT-TitleSync / ChatGPT 标题同步助手</strong>, written in C# 5 / .NET Framework 4.x.</p>
+<h2 id="branding-and-compatibility">Branding and compatibility</h2>
+<p>The public program name is <strong>ChatGPT-TitleSync / ChatGPT 标题同步助手</strong>. This rename keeps <code>Local\TdxChatGptTitleStandalone</code> and its <code>.Stop</code>/<code>.Settings</code> events unchanged, preventing an older standalone version from writing concurrently. Existing <code>%LOCALAPPDATA%\ChatGPT-title</code> storage and settings keys remain unchanged. C# also retains <code>chatgpt-title-cache.json</code>, the <code>chatgpt-title-readers</code> private work directory and diagnostic schema <code>chatgpt-title-probe-v1</code> for saved-data compatibility. The historical real-window observations below predate the branding and auto-start changes; newer owned/offline checks are scoped separately.</p>
+<h2 id="icon-themes-fixed-or-timed-random">Icon themes — fixed or timed random</h2>
+<p>Default: <strong>Fixed, theme45</strong>, with the random period retained as <strong>Daily</strong>. The selected design uses the large ChatGPT emblem on a cream tile, an upper-right rounded Title capsule and bold monospaced text. The eight files preserve that layout:</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Capsule / text</th>
+<th>ID</th>
+<th>Capsule / text</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>45</td>
+<td>Blue-violet / white</td>
+<td>49</td>
+<td>Rose / white</td>
+</tr>
+<tr>
+<td>46</td>
+<td>Lake blue / black</td>
+<td>50</td>
+<td>Sky blue / black</td>
+</tr>
+<tr>
+<td>47</td>
+<td>Amber / black</td>
+<td>51</td>
+<td>Lavender / black</td>
+</tr>
+<tr>
+<td>48</td>
+<td>Mint / black</td>
+<td>52</td>
+<td>Coral / black</td>
+</tr>
+</tbody>
+</table>
+<p><img src="../../assets/themes/45.png" alt="Default45" width="72"> <img src="../../assets/themes/47.png" alt="Amber47" width="72"> <img src="../../assets/themes/48.png" alt="Mint48" width="72"></p>
+<p>Settings adds three <strong>noneditable dropdowns</strong>, keeping the two numeric text fields and startup checkbox. <strong>Fixed/Random</strong> enables either the fixed-color field or the random-period field; the other is disabled. Random periods are local calendar day, local hour, or five-minute wall-clock bucket. Changing to Random or changing its period chooses once immediately; later changes avoid the preceding color. A restart in the same slot reuses the saved random choice. A cheap one-second UI check detects slot changes even while title monitoring is disabled; it does not read ChatGPT or launch a helper for color changes.</p>
+<p>Windows variants share only five theme values under <code>HKCU\Software\ChatGPT-TitleSync</code>: <code>IconMode</code> and <code>IconPeriod</code> (<code>REG_SZ</code>), <code>FixedIcon</code> and <code>RandomIcon</code> (<code>DWORD</code>, 45..52), and <code>IconSlot</code> (<code>REG_SZ</code>). Day slots use <code>YYYYMMDD</code>; hour slots use <code>YYYYMMDDHH±HHMM</code>; five-minute slots use <code>YYYYMMDDHHbb±HHMM</code>, where <code>bb</code> is minute//5, 00..11. These values do not replace <code>AutoStartEnabled</code> or monitoring settings.</p>
+<p><strong>Save</strong> validates assets and commits the theme with startup/interval changes. <strong>Cancel</strong> closes and discards the draft. Registry, startup and settings-file failures restore the preceding committed choice rather than applying a partial new icon. A missing rotation asset keeps the last usable icon and limits diagnostics to that slot; invalid saved data falls back to 45 with a bounded diagnostic instead of silently rewriting the preference. Only a normal resident can persist theme choices; diagnostic/control entries do not.</p>
+<p>Runtime themes change this product's tray and own settings-window icons, not EXE bytes, pinned shortcuts or the ChatGPT app's icon. Preserve <code>assets/themes/45..52.ico</code> with the install tree; root icon aliases and the base executable resource remain 45. Each previous owned icon is released after replacement. Control names are <code>IconMode</code>, <code>FixedIcon</code>, <code>IconPeriod</code>; their native window IDs are determined at runtime.</p>
+<p>The current change passed 37 C# injected clock/random/registry/asset/transaction checks and37 actual PowerShell callback checks in each host, using owned keys and never-shown controls. Earlier A1-era targeted runs documented on 2026-11-11 remain historical; they are not relabelled as current eight-theme/live-change acceptance. Current real-window retesting is recorded separately by the project publisher.</p>
+<h2 id="start-at-sign-in-default-on">Start at sign-in — default on</h2>
+<p>The normal resident enables <strong>开机自启动 / Start at sign-in</strong> by default. It runs when the current Windows user signs in, rather than before login. The tray check item applies immediately. The settings checkbox uses the same state: <strong>Save</strong> applies it; <strong>Cancel</strong> leaves it unchanged. A successful change from either entry updates the other, including an already-open settings form. Failures display an error and retain the preceding successful UI state; registry-write failures attempt to restore prior values.</p>
+<p>Windows implementations share the fixed <code>HKCU\Software\Microsoft\Windows\CurrentVersion\Run</code> value <strong>ChatGPT-TitleSync</strong> and <code>HKCU\Software\ChatGPT-TitleSync\AutoStartEnabled</code> DWORD preference. A missing preference means on; an explicit zero remains off across language variants and restarts. Only a normal resident that acquired the existing shared singleton reads/applies that preference and updates the product's Run command. Read-only, worker, one-pass checks and settings/stop IPC entries do not register startup. Turning it off removes only this product's Run value. No administrator permission, service or scheduled task is used. Enabling a command longer than the Windows Run 260-character limit is rejected before either value is changed; disabling still works. Already-matching startup/preference values are not rewritten. See <a href="https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys">Microsoft’s Run documentation</a>.</p>
+<p>The registered command is the fully quoted absolute path of the running <code>ChatGPT-TitleSync.exe</code>, without diagnostic or interval arguments. Keep <code>ChatGPT-TitleSync.Reader.exe</code> beside it.</p>
+<p>The menu item and settings checkbox have the control name <code>AutoStartEnabled</code>; source defaults remain foreground 2 seconds/background 5 seconds. The stored monitoring-settings JSON shape and legacy singleton identities remain compatible. This addition was checked with never-shown owned controls and temporary current-user registry keys, including cross-C#/PowerShell off-preference reads; that is not a new real-Run/login acceptance claim.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Build.ps1 uses the Windows Framework64 compiler and UIAutomation/WPF assemblies, produces AnyCPU executables, and requires no MSVC. Keep the main app and title-reader EXEs together. Preserve the repository assets directory for the relative tray icon; the main EXE embeds baseline 45.</p>
+<pre><code class="language-powershell">powershell.exe -NoProfile -File .\Build.ps1
+.\ChatGPT-TitleSync.exe --interval 2 --background-interval 5
+</code></pre>
+<p><code>--interval</code> accepts 1..3600 seconds for foreground source checks. <code>--background-interval</code> accepts 5..3600 seconds per background window, default 5; use <code>--background-interval 15</code> for 15 seconds. Native metadata/caption maintenance remains every second independently. The foreground interval controls actual helper source observations. The helper publishes an independent one-second heartbeat; the parent consumes newly observed source sequences on the one-second metadata tick. An unchanged source timestamp is never relabelled as a fresh observation.</p>
+<p>The tray provides <strong>Enable window titles</strong>, <strong>扫描间隔设置… / Scan intervals…</strong>, and <strong>Exit and restore titles</strong>. The modeless settings dialog accepts foreground (1..3600) and background (5..3600) whole seconds, saves both values and applies them immediately without restarting. Invalid values remain in the dialog with an inline error. Enable state and both intervals persist in <code>%LOCALAPPDATA%\ChatGPT-title\csharp\settings.json</code>; explicit CLI intervals override saved intervals for that run. Native background cached-caption repair stays fixed at one second. Start at sign-in is enabled by default; see the startup section below.</p>
+<p><code>ChatGPT-TitleSync.exe --settings</code> asks the existing resident instance to open this same menu handler; it does not start another writer. Exit code 4 means no compatible resident instance is available. <code>Build.ps1 -OutputDirectory PATH</code> builds isolated acceptance binaries without replacing a running copy.</p>
+<h2 id="files">Files</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App.cs</td>
+<td>Tray, settings, singleton and normal exit</td>
+</tr>
+<tr>
+<td>TitleMonitor.cs</td>
+<td>Three-layer scheduler, identity cache, owned helper lifetime and restoration</td>
+</tr>
+<tr>
+<td>TitleReader.cs</td>
+<td>Isolated source reader; document-root Name only during normal monitoring</td>
+</tr>
+<tr>
+<td>Build.ps1</td>
+<td>Builds ChatGPT-TitleSync.exe and ChatGPT-TitleSync.Reader.exe</td>
+</tr>
+</tbody>
+</table>
+<h2 id="three-layer-monitoring">Three-layer monitoring</h2>
+<ol>
+<li>Every second, check native ChatGPT identities/captions. Repair a known background window's generic <code>ChatGPT</code> reset from its verified cache without reading its source again.</li>
+<li>Read the foreground conversation name freshly on its source interval. Do not fall back to a cached foreground source. A foreground change cancels the old watch.</li>
+<li>Refresh each background source at most once per configured interval using one serial reader. Unknown background windows may acquire their first verified title. Foreground attachment/work has priority and does not synchronously wait on a background read.</li>
+</ol>
+<p>Source reads follow a bounded native shell to <code>Document[RootWebArea].Name</code>, not conversation descendants. Cache/write identity includes HWND, PID, creation time, class and executable path.</p>
+<p>Background results can write only for the same identity and a generic or still-owned caption. Non-generic custom captions are preserved. If a background target becomes foreground, its old background result is discarded; the foreground gets fresh source.</p>
+<h2 id="read-only-check">Read-only check</h2>
+<pre><code class="language-powershell">.\ChatGPT-TitleSync.exe --read-only --output .\read-only-results.json
+</code></pre>
+<p>This enumerates native ChatGPT windows, makes one bounded non-writing source read per window, saves UTF-8 JSON and exits. It does not start the live watch. The per-window read-only deadline is 4 seconds. Results include titles and process identity; keep them private.</p>
+<h2 id="stop-and-restore">Stop and restore</h2>
+<pre><code class="language-powershell">.\ChatGPT-TitleSync.exe --stop
+</code></pre>
+<p>Tray Exit and --stop request normal shutdown. Restore only if identity matches and the current caption equals the last write. Preserve external edits. A custom-caption hold releases on a generic reset or explicit feature disable/re-enable; foreground source reads remain fresh while writes are held.</p>
+<p>Standalone Windows variants share <code>Local\TdxChatGptTitleStandalone</code> and its <code>.Stop</code> event. Run one writer at a time. The settings action changes sampling cadence, not the singleton or stop contract.</p>
+<h2 id="helpers-timing-and-private-data">Helpers, timing and private data</h2>
+<p>The foreground retains one isolated --watch helper bound to its window and parent identity. It caches the RootWebArea element, not Name values, and atomically publishes heartbeat <code>Seq</code>/<code>HeartbeatUtc</code> and source <code>SourceSeq</code>/<code>ObservedUtc</code> snapshots. Parent polling does not wait for UIA.</p>
+<p>Cold attachment deadline: <strong>10 seconds</strong>. After first-ready, heartbeat deadline: <strong>4 seconds</strong>. An independent 500 ms snapshot check preserves healthy helper heartbeats even with a slower parent interval. New data is observed before a stale-boundary decision; pending, duplicate, stale or mismatched snapshots cannot write titles.</p>
+<p>Background snapshots have their own cancellation, output file, retained process handle and kill-on-close Job. They cannot kill the foreground helper or unrelated same-name processes. Target activation cancels the background role. Pause/disable/exit clean up both roles.</p>
+<p>A one-second schedule does not guarantee a cold reader finishes in one second. Provider responsiveness, native metadata work and system scheduling add latency.</p>
+<p><code>%LOCALAPPDATA%\ChatGPT-title\csharp</code> holds settings, title-operation logs, worker snapshots and <code>chatgpt-title-cache.json</code>. The private cache intentionally stores verified names and full identities so upgrades can restore existing background windows. It is runtime data, excluded from source packages. Logs use error codes/title fingerprints rather than conversation bodies.</p>
+<h2 id="validation-boundary">Validation boundary</h2>
+<p>The public fixture now contains 41 three-layer policy/timing checks, including long source gaps and background cancellation on role changes. Twelve settings/persistence checks exercise never-shown owned controls; the PowerShell counterpart exercises nine tray callbacks under both 5.1 and 7. Separate existing helper/Job checks cover cold/steady deadlines:</p>
+<pre><code class="language-powershell">powershell.exe -NoProfile -File ..\..\tools\test-csharp.ps1
+powershell.exe -NoProfile -STA -File ..\..\tools\test-tray-settings.ps1
+</code></pre>
+<p>These fake/self-owned checks cover cache reload/identity, generic resets, custom captions, fresh foreground sources, cancellation, cold/steady deadlines and restoration. They are not complete tray, installation, long-term or real taskbar visual acceptance. See <a href="../../docs/release-readiness.md#local-validation">local validation</a> and the <a href="../../support-matrix.md">support matrix</a>. macOS is not a C# target.</p>
+<h2 id="historical-real-window-observations">Historical real-window observations</h2>
+<p>The standalone app passed fresh foreground title switching and background generic-reset repair. Both the source and native-caption samples were verified as foreground. A source timestamp to first native-caption sample measured <strong>516ms</strong>; a background cache repair measured <strong>937ms</strong>.</p>
+<p>With --background-interval 15, worker-attempt gaps for three windows were approximately <strong>15.16s, 15.17s and 22.20s</strong>. The background reader is serial and foreground work has priority, so this interval is a scheduling minimum, not a guarantee that each window finishes reading exactly every 15 seconds.</p>
+<p>Normal --stop exited the app and left no owned foreground/background helper. The original conversation and configuration bytes were restored. These timing samples preceded the hidden-window lease guard; foreground/caption-maintenance paths were unchanged, and the final EXE includes that separately controlled fix.</p>
+<p>These are targeted observations, not latency guarantees or complete installation/tray/long-term/taskbar visual acceptance. macOS remains outside this C# target; no remote CI or public release has run.</p>
+<h2 id="hidden-startup-settings-visibility">Hidden-startup settings visibility</h2>
+<p>A process started with Windows <code>STARTUPINFO</code> set to Hidden can have its first ordinary Show suppressed. The settings entry now explicitly reveals its owned window with <code>SetWindowPos</code> before requesting activation. This is a native window visibility issue, separate from UI Automation source reading.</p>
+<p>The public <code>tools/test-tray-settings.ps1</code> includes a separate owned WinExe regression: it confirms <code>STARTF_USESHOWWINDOW</code> with <code>SW_HIDE</code>, observes the first native Show still hidden, then verifies the production reveal helper and a WinForms window become visible. Its windows are offscreen and use <code>WS_EX_NOACTIVATE</code>; it asserts that the foreground window stays unchanged. The same public entry runs under PowerShell 5.1 and 7. These are controlled visibility checks, separate from real ChatGPT/menu acceptance.</p>
+<!-- BEGIN TARGETED_WINDOWS_REAL -->
+<h2 id="targeted-real-windows-acceptance-2026-11-11">Targeted real Windows acceptance — 2026-11-11</h2>
+<p>41 policy + 13 helper/Job + 8 interval protocol + 12 settings and hidden-startup checks; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1384ms, BG 781ms; three original generic captions after normal exit. Single observations, not a benchmark.</p>
+<p>One accepted FG and one BG reset; the same three existing windows were reused and matched their original generic captions after exit. Native settings/menu-handler checks do not establish physical shell right-click, long-term use or installation acceptance. See the project support matrix for the precise scope.</p>
+<!-- END TARGETED_WINDOWS_REAL --></body></html>

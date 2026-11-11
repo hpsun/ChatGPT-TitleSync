@@ -1,0 +1,169 @@
+{
+  "Choice": "45",
+  "Product": "ChatGPT-TitleSync",
+  "DefaultMode": "fixed",
+  "Variants": [
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52
+  ],
+  "Layout": {
+    "position": 17,
+    "typeface": 20,
+    "size": 24,
+    "label": 26,
+    "outerFrame": false
+  },
+  "PNG": "chatgpt-titlesync-icon.png",
+  "Windows": "chatgpt-titlesync.ico",
+  "macOS": "chatgpt-titlesync.icns",
+  "ThemesDirectory": "themes",
+  "SelectedDateBeijing": "2026-11-11",
+  "Assets": [
+    {
+      "path": "assets/themes/45.png",
+      "sha256": "d098fc7d41703ac0f806e0285486611158db843e2b72f05c7a8808f856ec6792",
+      "bytes": 1453996
+    },
+    {
+      "path": "assets/themes/45.ico",
+      "sha256": "700cfe7a1ef6f3e72753441bcf9b5bea59362a54601e95a3e62a1babab986ccf",
+      "bytes": 114567
+    },
+    {
+      "path": "assets/themes/45-legacy.ico",
+      "sha256": "6b50e2989f3e306a9a989eec7f8bf4447bceeba2fb36b388e3e2e4b5ef167133",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/46.png",
+      "sha256": "5a8a98e6646ceabec3a22939b51e993d14f70d7c8bf0aa7eff98aae61e557164",
+      "bytes": 1464662
+    },
+    {
+      "path": "assets/themes/46.ico",
+      "sha256": "eec1ba1213bf66bce18b21fd54fac0a00a2398f109de0069312b66140ef9e10d",
+      "bytes": 115486
+    },
+    {
+      "path": "assets/themes/46-legacy.ico",
+      "sha256": "36d1e163a8c3e4da916dbf7bd81a51e46cbc2cc5bf017ecb005b51c085f92359",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/47.png",
+      "sha256": "3336d4969e5ae906b7213b8c7534152ca5a3600e33bd15f6143e7cb5817521df",
+      "bytes": 1461027
+    },
+    {
+      "path": "assets/themes/47.ico",
+      "sha256": "f2d20663f72006ff0acc09b5d135cf8b98a0e39734ba2baa67ba0322c372ad82",
+      "bytes": 116698
+    },
+    {
+      "path": "assets/themes/47-legacy.ico",
+      "sha256": "47c33394b4ac7b3032b258c97f1b29391a18f55abfa551c39a19a5a3009b6bd6",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/48.png",
+      "sha256": "f67011290ece50a14131e7946f4fe14c91e93a509c485d10bbe8737c8c7c2c72",
+      "bytes": 1450706
+    },
+    {
+      "path": "assets/themes/48.ico",
+      "sha256": "a5ab9663cf6221a2748af6d1364ad43890b3a102b7acfcc282a2f5badfcda506",
+      "bytes": 114452
+    },
+    {
+      "path": "assets/themes/48-legacy.ico",
+      "sha256": "40aea310753be5e1d331d33c710aa03d397e115344a0c2b01e3f9d91bed965af",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/49.png",
+      "sha256": "d609ad976be9b6dd9e8f331b21e24ded93bbb1e499443651f1bce1b71cb7ee7b",
+      "bytes": 1476631
+    },
+    {
+      "path": "assets/themes/49.ico",
+      "sha256": "7fb9ad48b15c882ba4ded10202153ea210c7f5828ac0cbec3bbdb50c8eb06c0a",
+      "bytes": 117831
+    },
+    {
+      "path": "assets/themes/49-legacy.ico",
+      "sha256": "beeeaf8e9b301e163cf0536b29db15b32f2cc976bd8ebeed062a50c4a141ed53",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/50.png",
+      "sha256": "f20d96ae5684d7a7dd1a7a65426caa1c1264c4cfc79843f8607146d0d7949dfe",
+      "bytes": 1477809
+    },
+    {
+      "path": "assets/themes/50.ico",
+      "sha256": "298421ff79f0cca3067c05f82afb57e546642d26698f240b468ee48456390276",
+      "bytes": 116346
+    },
+    {
+      "path": "assets/themes/50-legacy.ico",
+      "sha256": "977e470bc00bb216c78b88ee23cdeb27d95f839d2017f478c4b3edd6202c9914",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/51.png",
+      "sha256": "82912688562f261f1af4c2cbd98379b9b20f84b9f9aecf13e15bef568a6d3576",
+      "bytes": 1443931
+    },
+    {
+      "path": "assets/themes/51.ico",
+      "sha256": "4fd6f2f07b81eed02c654e992d08ef06bdbf76245333941d9f2edcc6f064011b",
+      "bytes": 116016
+    },
+    {
+      "path": "assets/themes/51-legacy.ico",
+      "sha256": "83c236f9a325db6243c69b78f31b633940b1b3396b18ac9bc50e048ebe3c4d60",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/themes/52.png",
+      "sha256": "b7d6d515e36c5c4c34d3bf122116d68129a8e65b9cfb4b2bdfb28b5d0be45635",
+      "bytes": 1462556
+    },
+    {
+      "path": "assets/themes/52.ico",
+      "sha256": "c1d67b9f84c4a3ffc7a65ecfdbb92788eeb5688a1a03ec2064551639cc3c985c",
+      "bytes": 115780
+    },
+    {
+      "path": "assets/themes/52-legacy.ico",
+      "sha256": "26eadbc004301ee1fcbe2c4c3a56b1c67a51d7f75a48a3323361e8496af232b1",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/chatgpt-titlesync-icon.png",
+      "sha256": "d098fc7d41703ac0f806e0285486611158db843e2b72f05c7a8808f856ec6792",
+      "bytes": 1453996
+    },
+    {
+      "path": "assets/chatgpt-titlesync.ico",
+      "sha256": "700cfe7a1ef6f3e72753441bcf9b5bea59362a54601e95a3e62a1babab986ccf",
+      "bytes": 114567
+    },
+    {
+      "path": "assets/chatgpt-titlesync-legacy.ico",
+      "sha256": "6b50e2989f3e306a9a989eec7f8bf4447bceeba2fb36b388e3e2e4b5ef167133",
+      "bytes": 372526
+    },
+    {
+      "path": "assets/chatgpt-titlesync.icns",
+      "sha256": "7517b1aa0efd865f09ca62ef01c0923c3297ea0f5e5dad52e74800de9a53c9e0",
+      "bytes": 1573723
+    }
+  ]
+}
