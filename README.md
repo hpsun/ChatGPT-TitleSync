@@ -1,8 +1,10 @@
 <p><a href="README.md"><img src="assets/language-en-active.svg" alt="English" width="112" height="34"></a><a href="README.zh-CN.md"><img src="assets/language-zh.svg" alt="简体中文" width="112" height="34"></a></p>
 
-<p><img src="assets/chatgpt-titlesync-icon.png" alt="Selected icon" width="96"></p>
+<p><img src="assets/chatgpt-titlesync-icon.png" alt="Selected icon" width="56"></p>
 
 # ChatGPT-TitleSync · ChatGPT 标题同步助手
+
+![Illustrated Windows taskbar before and after, using fictitious Example chat A, B and C titles](assets/feature-before-after.png)
 
 [简体中文](README.zh-CN.md) · [HTML](README.html) · [Support matrix](support-matrix.md) · [Guide index](docs/guides-index.md) · [v0.1.0 notes](docs/release-notes-v0.1.0.md) · [Roadmap](docs/roadmap.md)
 

@@ -125,7 +125,12 @@
     "assets/language-en.svg",
     "assets/language-en-active.svg",
     "assets/language-zh.svg",
-    "assets/language-zh-active.svg"
+    "assets/language-zh-active.svg",
+    "assets/chatgpt-app-icon.png",
+    "assets/feature-before-after.svg",
+    "assets/feature-before-after.zh-CN.svg",
+    "assets/feature-before-after.png",
+    "assets/feature-before-after.zh-CN.png"
   ],
   "required": [
     ".github/workflows/macos-experimental.yml",
@@ -282,7 +287,12 @@
     "assets/language-en.svg",
     "assets/language-en-active.svg",
     "assets/language-zh.svg",
-    "assets/language-zh-active.svg"
+    "assets/language-zh-active.svg",
+    "assets/chatgpt-app-icon.png",
+    "assets/feature-before-after.svg",
+    "assets/feature-before-after.zh-CN.svg",
+    "assets/feature-before-after.png",
+    "assets/feature-before-after.zh-CN.png"
   ],
   "source_rules": [
     {

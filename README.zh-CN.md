@@ -1,8 +1,10 @@
 <p><a href="README.md"><img src="assets/language-en.svg" alt="English" width="112" height="34"></a><a href="README.zh-CN.md"><img src="assets/language-zh-active.svg" alt="简体中文" width="112" height="34"></a></p>
 
-<p><img src="assets/chatgpt-titlesync-icon.png" alt="已选图标" width="96"></p>
+<p><img src="assets/chatgpt-titlesync-icon.png" alt="已选图标" width="56"></p>
 
 # ChatGPT 标题同步助手 · ChatGPT-TitleSync
+
+![Windows任务栏改名前后效果示意，使用虚构的示例对话A、B、C](assets/feature-before-after.zh-CN.png)
 
 [English](README.md) · [HTML](README.zh-CN.html) · [支持矩阵](support-matrix.zh-CN.md) · [指南索引](docs/guides-index.zh-CN.md) · [v0.1.0发布说明](docs/release-notes-v0.1.0.zh-CN.md) · [路线图](docs/roadmap.zh-CN.md)
 
