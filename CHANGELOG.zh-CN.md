@@ -4,6 +4,14 @@
 
 以下记录首次公开源码发布前的真实本地开发与验证日期，统一为**北京时间**，不冒充历史Git提交日期、版本标签或虚构GitHub Issue编号。后续公开修复应在实际Issue、提交或Release建立后引用真实链接。
 
+## 2026-11-11 — AppleScript保留字选择器修复候选
+
+提交`d90f7d3ca16cbd24b7f521b8baa18a0e947984e6`的[运行43035186223、Swift作业130572026758](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43035186223/job/130572026758)中，仅编译诊断成功，确认真正报错的是`app's run()`中的`run`。UTF-16错误范围分别为原始CRLF源码`{4883, 3}`、内存LF副本`{4787, 3}`。反复出现的命令行`:189`不足以确定报错语句，此前修改下拉选择表达式没有解决它。该次运行的四项原生编译仍全部通过。
+
+本候选仅将该调用改为`app's |run|()`。Apple的[AppleScriptObjC转换指南](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/AppendixA-AppleScriptObjCQuickTranslationGuide.html)说明，Cocoa方法名与AppleScript术语冲突时，应以竖线包围标识符；目标选择器仍是Cocoa的`run`方法。对同类命令名称作静态检查，未发现其他未转义调用，已有`|error|:`参数标签保留原样；没有修改其他选择器。
+
+本次修改仍是**待下一轮Mac CI真实编译确认的候选**。诊断只编译源码，没有执行事件循环、脚本处理器、AX监听或应用界面。本项工作仍未验证原生运行、设置、图标和登录自启动行为。
+
 ## 2026-11-11 — 原生SDK编译与AppleScript定位诊断
 
 提交`f9eb899396fd2885cbad5ee36002be4e8c77554d`的[运行43027160517](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43027160517)中，Swift、Objective-C、Go、Rust四项原生编译步骤均已通过。日志实际记录的环境为macOS 15.8.2（24H232）、Xcode 16.4（16F6）、macOS SDK 15.5、Swift 6.1.2、Apple Clang 17.0.0。这些是SDK编译结果，**不等于原生AX或应用运行验收**。

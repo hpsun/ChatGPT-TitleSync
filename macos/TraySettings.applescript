@@ -94,7 +94,7 @@ on run argv
     set iconTimer to current application's NSTimer's scheduledTimerWithTimeInterval:1 target:me selector:"iconTimerFired:" userInfo:(missing value) repeats:true
     iconTimer's setTolerance:0.2
     my writeText("ready", readyPath)
-    app's run()
+    app's |run|()
 end run
 on writeText(contentText, destinationPath)
     set nsText to current application's NSString's stringWithString:contentText

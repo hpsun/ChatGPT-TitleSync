@@ -4,6 +4,14 @@
 
 These entries record local development and verification dates in **Beijing time** before the first public source publication. They are not historical Git commit dates, version tags, or invented GitHub issue numbers. Future published fixes should link the real issue, commit or release after it exists.
 
+## 2026-11-11 — AppleScript reserved-selector candidate
+
+The compile-only diagnostic in [run 43035186223, Swift job 130572026758](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43035186223/job/130572026758), for commit `d90f7d3ca16cbd24b7f521b8baa18a0e947984e6`, succeeded and identified the actual offending token as `run` inside `app's run()`. The UTF-16 error range was `{4883, 3}` for the exact CRLF source and `{4787, 3}` for its in-memory LF copy. The repeated CLI `:189` location was not sufficient to identify the failing source statement; the earlier popup edits did not resolve it. All four native compilation steps still passed in that run.
+
+This candidate changes that one call to `app's |run|()`. Apple's [AppleScriptObjC translation guide](https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/AppendixA-AppleScriptObjCQuickTranslationGuide.html) documents vertical-bar escaping for Cocoa method names that conflict with AppleScript terminology. The selector remains the Cocoa `run` method. A focused static review found no other bare calls from the same command-name set; existing `|error|:` parameter labels remain escaped. No other selector was changed.
+
+The source change is **a candidate pending the next actual Mac CI compile**. The diagnosis compiled source only; it never executed the event loop, a script handler, the AX monitor or the application UI. Native runtime, settings, icons and sign-in startup remain unverified by this work.
+
 ## 2026-11-11 — Native SDK compilation and AppleScript diagnostics
 
 In [run 43027160517](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43027160517), commit `f9eb899396fd2885cbad5ee36002be4e8c77554d` passed all four native compilation steps: Swift, Objective-C, Go and Rust. The recorded runner was macOS 15.8.2 (24H232), with Xcode 16.4 (16F6), macOS SDK 15.5, Swift 6.1.2 and Apple Clang 17.0.0. These are SDK compilation results, **not native AX or application-runtime acceptance**.
