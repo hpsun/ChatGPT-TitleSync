@@ -41,12 +41,14 @@ jobs:
           GOTOOLCHAIN: local
         run: |
           set -euo pipefail
+          bash shared/macos/build.sh "$RUNNER_TEMP"
           case "$TITLE_BUILD_LANGUAGE" in
             swift)
-              swiftc macos/ChatGPTWindowTitles.swift -framework AppKit -framework ApplicationServices -o "$RUNNER_TEMP/chatgpt-titlesync-swift"
+              clang -fobjc-arc -fblocks -c shared/macos/RulesClient.m -o "$RUNNER_TEMP/RulesClient.o"
+              swiftc macos/ChatGPTWindowTitles.swift "$RUNNER_TEMP/RulesClient.o" -import-objc-header shared/macos/RulesClient.h -framework AppKit -framework ApplicationServices -o "$RUNNER_TEMP/chatgpt-titlesync-swift"
               ;;
             objective-c)
-              clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices macos/ChatGPTWindowTitles.m -o "$RUNNER_TEMP/chatgpt-titlesync-objc"
+              clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices macos/ChatGPTWindowTitles.m shared/macos/RulesClient.m -o "$RUNNER_TEMP/chatgpt-titlesync-objc"
               ;;
             rust)
               cargo +1.82.0 build --manifest-path rust/Cargo.toml --release --offline
