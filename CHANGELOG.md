@@ -45,3 +45,7 @@ The macOS Swift, Objective-C, Go/Darwin and Rust/macOS branches remain **Experim
 ## Event experiment retained as a limitation
 
 In one 60-second Windows experiment with two confirmed conversation navigations, a single `Document.NameProperty` / `TreeScope.Element` subscription received **zero callbacks**, although source/header observations showed the changes and native foreground/name-change metadata events arrived. Header-text events were not subscribed and the document locator was not rebound. This does not prove every possible ChatGPT event route is unavailable. Event-only monitoring was not adopted; the 2/5-second source fallback remains. See [known issues](KNOWN_ISSUES.md#event-only-monitoring-is-not-implemented).
+
+## 2026-11-11 — Experimental macOS compilation repairs
+
+The [first supported-runner build](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43019350487) reached the macOS SDK: Objective-C and Rust compiled successfully. Go failed because an adjacent explanatory comment was included in the Cgo preamble as C text; separating the comments fixes that input. The Swift job stopped at a shared AppleScript parser error before swiftc; the mode-selection branch now computes an integer before making one Objective-C selector call. The next actual CI run must verify both repairs. These are compilation observations, not macOS accessibility or application runtime acceptance.

@@ -183,11 +183,9 @@ on openSettings:sender
         settingsPanel's center()
     end if
     startupCheckbox's setState:(autoStartEnabled as integer)
-    if iconMode is "fixed" then
-        iconModeChoice's selectItemAtIndex:0
-    else
-        iconModeChoice's selectItemAtIndex:1
-    end if
+    set selectedModeIndex to 0
+    if iconMode is "random" then set selectedModeIndex to 1
+    iconModeChoice's selectItemAtIndex:selectedModeIndex
     fixedIconChoice's selectItemAtIndex:(fixedIcon - 45)
     if iconPeriod is "day" then
         iconPeriodChoice's selectItemAtIndex:0

@@ -45,3 +45,7 @@ Mac四分支——Swift、Objective-C、Go/Darwin、Rust/macOS——仍为**Expe
 ## 作为限制保留的事件实验
 
 一次Windows60秒实验中，两次导航已由来源/页头确认，而单次Document.NameProperty、TreeScope.Element订阅收到**0条回调**；原生前台/名称变化元数据事件有到达。本次未订阅页头文本，也不重绑文档，不能据此断言所有ChatGPT事件路径不可用。未采用纯事件监听，保留2/5秒来源兜底。见[已知问题](KNOWN_ISSUES.zh-CN.md#event-only-monitoring-is-not-implemented)。
+
+## 2026-11-11 — 实验性Mac编译修正
+
+[首次有效运行环境检查](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43019350487)已进入真实macOS SDK：Objective-C与Rust编译成功。Go因相邻说明注释被Cgo收入前言并当成C文本而失败，现用空行分离；Swift作业在swiftc之前被共享AppleScript语法错误中止，现先计算模式索引，再统一调用一次Objective-C选择器。两处修正仍须下一轮真实CI核验；这些是编译结果，不等于Mac辅助功能或应用运行验收。
