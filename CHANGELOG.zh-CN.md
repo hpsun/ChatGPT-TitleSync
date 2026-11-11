@@ -4,6 +4,14 @@
 
 以下记录首次公开源码发布前的真实本地开发与验证日期，统一为**北京时间**，不冒充历史Git提交日期、版本标签或虚构GitHub Issue编号。后续公开修复应在实际Issue、提交或Release建立后引用真实链接。
 
+## 2026-11-11 — 原生SDK编译与AppleScript定位诊断
+
+提交`f9eb899396fd2885cbad5ee36002be4e8c77554d`的[运行43027160517](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43027160517)中，Swift、Objective-C、Go、Rust四项原生编译步骤均已通过。日志实际记录的环境为macOS 15.8.2（24H232）、Xcode 16.4（16F6）、macOS SDK 15.5、Swift 6.1.2、Apple Clang 17.0.0。这些是SDK编译结果，**不等于原生AX或应用运行验收**。
+
+独立的共享AppleScript编译仍报`macos/TraySettings.applescript:189: error: Expected expression but found command name. (-2741)`。`:189`究竟表示源码行号还是字符范围尚未核实；此前对下拉选择表达式的调整没有解决该错误，实际定位与修正仍待确认。
+
+新增最小的[仅编译诊断工具](tools/diagnose-applescript.swift)，分别对原文和内存中仅规范化为LF的副本调用`NSAppleScript.compileAndReturnError`，输出编译错误字典、UTF-16的`NSRange`、报错片段及邻近源码。工作流仅在共享AppleScript编译步骤失败后调用它。该工具不执行脚本或处理器，不启动监听器，也不操作AX或界面。诊断工具本身仍待首次Mac CI真实结果；添加工具不代表已经修复AppleScript或验证运行成功。
+
 ## 2026-11-11 — 公开发布后的macOS CI运行环境修正
 
 首次公开源码提交 `4024f41be4792372e574168c938e4a6a3da6766c` 的[macOS仅编译运行（42985821518）](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/42985821518)结果为**已取消**。Swift、Objective-C、Rust、Go四个作业均未分配runner，且没有执行任何步骤。每个作业的注解原文均为：`The configuration 'macos-14-arm64-us-default' is not supported`。源码检出和编译均未开始；该次运行没有产生源码编译结论，也没有提供费用问题的证据。

@@ -130,7 +130,8 @@
     "assets/feature-before-after.svg",
     "assets/feature-before-after.zh-CN.svg",
     "assets/feature-before-after.png",
-    "assets/feature-before-after.zh-CN.png"
+    "assets/feature-before-after.zh-CN.png",
+    "tools/diagnose-applescript.swift"
   ],
   "required": [
     ".github/workflows/macos-experimental.yml",
@@ -292,7 +293,8 @@
     "assets/feature-before-after.svg",
     "assets/feature-before-after.zh-CN.svg",
     "assets/feature-before-after.png",
-    "assets/feature-before-after.zh-CN.png"
+    "assets/feature-before-after.zh-CN.png",
+    "tools/diagnose-applescript.swift"
   ],
   "source_rules": [
     {

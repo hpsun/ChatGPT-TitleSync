@@ -4,6 +4,14 @@
 
 These entries record local development and verification dates in **Beijing time** before the first public source publication. They are not historical Git commit dates, version tags, or invented GitHub issue numbers. Future published fixes should link the real issue, commit or release after it exists.
 
+## 2026-11-11 — Native SDK compilation and AppleScript diagnostics
+
+In [run 43027160517](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43027160517), commit `f9eb899396fd2885cbad5ee36002be4e8c77554d` passed all four native compilation steps: Swift, Objective-C, Go and Rust. The recorded runner was macOS 15.8.2 (24H232), with Xcode 16.4 (16F6), macOS SDK 15.5, Swift 6.1.2 and Apple Clang 17.0.0. These are SDK compilation results, **not native AX or application-runtime acceptance**.
+
+The independent shared AppleScript compilation still failed with `macos/TraySettings.applescript:189: error: Expected expression but found command name. (-2741)`. The meaning of `:189` has not been established as a source line or character range; earlier popup-expression changes did not resolve the observed error. Its actual location and correction remain pending.
+
+A minimal [compile-only diagnostic tool](tools/diagnose-applescript.swift) now calls `NSAppleScript.compileAndReturnError` for the exact source and an in-memory LF-normalized copy. It prints the compiler error dictionary, UTF-16 `NSRange`, offending token and nearby source text. The workflow invokes it only after the shared AppleScript compile step fails. It never executes the script or a handler, launches the monitor, or performs AX/UI operations. The diagnostic itself still needs its first actual Mac CI result; no AppleScript fix or runtime success is claimed by adding this tool.
+
 ## 2026-11-11 — Post-publication macOS CI runner correction
 
 The first public-source [macOS compile-only run (42985821518)](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/42985821518), for commit `4024f41be4792372e574168c938e4a6a3da6766c`, ended as **cancelled**. All four jobs (Swift, Objective-C, Rust and Go) had no assigned runner and no executed steps. Each job annotation reported: `The configuration 'macos-14-arm64-us-default' is not supported`. Checkout and compilation never began; this run provides no source-compilation result or evidence of a billing failure.

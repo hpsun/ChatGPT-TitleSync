@@ -56,5 +56,10 @@ jobs:
               ;;
           esac
       - name: Compile the shared menu script without launching it
+        id: applescript_compile
         if: ${{ always() && matrix.language == 'swift' }}
         run: osacompile -o "$RUNNER_TEMP/TitleSyncTray.scpt" macos/TraySettings.applescript
+      - name: Diagnose a failed AppleScript compile without executing it
+        if: ${{ always() && matrix.language == 'swift' && steps.applescript_compile.outcome == 'failure' }}
+        shell: bash
+        run: swift tools/diagnose-applescript.swift macos/TraySettings.applescript
