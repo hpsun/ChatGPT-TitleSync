@@ -305,7 +305,8 @@ end quitHelper:
 -- No shell interpolation and no bootstrap: the selected binary runs at the next login.
 on applyStartup(wanted)
     set manager to current application's NSFileManager's defaultManager()
-    set homePath to (manager's homeDirectoryForCurrentUser()'s path()) as text
+    set homeURL to manager's homeDirectoryForCurrentUser()
+    set homePath to homeURL's |path|() as text
     set folderPath to homePath & "/Library/LaunchAgents"
     set targetPath to folderPath & "/io.github.hpsun.ChatGPTTitleSync.plist"
     if wanted then
@@ -563,7 +564,9 @@ on restoreFile(dataObject, pathValue)
 end restoreFile
 on startupTarget()
     set manager to current application's NSFileManager's defaultManager()
-    return (manager's homeDirectoryForCurrentUser()'s path() as text) & "/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist"
+    set homeURL to manager's homeDirectoryForCurrentUser()
+    set homePath to homeURL's |path|() as text
+    return homePath & "/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist"
 end startupTarget
 on startupSnapshot()
     set dataObject to my fileSnapshot(my startupTarget())
