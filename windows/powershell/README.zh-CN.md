@@ -4,8 +4,31 @@
 
 Windows x64源代码草稿。已在Windows PowerShell 5.1和PowerShell 7中验证脚本解析、内嵌C#编译及模拟前台状态；本分支未操作真实ChatGPT验证。
 
+## 名称替换——缺省规则为空
+
+托盘 **Name replacement… / 名称替换…** 和设置窗中的同名按钮打开共用Unicode编辑器。初始**没有任何规则**，不会自动去掉厂商前缀或提取括号。可逐条启用并调整顺序。**Plain text / 普通文字**按区分大小写的原文全局替换，替换内容按普通文字处理；**Regex / 正则**采用Windows .NET引擎，支持 `$0`～`$99`、`${0}`～`${99}` 和 `$$`，拒绝未知或不存在的捕获引用。
+
+当前对话下拉读取监控器的私有 **CTS1来源快照**，显示时间并可刷新文件，不为此额外读取ChatGPT或UIA。快照缺失或无效时仍可手工输入示例。**建议规则**根据当前示例或所选文字派生转义后的候选，包含去前缀、保留分隔符后内容、成对符号内部等；建议只是草稿，必须先点**使用规则**，再点**保存**才生效。**取消**不保存。预览只处理本地示例，并使用有界子进程。
+
+Windows前端共享 `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`，与间隔、自启动和图标设置分开。规则只作用于可信原始对话名，之后才拼显示后缀。配置、替换引用、匹配超时、空白／控制字符／通用名结果、超长输出或孤立UTF-16代理项，均回退**完整原始来源名**，不使用中途结果。共用工具每条正则限制100毫秒、整条链500毫秒；调用方对规则worker设置1500毫秒期限，排队和调度仍可能增加耗时。相同原名及规则签名复用成功／回退缓存，不每秒重启worker。
+
+保存规则从raw缓存重新派生已知显示，不重置来源读取截止时间。重绘仍核验同一窗口身份及“当前标题等于本实例最后写入值”，保留外部手工标题。运行期 `title-rule-sources.bin` 包含私人对话名，不应发布。
+
+已建立客户端后，显示签名同时包含规则内容及worker文件的存在性、大小和修改时间；补回同路径worker可让相同raw重新格式化，不为此多读来源。PowerShell启动时若未找到共用工具，该功能保持不可用；补齐后须重启脚本。这里不提供缺包启动后的程序集热加载。
+
+参见[名称替换帮助](../../docs/name-replacement.zh-CN.md)及打包的[本地HTML帮助](../../docs/name-replacement.zh-CN.html)。
+
+### 新功能验证边界
+
+共用工具已有Unicode／CLI纯测试，覆盖整链回退和孤立代理项；注入后端证明缓存重绘不增加来源读取。PowerShell5.1／7客户端检查使用私有文件与模拟窗口后端。编辑器效果图仅用虚构示例、从未显示的自有控件，模拟100%、125%、150%字体与几何，表头字形内容区完整；另以自有离屏NOACTIVATE／Hidden夹具核验候选的显式原生显示且前台不变。这些检查**不代表**新增正常桌面、登录启动、物理托盘菜单或全部实时UIA验收；下方早期真实窗口结果保留原日期和范围。
+
+### 共用工具与PowerShell加载
+
+先从本目录执行 `powershell.exe -NoProfile -File ..\..\shared\windows\Build.ps1`。名称替换需要生成的 `ChatGPT-TitleSync.Rules.exe`，可放脚本旁或保留仓库 `shared/windows` 位置。脚本自动使用 `[Reflection.Assembly]::LoadFrom(...)` 加载纯BCL客户端；PS7不能用 `Add-Type -Path` 加载EXE，框架JSON／正则匹配留在隔离规则进程内，主机使用原生JSON检查空规则。没有共用工具时，该功能入口不可用；原有监控不由它接管。该工具不是PS脚本的EXE封装。
+
+
 ## 环境与构建
-使用64位Windows PowerShell 5.1；父脚本也可使用PowerShell 7。隔离读取器固定使用Windows自带的Windows PowerShell 5.1及UIAutomation程序集，无需MSVC、外部C#程序或额外SDK；原生绑定由Add-Type在内存中编译。
+使用64位Windows PowerShell 5.1；父脚本也可使用PowerShell 7。隔离读取器固定使用Windows自带的Windows PowerShell 5.1及UIAutomation程序集，无需MSVC或额外SDK；名称替换另用打包的共用C#规则工具，原生绑定仍由Add-Type在内存中编译。
 
 
 ## 品牌与兼容性
@@ -86,7 +109,7 @@ Windows各语言版本共用互斥体Local\TdxChatGptTitleStandalone与停止事
 
 修改设置会取消自有读者并使旧任务代次失效，旧结果不能覆盖新设置下的状态。关闭启用选项会取消读者并恢复仍由本实例拥有的标题；重新启用启动新的来源读取。`-Settings` 通知已运行实例调用同一设置菜单处理器，不启动第二个实例。Worker、ReadOnly配合Once、Stop均不启动托盘。
 
-托盘缺省使用共享45号ICO，并支持下述八色主题。脚本宿主EXE自身的图标仍由宿主决定，不新增外部EXE；登录自启动使用上述共享Run项。
+托盘缺省使用共享45号ICO，并支持下述八色主题。脚本宿主EXE自身的图标仍由宿主决定，名称替换另依赖共用规则EXE；登录自启动仍使用上述共享Run项。
 
 公开验证入口：`tools/test-tray-settings.ps1`，分别在Windows PowerShell 5.1与PowerShell 7下运行。两者各通过9项菜单回调、输入校验、即时状态更新、再次覆盖保存、重新打开及退出请求测试；另有32项调度回归。夹具控件不会显示、激活或读取真实ChatGPT，不发送共享Stop。File.Replace的备份参数使用[NullString]::Value，避免PowerShell把空值转换为空路径。
 

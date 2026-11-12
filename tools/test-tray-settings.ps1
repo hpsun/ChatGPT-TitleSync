@@ -4,8 +4,11 @@ $root=Split-Path $PSScriptRoot -Parent
 if(!$OutputDirectory){$OutputDirectory=Join-Path $env:TEMP ('chatgpt-titlesync-settings-'+[Guid]::NewGuid().ToString('N'))}
 [void][IO.Directory]::CreateDirectory($OutputDirectory)
 $csc=Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
+# App.cs references the shared Unicode rules assembly; build/copy only, never launch its editor.
+& (Join-Path $root 'shared/windows/Build.ps1') -OutputDirectory $OutputDirectory
+$rulesExe=Join-Path $OutputDirectory 'ChatGPT-TitleSync.Rules.exe'
 $fixture=Join-Path $OutputDirectory 'csharp-settings-fixture.exe'
-& $csc /nologo /target:exe /optimize+ /main:ChatGptTitle.SettingsFixture "/out:$fixture" /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:System.Drawing.dll (Join-Path $root 'windows/csharp/App.cs') (Join-Path $root 'windows/csharp/TitleMonitor.cs') (Join-Path $PSScriptRoot 'tests/csharp_settings_fixture.cs')
+& $csc /nologo /target:exe /optimize+ /main:ChatGptTitle.SettingsFixture "/out:$fixture" "/reference:$rulesExe" /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:System.Drawing.dll (Join-Path $root 'windows/csharp/App.cs') (Join-Path $root 'windows/csharp/TitleMonitor.cs') (Join-Path $PSScriptRoot 'tests/csharp_settings_fixture.cs')
 if($LASTEXITCODE){throw 'Settings fixture compilation failed.'}
 & $fixture (Join-Path $OutputDirectory 'csharp')
 if($LASTEXITCODE){throw 'C# settings checks failed.'}
@@ -24,7 +27,7 @@ function Click-Control($button){$button.GetType().GetMethod('OnClick',[Reflectio
 $path=Join-Path $OutputDirectory 'powershell-settings.json';$state=@{Enabled=$true;Foreground=2;Background=5;Revision=0;Quit=$false;Form=$null;Tray=$null;Menu=$null;Icon=$null}
 try{
  Initialize-CgtTray $state $path
- Check 'tray_has_enable_settings_startup_and_exit_actions' ($state.Menu.Items.Count -eq 4 -and $state.Menu.Items[2].Name -eq 'AutoStartEnabled' -and $state.Menu.Items[3].Text -like 'Exit*')
+ Check 'tray_has_enable_settings_startup_and_exit_actions' ($state.Menu.Items.Count -eq 5 -and $state.Menu.Items[2].Name -eq 'AutoStartEnabled' -and $state.Menu.Items[3].Text -like 'Exit*' -and $state.Menu.Items[4].Text -like '*Name replacement*')
  $state.Menu.Items[1].PerformClick();$form=$state.Form
  Check 'settings_menu_callback_builds_inputs' ($null -ne $form -and $form.Controls['ForegroundSeconds'].Text -eq '2' -and $form.Controls['BackgroundSeconds'].Text -eq '5')
  $buttons=@($form.Controls|Where-Object {$_ -is [Windows.Forms.Button]});$save=$buttons|Where-Object {$_.Text -like '*Save*'}
@@ -57,7 +60,7 @@ $nativeText=$nativeText.Substring(0,$themeBoundary)
 $bridgeSource=Join-Path $OutputDirectory 'PowerShellNativeBridge.cs'
 [IO.File]::WriteAllText($bridgeSource,$nativeText,[Text.UTF8Encoding]::new($false))
 $startupFixture=Join-Path $OutputDirectory 'startup-hidden-fixture.exe'
-& $csc /nologo /target:winexe /optimize+ /main:ChatGptTitle.StartupHiddenFixture "/out:$startupFixture" /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:System.Drawing.dll (Join-Path $root 'windows/csharp/App.cs') (Join-Path $root 'windows/csharp/TitleMonitor.cs') $bridgeSource (Join-Path $PSScriptRoot 'tests/startup_hidden_fixture.cs')
+& $csc /nologo /target:winexe /optimize+ /main:ChatGptTitle.StartupHiddenFixture "/out:$startupFixture" "/reference:$rulesExe" /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:System.Drawing.dll (Join-Path $root 'windows/csharp/App.cs') (Join-Path $root 'windows/csharp/TitleMonitor.cs') $bridgeSource (Join-Path $PSScriptRoot 'tests/startup_hidden_fixture.cs')
 if($LASTEXITCODE){throw 'Hidden startup fixture compilation failed.'}
 foreach($implementation in @('csharp','powershell')){
  $receipt=Join-Path $OutputDirectory ($implementation+'-startup-hidden.json')

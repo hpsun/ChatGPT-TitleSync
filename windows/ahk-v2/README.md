@@ -16,9 +16,9 @@ Run this source with its matching interpreter. The build recipe and current acce
 
 - Windows; runtime: **AutoHotkey v2**, **Unicode x86 or x64; v2.0+**.
 - OS-provided Windows UI Automation and Win32 APIs.
-- No external COM library, model/API connection, or C# helper.
+- No external COM library or model/API connection. Optional name replacement uses the separately built shared C# companion below.
 
-The tested installed runtime is v2.0.15, both AutoHotkey32.exe and AutoHotkey64.exe. This is v2 syntax and must not be launched by v1.1 or Basic. It uses ComCall, ComObject, Buffer, and native pointer-size types, without a C# helper.
+The tested installed runtime is v2.0.15, both AutoHotkey32.exe and AutoHotkey64.exe. This is v2 syntax and must not be launched by v1.1 or Basic. Native title reading uses ComCall, ComObject, Buffer and native pointer-size types. Optional name replacement uses the shared Unicode companion described below.
 
 Both pointer sizes passed the owned GUI/fake-source foreground policy tests. That test also exposed and verified the fix for a previous Key() function-name shadowing error in Poll and LogEvent; earlier limited self-tests are not substituted for the main-loop policy check.
 
@@ -154,3 +154,25 @@ Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source a
 
 One accepted FG and one BG reset; the same three existing windows were reused and matched their original generic captions after exit. Native settings/menu-handler checks do not establish physical shell right-click, long-term use or installation acceptance. See the project support matrix for the precise scope.
 <!-- END TARGETED_WINDOWS_REAL -->
+
+## Name replacement — shared Unicode companion
+
+The tray **Name replacement… / 名称替换…** and the settings window's same-named button open the **same** shared editor: ordered literal/regex rows, preview, already-read raw-name dropdown, generic regex suggestions and local help. Suggestions require explicit **Use rule**, then Save. Defaults are empty/identity; no personal or machine-specific presets are built in or migrated.
+
+Build the companion first, from this branch directory:
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "..\..\shared\windows\Build.ps1"
+
+This builds [TitleRules.cs](../../shared/windows/TitleRules.cs) with the Windows .NET Framework compiler. Retain `ChatGPT-TitleSync.Rules.exe` beside the main EXE, or at the exact repository location `../../shared/windows`; it is never searched through PATH or a preference-supplied command. Keep [English help](../../docs/name-replacement.md) and [中文帮助](../../docs/name-replacement.zh-CN.md), including their HTML siblings, available locally.
+
+Rules are separate at `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`. Reading, opening and previewing do not create it; only successful editor Save writes it. Timing/startup/icon saves do not overwrite rules. No file means unchanged raw name. Existing rules plus an unavailable companion mean whole-raw fallback with a diagnostic.
+
+Formatting runs on the **verified raw name before** the standard ` — ChatGPT` suffix. Raw-source cache and original native-caption restoration stay unchanged. A separate display revision refreshes only a caption still owned by this run and equal to its last write, protecting manual and generic captions. Normal source schedules and 1-second cached repair remain separate. A nonblocking, pinned, caller-owned format child has a 1500 ms deadline; unchanged success/fallback is cached and stale results are discarded. Signatures are checked on a bounded 1-second cadence without extra ChatGPT reads.
+
+`title-rule-sources.bin` is a **private** CTS1 snapshot in the monitor runtime/settings directory. It contains verified raw names only, is updated on name/window-set changes and must not be committed or published. It populates the editor dropdown without extra UIA reads.
+
+Keep [NameReplacement.ahk](NameReplacement.ahk) beside the main source; its `#Include` is required. Matching modern Ahk2Exe embeds the include, but **does not embed the shared rules EXE or local help**. A compiled deployment needs `ChatGPT-TitleSync.Rules.exe` beside the main EXE and both help pages in a sibling `docs` directory. The existing icon include and theme assets remain required.
+
+The matching official interpreter passed early `--check` parsing. A separate private fixture passed **18** checks with fictional names, the real shared format companion, a disposable owned timeout child and stubbed identity/caption operations.
+
+These are format/protocol and controlled-ownership checks. They do not open the editor, start a normal resident, read ChatGPT, change production startup/preferences or claim new real-desktop/menu acceptance. The linked help defines limits, strict replacement references, OS regex differences and complete-raw fallback.

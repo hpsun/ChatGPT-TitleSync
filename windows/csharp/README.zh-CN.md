@@ -5,6 +5,29 @@
 **ChatGPT 标题同步助手／ChatGPT-TitleSync** 的 Windows 托盘应用，C# 5／.NET Framework 4.x。
 
 
+## 名称替换——缺省规则为空
+
+托盘 **Name replacement… / 名称替换…** 和设置窗中的同名按钮打开共用Unicode编辑器。初始**没有任何规则**，不会自动去掉厂商前缀或提取括号。可逐条启用并调整顺序。**Plain text / 普通文字**按区分大小写的原文全局替换，替换内容按普通文字处理；**Regex / 正则**采用Windows .NET引擎，支持 `$0`～`$99`、`${0}`～`${99}` 和 `$$`，拒绝未知或不存在的捕获引用。
+
+当前对话下拉读取监控器的私有 **CTS1来源快照**，显示时间并可刷新文件，不为此额外读取ChatGPT或UIA。快照缺失或无效时仍可手工输入示例。**建议规则**根据当前示例或所选文字派生转义后的候选，包含去前缀、保留分隔符后内容、成对符号内部等；建议只是草稿，必须先点**使用规则**，再点**保存**才生效。**取消**不保存。预览只处理本地示例，并使用有界子进程。
+
+Windows前端共享 `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`，与间隔、自启动和图标设置分开。规则只作用于可信原始对话名，之后才拼显示后缀。配置、替换引用、匹配超时、空白／控制字符／通用名结果、超长输出或孤立UTF-16代理项，均回退**完整原始来源名**，不使用中途结果。共用工具每条正则限制100毫秒、整条链500毫秒；调用方对规则worker设置1500毫秒期限，排队和调度仍可能增加耗时。相同原名及规则签名复用成功／回退缓存，不每秒重启worker。
+
+保存规则从raw缓存重新派生已知显示，不重置来源读取截止时间。重绘仍核验同一窗口身份及“当前标题等于本实例最后写入值”，保留外部手工标题。运行期 `title-rule-sources.bin` 包含私人对话名，不应发布。
+
+已建立客户端后，显示签名同时包含规则内容及worker文件的存在性、大小和修改时间；补回同路径worker可让相同raw重新格式化，不为此多读来源。C#主程序把共用规则程序集作为启动依赖；缺失时须先补齐配套文件再启动，不能只复制主EXE。
+
+参见[名称替换帮助](../../docs/name-replacement.zh-CN.md)及打包的[本地HTML帮助](../../docs/name-replacement.zh-CN.html)。
+
+### 新功能验证边界
+
+共用工具已有Unicode／CLI纯测试，覆盖整链回退和孤立代理项；注入后端证明缓存重绘不增加来源读取。PowerShell5.1／7客户端检查使用私有文件与模拟窗口后端。编辑器效果图仅用虚构示例、从未显示的自有控件，模拟100%、125%、150%字体与几何，表头字形内容区完整；另以自有离屏NOACTIVATE／Hidden夹具核验候选的显式原生显示且前台不变。这些检查**不代表**新增正常桌面、登录启动、物理托盘菜单或全部实时UIA验收；下方早期真实窗口结果保留原日期和范围。
+
+### 构建依赖
+
+本分支 `Build.ps1` 先调用 `shared/windows/Build.ps1` 构建 `ChatGPT-TitleSync.Rules.exe`，再引用该程序集构建主程序。主程序、读取器和规则工具三个EXE须相邻，保留docs帮助及assets资源。规则CLI／编辑器不取得监控器互斥体，不注册自启动。
+
+
 ## 品牌与兼容性
 
 正式名称为 **ChatGPT 标题同步助手／ChatGPT-TitleSync**。保留 `Local\TdxChatGptTitleStandalone` 及 `.Stop`／`.Settings` 事件，确保旧独立版不能同时写标题。现有 `%LOCALAPPDATA%\ChatGPT-title` 数据位置与设置字段保持兼容。C# 的 `chatgpt-title-cache.json`、私有工作目录 `chatgpt-title-readers` 和诊断结构标识 `chatgpt-title-probe-v1` 也保留，用于兼容既有数据。下方历史真实窗口观察早于品牌与自启动修改；本次自有／离线检查另行注明范围。
@@ -44,7 +67,7 @@ Windows各实现共享 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` 下�
 
 ## 构建与运行
 
-Build.ps1 使用 Windows Framework64 编译器及 UIAutomation／WPF 引用，输出 AnyCPU EXE，不需要 MSVC。主程序及读取器两个 EXE 放在一起。保留仓库 assets 目录用于相对托盘图标；主 EXE 也会嵌入基准45。
+Build.ps1 使用 Windows Framework64 编译器及 UIAutomation／WPF 引用，输出 AnyCPU EXE，不需要 MSVC。主程序、读取器及规则工具三个EXE放在一起。保留仓库 assets 目录用于相对托盘图标；主 EXE 也会嵌入基准45。
 
 ```powershell
 powershell.exe -NoProfile -File .\Build.ps1
@@ -62,7 +85,7 @@ powershell.exe -NoProfile -File .\Build.ps1
 | App.cs | 托盘、设置、单实例及正常退出 |
 | TitleMonitor.cs | 三层调度、身份缓存、自有读取器生命周期及恢复 |
 | TitleReader.cs | 隔离来源读取；正常监听只取文档根 Name |
-| Build.ps1 | 构建 ChatGPT-TitleSync.exe 和 ChatGPT-TitleSync.Reader.exe |
+| Build.ps1 | 先构建共用规则工具，再构建ChatGPT-TitleSync.exe和ChatGPT-TitleSync.Reader.exe |
 
 ## 三层监听
 

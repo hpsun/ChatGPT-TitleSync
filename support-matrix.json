@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
-  "snapshot_date_beijing": "2026-11-11",
+  "snapshot_date_beijing": "2026-11-12",
   "project": "ChatGPT-TitleSync",
-  "project_state": "public_repository_file_publication_in_progress_user_approved_2026_11_11",
+  "project_state": "public_v0_1_0_preview_with_name_replacement_feature_branch_in_validation",
   "remote_repository_created": true,
-  "published": false,
+  "published": true,
   "autostart_configured": null,
   "icon_state": "baseline_45_with_eight_runtime_palettes",
   "language_count": 8,
@@ -1280,5 +1280,33 @@
     "explicit_zero_retained": true,
     "windows_max_command_characters": 260,
     "macos": "Experimental source; NSUserDefaults io.github.hpsun.ChatGPTTitleSync/AutoStartEnabled and same-label per-user LaunchAgent; not native-verified"
+  },
+  "publication_scope": "Existing v0.1.0 preview is public. Name-replacement branch is not a new Release; product name and version remain unchanged.",
+  "name_replacement": {
+    "state": "controlled_verification_in_progress",
+    "defaults": {
+      "rules": [],
+      "personal_presets": false,
+      "automatic_migration": false
+    },
+    "modes": [
+      "literal",
+      "regex"
+    ],
+    "source_examples": "already_verified_names_private_CTS1_snapshot",
+    "suggestions": "example_derived_user_selects_Use_rule_then_Save",
+    "companions": {
+      "windows": ".NET Framework Unicode worker/editor",
+      "macos": "Foundation worker/AppKit editor"
+    },
+    "verification": {
+      "shared_windows_cases": 31,
+      "shared_macos_cases": 30,
+      "macos_source_commit": "19cec8080908a15f0d0a8ccefa66209cb207bf71",
+      "macos_run": 43124672990,
+      "macos_ax_runtime": false,
+      "real_desktop_acceptance": false
+    },
+    "release": "not_created_for_this_feature"
   }
 }

@@ -1,4 +1,4 @@
-﻿// Optional ChatGPT native-caption presentation. UIA is confined to its child reader.
+// Optional ChatGPT native-caption presentation. UIA is confined to its child reader.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,8 +51,30 @@ namespace ChatGptTitle
 
     internal interface IChatGptTimedHeaderReader { void SetIntervalMilliseconds(int milliseconds); }
 
+    internal interface IChatGptNameRules
+    {
+        string Resolve(string raw);
+        void PublishSources(IDictionary<string,string> sources);
+    }
     internal sealed class ChatGptWindowTitleMonitor : IDisposable
     {
+        internal IChatGptNameRules NameRules { get; set; }
+        string DisplayName(string raw){return NameRules==null?raw:NameRules.Resolve(raw);}
+        void RefreshOwnedDisplay(IList<ChatGptTitleWindow> candidates,int expected)
+        {
+            if(NameRules==null)return;
+            foreach(var window in candidates)
+            {
+                Tracked state;Verified source;
+                if(!tracked.TryGetValue(window.Key,out state)||!verified.TryGetValue(window.Key,out source)||state.LastWritten==null||state.ManualCaption!=null)continue;
+                string current=windows.GetCaption(window);
+                if(current!=state.LastWritten||!windows.IsSame(window))continue;
+                string desired=DisplayName(source.Title)+" — ChatGPT";
+                if(current!=desired)WriteCaption(state,current,desired,expected,windows.ForegroundHwnd==window.Hwnd,"DisplayRulesChanged");
+            }
+            NameRules.PublishSources(candidates.Where(window=>verified.ContainsKey(window.Key)).ToDictionary(window=>window.Key,window=>verified[window.Key].Title));
+        }
+
         sealed class Tracked
         {
             internal ChatGptTitleWindow Window;
@@ -148,6 +170,7 @@ namespace ChatGptTitle
                 }
                 else StopActiveReader();
                 if(Allowed(expected))StartBackgroundIfDue(candidates,front,expected);
+                if(Allowed(expected))RefreshOwnedDisplay(candidates,expected);
                 SaveCache();
             }
         }
@@ -188,7 +211,7 @@ namespace ChatGptTitle
                 Verified cache;
                 if(state.ManualCaption!=null||!verified.TryGetValue(window.Key,out cache))return;
                 if(!GenericCaption(current)&&(state.LastWritten==null||current!=state.LastWritten))return;
-                string desired=cache.Title+" — ChatGPT";
+                string desired=DisplayName(cache.Title)+" — ChatGPT";
                 if(current!=desired)WriteCaption(state,current,desired,expected,false,"CacheReapplied");
             }
             catch{Log("Skipped",window,"NativeBackgroundFailed",true);}
@@ -224,7 +247,7 @@ namespace ChatGptTitle
                 if(!ValidTitle(title)){Log("Skipped",window,"HeaderInvalid",true);return;}
                 RememberVerified(window,title,observed);
                 if(state.ManualCaption!=null)return;
-                WriteCaption(state,current,title+" — ChatGPT",expected,true,"Changed");
+                WriteCaption(state,current,DisplayName(title)+" — ChatGPT",expected,true,"Changed");
             }
             catch{foregroundReadyKey=null;CancelBackground();Log("Skipped",window,"ReaderException",true);}
         }

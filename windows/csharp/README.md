@@ -5,6 +5,29 @@
 Windows tray application for **ChatGPT-TitleSync / ChatGPT 标题同步助手**, written in C# 5 / .NET Framework 4.x.
 
 
+## Name replacement — empty rules by default
+
+The tray **Name replacement… / 名称替换…** entry and the matching button in Settings open the shared Unicode editor. It starts with **no rules**: it does not remove vendor prefixes or extract brackets automatically. Enable individual rows and arrange their order. **Plain text / 普通文字** performs ordinal, case-sensitive global replacement and treats the replacement literally; **Regex / 正则** uses the Windows .NET engine and supports `$0`–`$99`, `${0}`–`${99}` and `$$`. Unsupported or nonexistent capture references are rejected.
+
+The current-conversation list reads the monitor's private **CTS1 source snapshot**, shows its timestamp and can refresh that file. It does not issue another ChatGPT/UIA read. A manual example remains available when the snapshot is missing or invalid. **Suggest rules** derives escaped candidates from the example or selected text, including prefix removal, separator content and paired delimiters. Suggestions are drafts: select **Use rule**, then **Save** to apply them. **Cancel** never saves. Preview runs against the local example only, in a bounded child process.
+
+Windows frontends share `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`, independent of interval, startup and icon settings. Rules run on the verified raw conversation name before the display suffix. An invalid configuration, replacement, match timeout, blank/control/generic result, overlong output or unpaired UTF-16 surrogate restores the **entire original raw name**, not a partially transformed value. The helper limits matching to 100 ms per regex and 500 ms per pipeline; callers enforce a 1,500 ms rule-worker deadline. Queueing and scheduling can add latency. Unchanged raw names and rule signatures reuse success/fallback caches instead of spawning workers every second.
+
+Saving rules re-derives known displays from raw caches without resetting source-read deadlines. A repaint still requires the same window identity and an owned caption equal to its last write; externally chosen titles remain protected. Runtime `title-rule-sources.bin` snapshots contain private conversation names and must not be published.
+
+After a client has been constructed, the display signature includes rule bytes plus worker existence, size and last-write time. Restoring that worker at the same path can reformat the same cached raw name without another source read. The C# application references the shared rules assembly as a startup dependency; restore the complete companion set before launching if it is missing. Copying only the main EXE is insufficient.
+
+See [name-replacement help](../../docs/name-replacement.md) and the packaged [local HTML help](../../docs/name-replacement.html).
+
+### New-feature verification boundary
+
+The new companion has pure Unicode/CLI tests, including whole-pipeline fallback and malformed surrogate output. Injected display-only checks prove cached repaint does not add a source read. PowerShell 5.1/7 client checks use private files and fake window backends. Editor renders use fictional examples and never-shown owned controls at 100%, 125% and 150% simulated font/geometry scales; header glyph bounds fit. A separate offscreen NOACTIVATE/Hidden check verifies the candidate's explicit native reveal without changing the foreground. These checks do **not** claim a new normal-desktop, sign-in, physical tray-menu or all-live-UIA acceptance run. Earlier real-window results below retain their original dates and scope.
+
+### Build dependency
+
+This branch’s `Build.ps1` first calls `shared/windows/Build.ps1` to build `ChatGPT-TitleSync.Rules.exe`, then references that assembly when compiling the main application. Keep the main app, reader and rules companion together, with packaged docs/help and assets. Rule CLI/editor entries do not acquire the monitor singleton or register startup.
+
+
 ## Branding and compatibility
 
 The public program name is **ChatGPT-TitleSync / ChatGPT 标题同步助手**. This rename keeps `Local\TdxChatGptTitleStandalone` and its `.Stop`/`.Settings` events unchanged, preventing an older standalone version from writing concurrently. Existing `%LOCALAPPDATA%\ChatGPT-title` storage and settings keys remain unchanged. C# also retains `chatgpt-title-cache.json`, the `chatgpt-title-readers` private work directory and diagnostic schema `chatgpt-title-probe-v1` for saved-data compatibility. The historical real-window observations below predate the branding and auto-start changes; newer owned/offline checks are scoped separately.
@@ -44,7 +67,7 @@ The menu item and settings checkbox have the control name `AutoStartEnabled`; so
 
 ## Build and run
 
-Build.ps1 uses the Windows Framework64 compiler and UIAutomation/WPF assemblies, produces AnyCPU executables, and requires no MSVC. Keep the main app and title-reader EXEs together. Preserve the repository assets directory for the relative tray icon; the main EXE embeds baseline 45.
+Build.ps1 uses the Windows Framework64 compiler and UIAutomation/WPF assemblies, produces AnyCPU executables, and requires no MSVC. Keep the main app, title reader and shared rules EXEs together. Preserve the repository assets directory for the relative tray icon; the main EXE embeds baseline 45.
 
 ```powershell
 powershell.exe -NoProfile -File .\Build.ps1
@@ -64,7 +87,7 @@ The tray provides **Enable window titles**, **扫描间隔设置… / Scan inter
 | App.cs | Tray, settings, singleton and normal exit |
 | TitleMonitor.cs | Three-layer scheduler, identity cache, owned helper lifetime and restoration |
 | TitleReader.cs | Isolated source reader; document-root Name only during normal monitoring |
-| Build.ps1 | Builds ChatGPT-TitleSync.exe and ChatGPT-TitleSync.Reader.exe |
+| Build.ps1 | Builds rules companion first, then ChatGPT-TitleSync.exe and ChatGPT-TitleSync.Reader.exe |
 
 ## Three-layer monitoring
 

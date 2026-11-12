@@ -622,7 +622,7 @@ on openNameReplacement:sender
         editorTask's setArguments:{"--edit", "--rules", rulesPath, "--sources", namesPath, "--help", helpFile}
         editorTask's setStandardOutput:(current application's NSFileHandle's fileHandleWithNullDevice())
         editorTask's setStandardError:(current application's NSFileHandle's fileHandleWithNullDevice())
-        editorTask's launch()
+        editorTask's |launch|()
     on error errorText
         my showError(errorText)
     end try

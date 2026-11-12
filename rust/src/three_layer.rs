@@ -19,6 +19,12 @@ pub struct Job {
 pub struct Entry {
     pub w: Window,
     pub title: String,
+    pub raw: String,
+    pub rule_epoch: u64,
+    pub pending_display: bool,
+    pub pending_foreground: bool,
+    pub pending_version: u64,
+    pub needs_fresh_source: bool,
     pub last: String,
     pub original: String,
     pub own: bool,
@@ -32,6 +38,7 @@ pub struct Cache<B: Backend> {
     pub readonly: bool,
     pub background: Duration,
     pub epoch: u64,
+    pub rules: Option<crate::name_rules::Client>,
     next_id: u64,
 }
 impl<B: Backend> Cache<B> {
@@ -42,6 +49,7 @@ impl<B: Backend> Cache<B> {
             readonly,
             background,
             epoch: 0,
+            rules: None,
             next_id: 0,
         }
     }
@@ -49,6 +57,12 @@ impl<B: Backend> Cache<B> {
         self.entries.entry(w.clone()).or_insert(Entry {
             w,
             title: String::new(),
+            raw: String::new(),
+            rule_epoch: 0,
+            pending_display: false,
+            pending_foreground: false,
+            pending_version: 0,
+            needs_fresh_source: false,
             last: String::new(),
             original: String::new(),
             own: false,
@@ -76,7 +90,14 @@ impl<B: Backend> Cache<B> {
                 continue;
             }
             let e = self.entries.get_mut(&w).unwrap();
-            if e.title.is_empty() || self.b.active(&w) {
+            if self
+                .rules
+                .as_ref()
+                .map(|r| e.pending_display || e.needs_fresh_source || e.rule_epoch != r.epoch)
+                .unwrap_or(false)
+                || e.title.is_empty()
+                || self.b.active(&w)
+            {
                 continue;
             }
             let current = match self.b.caption(&w) {
@@ -144,11 +165,11 @@ impl<B: Backend> Cache<B> {
         };
         if !j.foreground {
             if e.pending == j.id {
-                e.pending = 0;
+                e.pending = 0
             }
             e.next_bg = now + self.background;
         }
-        let title = match result {
+        let raw = match result {
             Ok(s) => s,
             Err(_) => return,
         };
@@ -159,9 +180,9 @@ impl<B: Backend> Cache<B> {
         } else if self.b.active(&j.w) || e.version != j.version {
             return;
         }
-        let title: String = title.chars().filter(|c| !c.is_control()).collect();
-        let title = title.trim();
-        if title.chars().count() > 240 {
+        let raw: String = raw.chars().filter(|c| !c.is_control()).collect();
+        let raw = raw.trim();
+        if raw.chars().count() > 240 {
             return;
         }
         let current = match self.b.caption(&j.w) {
@@ -171,11 +192,13 @@ impl<B: Backend> Cache<B> {
         if !self.b.same(&j.w) || (j.foreground && !self.b.active(&j.w)) {
             return;
         }
-        let previous = e.last.clone();
         e.version += 1;
         e.next_bg = now + self.background;
-        if generic(title) {
+        e.needs_fresh_source = false;
+        if generic(raw) {
+            e.raw.clear();
             e.title.clear();
+            e.pending_display = false;
             if e.own && current == e.last && !self.readonly {
                 let _ = self.b.set(&j.w, &current, &e.original);
             }
@@ -184,14 +207,117 @@ impl<B: Backend> Cache<B> {
             e.last.clear();
             return;
         }
-        let desired = if title.ends_with(" — ChatGPT") {
-            title.to_string()
+        e.raw = raw.into();
+        e.rule_epoch = 0;
+        e.pending_display = true;
+        e.pending_foreground = j.foreground;
+        e.pending_version = e.version;
+        self.resolve_source_display(&j.w);
+    }
+    fn resolve_source_display(&mut self, w: &Window) {
+        let (raw, pending, foreground, version) = match self.entries.get(w) {
+            Some(e) => (
+                e.raw.clone(),
+                e.pending_display,
+                e.pending_foreground,
+                e.pending_version,
+            ),
+            None => return,
+        };
+        if !pending {
+            return;
+        }
+        let value = match self.rules.as_mut() {
+            Some(r) => r.display(&raw),
+            None => Some(raw),
+        };
+        let value = match value {
+            Some(v) => v,
+            None => return,
+        };
+        let e = self.entries.get_mut(w).unwrap();
+        e.pending_display = false;
+        if e.version != version || !self.b.same(w) || self.b.active(w) != foreground {
+            e.needs_fresh_source = true;
+            return;
+        }
+        self.write_display(w, value, foreground, false);
+    }
+    fn poll_name_rules(&mut self, write: bool) {
+        let names: Vec<_> = self
+            .entries
+            .values()
+            .filter(|e| !e.raw.is_empty())
+            .map(|e| e.raw.clone())
+            .collect();
+        let mut source_keys: Vec<_> = self
+            .entries
+            .keys()
+            .map(|w| format!("{}|{}|{}|{}|{}", w.handle, w.pid, w.start, w.class, w.exe))
+            .collect();
+        source_keys.sort();
+        if let Some(r) = self.rules.as_mut() {
+            r.source_set_key = source_keys.join("\0");
+        }
+        let epoch = match self.rules.as_mut() {
+            Some(r) => {
+                r.poll(&names);
+                r.epoch
+            }
+            None => return,
+        };
+        if !write {
+            return;
+        }
+        let keys: Vec<_> = self.entries.keys().cloned().collect();
+        for w in keys {
+            let e = &self.entries[&w];
+            if e.raw.is_empty() || e.needs_fresh_source {
+                continue;
+            }
+            if e.pending_display {
+                self.resolve_source_display(&w);
+                continue;
+            }
+            if e.rule_epoch != epoch {
+                let raw = e.raw.clone();
+                if let Some(value) = self.rules.as_mut().unwrap().display(&raw) {
+                    let fg = self.b.active(&w);
+                    self.write_display(&w, value, fg, true);
+                }
+            }
+        }
+    }
+    fn write_display(&mut self, w: &Window, value: String, foreground: bool, owned_only: bool) {
+        if !self.b.same(w) || self.b.active(w) != foreground {
+            return;
+        }
+        let current = match self.b.caption(w) {
+            Ok(s) => s,
+            Err(_) => return,
+        };
+        if !self.b.same(w) {
+            return;
+        }
+        let e = match self.entries.get_mut(w) {
+            Some(e) => e,
+            None => return,
+        };
+        let previous = e.last.clone();
+        let desired = if value.ends_with(" — ChatGPT") {
+            value
         } else {
-            format!("{} — ChatGPT", title)
+            format!("{} — ChatGPT", value)
         };
         e.title = desired.clone();
+        if let Some(r) = self.rules.as_ref() {
+            e.rule_epoch = r.epoch
+        }
         if current == desired {
             e.last = desired;
+            return;
+        }
+        if owned_only && (!e.own || current != previous) {
             return;
         }
         if !generic(&current) && (previous.is_empty() || current != previous) {
@@ -203,12 +329,12 @@ impl<B: Backend> Cache<B> {
         if self.readonly {
             return;
         }
-        let written = if j.foreground {
-            self.b.set_active(&j.w, &current, &desired)
+        let result = if foreground {
+            self.b.set_active(w, &current, &desired)
         } else {
-            self.b.set_inactive(&j.w, &current, &desired)
+            self.b.set_inactive(w, &current, &desired)
         };
-        if written.is_ok() {
+        if result.is_ok() {
             if !e.own {
                 e.original = current
             }
@@ -331,6 +457,7 @@ pub fn run_live<B: Backend>(
             break;
         }
         paused.store(pause, Ordering::Relaxed);
+        cache.poll_name_rules(!pause);
         if pause {
             if !was_paused {
                 cache.epoch += 1;
@@ -393,6 +520,9 @@ pub fn run_live<B: Backend>(
     drop(bgtx);
     let _ = fg.join();
     let _ = bg.join();
+    if let Some(mut rules) = cache.rules.take() {
+        rules.close();
+    }
     cache.restore();
 }
 #[cfg(test)]
@@ -636,5 +766,206 @@ mod tests {
         );
         assert!(reads.load(Ordering::Relaxed) >= 3);
         assert!(discoveries.load(Ordering::Relaxed) >= 2);
+    }
+    #[test]
+    fn rule_display_keeps_raw_lease_and_source_deadlines() {
+        use crate::name_rules::{Client, Memo};
+        let dir = std::env::temp_dir().join(format!(
+            "cts-rule-cache-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let rules = dir.join("rules.json");
+        std::fs::write(&rules, b"first").unwrap();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let count = calls.clone();
+        let client = Client::at(
+            dir.clone(),
+            rules.clone(),
+            None,
+            Arc::new(move |_, _, _, bytes, _, raw| {
+                count.fetch_add(1, Ordering::Relaxed);
+                Memo {
+                    value: format!("{} {}", raw, String::from_utf8_lossy(bytes)),
+                    status: "ok".into(),
+                }
+            }),
+        );
+        let mut c = fixture();
+        c.rules = Some(client);
+        let w = c.b.ws[0].clone();
+        observe(&mut c, w.clone(), true, "Example", Instant::now());
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Example first — ChatGPT" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let e = &c.entries[&w];
+        let (deadline, version, epoch) = (e.next_bg, e.version, c.epoch);
+        assert_eq!(e.raw, "Example");
+        assert_eq!(e.original, "ChatGPT");
+        std::fs::write(&rules, b"second").unwrap();
+        c.rules.as_mut().unwrap().refresh_now();
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Example second — ChatGPT" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let e = &c.entries[&w];
+        assert_eq!(e.raw, "Example");
+        assert_eq!(e.original, "ChatGPT");
+        assert_eq!(e.next_bg, deadline);
+        assert_eq!(e.version, version);
+        assert_eq!(c.epoch, epoch);
+        let before = calls.load(Ordering::Relaxed);
+        for _ in 0..10 {
+            c.poll_name_rules(true);
+            c.maintain();
+        }
+        assert_eq!(calls.load(Ordering::Relaxed), before);
+        c.b.caps.insert(11, "Manual title".into());
+        std::fs::write(&rules, b"third").unwrap();
+        c.rules.as_mut().unwrap().refresh_now();
+        let until = Instant::now() + Duration::from_secs(2);
+        loop {
+            c.poll_name_rules(true);
+            if c.entries[&w].title.contains("third") {
+                break;
+            }
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        assert_eq!(c.b.caps[&11], "Manual title");
+        c.restore();
+        assert_eq!(c.b.caps[&11], "Manual title");
+    }
+    #[test]
+    fn stale_rule_worker_is_discarded_and_fallback_is_memoized() {
+        use crate::name_rules::{Client, Memo};
+        let dir = std::env::temp_dir().join(format!(
+            "cts-rule-stale-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let rules = dir.join("rules.json");
+        std::fs::write(&rules, b"old").unwrap();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let count = calls.clone();
+        let client = Client::at(
+            dir.clone(),
+            rules.clone(),
+            None,
+            Arc::new(move |cancel, _, _, bytes, _, raw| {
+                count.fetch_add(1, Ordering::Relaxed);
+                if bytes == b"old" {
+                    while !cancel.load(Ordering::Relaxed) {
+                        thread::sleep(Duration::from_millis(1));
+                    }
+                    return Memo {
+                        value: "STALE".into(),
+                        status: "ok".into(),
+                    };
+                }
+                Memo {
+                    value: raw.into(),
+                    status: "fallback:Fixture".into(),
+                }
+            }),
+        );
+        let mut c = fixture();
+        c.rules = Some(client);
+        let w = c.b.ws[0].clone();
+        observe(&mut c, w.clone(), true, "Current", Instant::now());
+        c.poll_name_rules(true);
+        std::fs::write(&rules, b"new").unwrap();
+        c.rules.as_mut().unwrap().refresh_now();
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Current — ChatGPT" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let before = calls.load(Ordering::Relaxed);
+        for _ in 0..10 {
+            c.poll_name_rules(true)
+        }
+        assert_eq!(calls.load(Ordering::Relaxed), before);
+        assert!(!c.b.caps[&11].contains("STALE"));
+    }
+    #[test]
+    fn companion_recovery_keeps_source_generation_and_deadlines() {
+        use crate::name_rules::{Client, Memo};
+        let dir = std::env::temp_dir().join(format!(
+            "cts-helper-recovery-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let rules = dir.join("rules.json");
+        let helper = dir.join("owned-helper-fixture");
+        std::fs::write(&rules, b"unchanged").unwrap();
+        let client = Client::at(
+            dir.clone(),
+            rules.clone(),
+            Some(helper.clone()),
+            Arc::new(|_, _, helper, _, _, raw| {
+                if helper.map_or(false, |p| p.is_file()) {
+                    Memo {
+                        value: format!("{} formatted", raw),
+                        status: "ok".into(),
+                    }
+                } else {
+                    Memo {
+                        value: raw.into(),
+                        status: "fallback:MissingHelper".into(),
+                    }
+                }
+            }),
+        );
+        let mut c = fixture();
+        c.rules = Some(client);
+        let w = c.b.ws[0].clone();
+        observe(&mut c, w.clone(), true, "Example", Instant::now());
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Example — ChatGPT" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let e = &c.entries[&w];
+        let (deadline, version, source_epoch, display_epoch) = (
+            e.next_bg,
+            e.version,
+            c.epoch,
+            c.rules.as_ref().unwrap().epoch,
+        );
+        std::fs::write(&helper, b"owned fake helper").unwrap();
+        c.rules.as_mut().unwrap().refresh_now();
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Example formatted — ChatGPT" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let e = &c.entries[&w];
+        assert!(c.rules.as_ref().unwrap().epoch > display_epoch);
+        assert_eq!(c.epoch, source_epoch);
+        assert_eq!(e.version, version);
+        assert_eq!(e.next_bg, deadline);
+        assert_eq!(e.raw, "Example");
+        assert_eq!(e.original, "ChatGPT");
     }
 }

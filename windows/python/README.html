@@ -9,7 +9,7 @@
 <ul>
 <li>Windows and a Python 3 interpreter. The script uses only the standard library: ctypes, subprocess, pathlib, and related modules.</li>
 <li>Windows UI Automation and Win32 APIs supplied by the OS.</li>
-<li>No pythonnet, external COM package, C# helper, or model/API connection.</li>
+<li>No pythonnet, external COM package or model/API connection. Optional name replacement uses the separately built shared C# companion below.</li>
 </ul>
 <p>Keep a python.exe next to pythonw.exe when using the latter: the source-mode worker chooses the console interpreter to capture its JSON output.</p>
 <h2 id="run-from-source">Run from source</h2>
@@ -153,4 +153,23 @@ python chatgpt_window_titles.py --icon-self-test
 <h2 id="targeted-real-windows-acceptance-2026-11-11">Targeted real Windows acceptance — 2026-11-11</h2>
 <p>Final executable passed source/header and later native-title agreement, FG reset 161ms, BG reset 379ms and three generic captions after exit. Two earlier guards skipped injection, not product failures. Settings recheck independently proved persisted/reopened 7/17 and restored 2/5 in one process; the earlier 33/10 ambiguity is preserved without a product-defect conclusion. No Mac validation.</p>
 <p>One accepted FG and one BG reset; the same three existing windows were reused and matched their original generic captions after exit. Native settings/menu-handler checks do not establish physical shell right-click, long-term use or installation acceptance. See the project support matrix for the precise scope.</p>
-<!-- END TARGETED_WINDOWS_REAL --></body></html>
+<!-- END TARGETED_WINDOWS_REAL -->
+
+<h2 id="name-replacement-shared-unicode-companion">Name replacement — shared Unicode companion</h2>
+<p>The tray <strong>Name replacement… / 名称替换…</strong> and the settings window's same-named button open the <strong>same</strong> shared editor: ordered literal/regex rows, preview, already-read raw-name dropdown, generic regex suggestions and local help. Suggestions require explicit <strong>Use rule</strong>, then Save. Defaults are empty/identity; no personal or machine-specific presets are built in or migrated.</p>
+<p>Build the companion first, from this branch directory:</p>
+<pre><code>powershell.exe -NoProfile -ExecutionPolicy Bypass -File "..\..\shared\windows\Build.ps1"
+</code></pre>
+<p>This builds <a href="../../shared/windows/TitleRules.cs">TitleRules.cs</a> with the Windows .NET Framework compiler. Retain <code>ChatGPT-TitleSync.Rules.exe</code> beside the main EXE, or at the exact repository location <code>../../shared/windows</code>; it is never searched through PATH or a preference-supplied command. Keep <a href="../../docs/name-replacement.md">English help</a> and <a href="../../docs/name-replacement.zh-CN.md">中文帮助</a>, including their HTML siblings, available locally.</p>
+<p>Rules are separate at <code>%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json</code>. Reading, opening and previewing do not create it; only successful editor Save writes it. Timing/startup/icon saves do not overwrite rules. No file means unchanged raw name. Existing rules plus an unavailable companion mean whole-raw fallback with a diagnostic.</p>
+<p>Formatting runs on the <strong>verified raw name before</strong> the standard <code>— ChatGPT</code> suffix. Raw-source cache and original native-caption restoration stay unchanged. A separate display revision refreshes only a caption still owned by this run and equal to its last write, protecting manual and generic captions. Normal source schedules and 1-second cached repair remain separate. A nonblocking, pinned, caller-owned format child has a 1500 ms deadline; unchanged success/fallback is cached and stale results are discarded. Signatures are checked on a bounded 1-second cadence without extra ChatGPT reads.</p>
+<p><code>title-rule-sources.bin</code> is a <strong>private</strong> CTS1 snapshot in the monitor runtime/settings directory. It contains verified raw names only, is updated on name/window-set changes and must not be committed or published. It populates the editor dropdown without extra UIA reads.</p>
+<p>Keep <a href="name_replacement.py">name_replacement.py</a> beside the main source. PyInstaller follows its static import; a custom spec must retain it, or add <code>--hidden-import name_replacement</code>. The shared rules EXE remains external. After the onedir build above:</p>
+<pre><code>$bundle = ".\build\dist\ChatGPTTitleSyncPython"
+Copy-Item "..\..\shared\windows\ChatGPT-TitleSync.Rules.exe" $bundle
+New-Item -ItemType Directory -Force "$bundle\docs" | Out-Null
+Copy-Item "..\..\docs\name-replacement.html","..\..\docs\name-replacement.zh-CN.html" "$bundle\docs"
+python -B tests/test_name_replacement.py -v
+</code></pre>
+<p>The adapter passed 14 owned-file/process tests plus 8 private checks with the real shared format companion. The checks include Unicode CTS1, exact fallback, cache invalidation, timeout, stale generations and simulated ownership guards.</p>
+<p>These are format/protocol and controlled-ownership checks. They do not open the editor, start a normal resident, read ChatGPT, change production startup/preferences or claim new real-desktop/menu acceptance. The linked help defines limits, strict replacement references, OS regex differences and complete-raw fallback.</p></body></html>

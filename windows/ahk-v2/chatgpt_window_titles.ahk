@@ -11,6 +11,7 @@
 ; https://learn.microsoft.com/windows/win32/api/uiautomationclient/
 ; https://www.autohotkey.com/docs/v2/lib/ComCall.htm
 
+global NR := 0
 global G := {States: Map(), Busy: false, Closing: false, Child: 0, Mutex: 0, StopEvent: 0,
     ReadOnly: HasArg("--read-only"), Rotation: 0,
     LogDir: EnvGet("LOCALAPPDATA") "\TdxChatGptTitles", Recent: Map()} ; Keep the existing log directory for compatibility.
@@ -85,6 +86,7 @@ try {
     }
     A_TrayMenu.Delete()
     A_TrayMenu.Add("扫描间隔设置…", (*) => ShowIntervalSettings())
+    A_TrayMenu.Add("名称替换…", (*) => RulesEditor())
     A_TrayMenu.Add("开机自启动",TrayAutoStart)
     A_TrayMenu.Disable("开机自启动")
     G.AutoStartMenuReady:=true
@@ -100,6 +102,10 @@ try {
     G.BackgroundMs := Round(backgroundInterval*1000), G.BgBusy := false, G.NativeBusy := false, G.NextNative := 0, G.BgChild := 0
     G.SettingsFile:=EnvGet("LOCALAPPDATA") "\ChatGPT-title\ahk-v2\settings.ini", G.SettingsRevision:=0 ; Keep legacy settings so existing user preferences continue to load.
     LoadIntervalSettings()
+    if !HasArg("--once") {
+        RulesInit()
+        SetTimer(RulesTick,50)
+    }
     G.AutoStartAllowed:=!G.ReadOnly && !HasArg("--once")
     if G.AutoStartAllowed {
         try AutoStartInitialize()
@@ -315,7 +321,7 @@ Poll() {
             }
             if !Active(id)
                 continue
-            title := RegExReplace(result["Title"], "[\x00-\x1F\x7F]"), desired := title " — ChatGPT"
+            title := RegExReplace(result["Title"], "[\x00-\x1F\x7F]"), desired := RulesDisplay(title) " — ChatGPT"
             output.Push(Map("Hwnd", id["Hwnd"], "Success", 1, "Title", title))
             state.VerifiedTitle := title, state.NextBackground := Tick()+G.BackgroundMs
             if G.ReadOnly || (state.HasOwnProp("ProtectedCustom") && state.ProtectedCustom)
@@ -383,7 +389,7 @@ NativeMaintenance() {
             }
             if Active(id) || !Same(id) || Caption(id["Hwnd"]) != current
                 continue
-            desired := title " — ChatGPT"
+            desired := RulesDisplay(title) " — ChatGPT"
             if WriteCaption(id,desired) {
                 state.Original := current, state.Last := desired, state.Owned := true, state.ProtectedCustom := false
                 LogEvent("BackgroundCacheRestored",id,"NativeGenericReset")
@@ -429,7 +435,7 @@ BackgroundPoll() {
                 state.Owned := false, state.Original := "", state.Last := "", state.ProtectedCustom := true
                 break
             }
-            desired := title " — ChatGPT"
+            desired := RulesDisplay(title) " — ChatGPT"
             if current = desired
                 break
             original := state.Owned && current = state.Last ? state.Original : current
@@ -519,6 +525,8 @@ RestoreOne(state) {
 }
 ExitRestore(*) {
     global G
+    SetTimer(RulesTick,0)
+    RulesClose()
     ThemeDispose()
     G.Closing := true
     SetTimer(Poll, 0)
@@ -829,6 +837,7 @@ ShowIntervalSettings(show:=true) {
     close:=form.AddButton("x+10 w110","Cancel")
     save.Move(80,290),close.Move(200,290)
     ThemeAddControls(form)
+    form.AddButton("x20 y335 w280","Name replacement...").OnEvent("Click",(*)=>RulesEditor())
     dispose:=(*)=>(form.Destroy(),G.SettingsGui:=0,G.SettingsHwnd:=0)
     save.OnEvent("Click",SaveSettings)
     close.OnEvent("Click",dispose)
@@ -1166,3 +1175,5 @@ AutoStartSelfTest() {
 
 #Include %A_ScriptDir%\IconTheme.ahk
 
+
+#Include NameReplacement.ahk

@@ -2,7 +2,27 @@
 
 [简体中文](CHANGELOG.zh-CN.md) · [HTML](CHANGELOG.html) · [Known issues](KNOWN_ISSUES.md) · [Project home](README.md)
 
-These entries record local development and verification dates in **Beijing time** before the first public source publication. They are not historical Git commit dates, version tags, or invented GitHub issue numbers. Future published fixes should link the real issue, commit or release after it exists.
+Entries use actual development and verification dates in **Beijing time**; these are not invented Git commit dates, version tags or issue numbers. Historical **candidate**, **pending** and **source-only** statements below describe their dated checkpoints. The **Unreleased** entry at the top records the current scope and verified CI evidence; earlier statements do not mean that all Mac sources remain uncompiled.
+
+## Unreleased — 2026-11-12
+
+### Name replacement
+
+- Add ordered **plain-text and regular-expression** rules for the displayed conversation name, before the usual ` — ChatGPT` suffix. Rules start empty; no private/machine-specific rules are bundled, imported or migrated. Missing configuration means identity.
+- Select an already-observed current name from the private CTS1 snapshot, or enter a manual sample. Preview and generic suggestions do not save or apply rules: explicitly choose **Use rule**, then **Save**. Cancel leaves saved rules unchanged; reading/opening/previewing does not create configuration. The selector performs no extra ChatGPT source read.
+- Frontends share one audited Unicode companion per OS: Windows .NET and macOS Foundation. Keep the required companion and local help with the selected frontend. Asynchronous formatting has a caller-owned **1500 ms** deadline; failures return the **entire original raw name**, never a partial result. Raw-source caches, original-caption restoration and manual-caption guards remain separate from display revisions. Rule changes do not reset source schedules. See [name replacement help](docs/name-replacement.md).
+
+### Verification status
+
+- **Windows:** the final shared format-CLI suite passed **31/31**. This is one common suite, counted once, not 31 per language or a fresh acceptance of all frontend desktop behavior.
+- **macOS:** [checkpoint `19cec808`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990) and [checkpoint `97858710`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444) compiled the Foundation helper and new Swift/Objective-C client integrations and passed the same **30 common format-CLI cases**. Go/Rust still used older baseline adapters at those checkpoints; these results do not establish their new adapter acceptance.
+- The latest Mac **31-case** suite, **five I/O-boundary cases**, client missing-helper recovery, the AppleScript `|launch|` change and the new adapter integrations await the next complete integration CI result. Actual ChatGPT **AX/title writes, editor/menu GUI and login behavior remain unverified**. Mac routes remain Experimental; native compilation and CLI execution are not AX/runtime acceptance.
+
+### README illustration and version
+
+Replace the rounded-card taskbar illustration with matching flat gray **Windows 10-style** taskbars before and after. Captions use one uniform normal-weight font/style; long text is ellipsized in narrow buttons. Each system accent line is **228/234 px = 97.4%** of its button width, with identical color and geometry before/after. The real ChatGPT application icon is retained; all conversation names are fictional **Example chat A/B/C**. The image is clearly an illustration, and Windows controls button width, font, grouping and theme.
+
+Product version remains **0.1.0**. These changes have **no new Release**; the existing public preview is not a release of this unreleased feature.
 
 ## 2026-11-11 — AppleScript reserved-selector candidate
 

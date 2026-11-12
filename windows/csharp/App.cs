@@ -148,6 +148,12 @@ namespace ChatGptTitle {
    form.Controls.Add(new Label{Text="图标模式 / Icon mode",AutoSize=true,Location=new Point(16,147)});form.Controls.Add(mode);form.Controls.Add(new Label{Text="固定配色 / Fixed color",AutoSize=true,Location=new Point(16,189)});form.Controls.Add(fixedIcon);form.Controls.Add(new Label{Text="随机换色 / Random period",AutoSize=true,Location=new Point(16,231)});form.Controls.Add(period);return form;
   }
  }
+ internal sealed class NameRuleAdapter:IChatGptNameRules {
+  readonly TitleSyncRules.RulesClient client;
+  internal NameRuleAdapter(TitleSyncRules.RulesClient value){client=value;}
+  public string Resolve(string raw){return client.Resolve(raw);}
+  public void PublishSources(IDictionary<string,string> sources){try{client.PublishSources(sources);}catch{}}
+ }
  static class App {
   // Keep the legacy singleton and events so old and renamed versions cannot write concurrently.
   const string MutexName="Local\\TdxChatGptTitleStandalone", StopName=MutexName+".Stop";
@@ -206,7 +212,9 @@ namespace ChatGptTitle {
      using(var settingsEvent=new EventWaitHandle(false,EventResetMode.AutoReset,MutexName+".Settings"))
      using(var marshal=new Control())
      using(var tray=new NotifyIcon())
+     using(var nameRules=new TitleSyncRules.RulesClient(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"ChatGPT-TitleSync.Rules.exe"),TitleSyncRules.Engine.DefaultRulesPath,directory))
      using(var monitor=new ChatGptWindowTitleMonitor(config,delegate{return false;},helper,directory)) {
+      monitor.NameRules=new NameRuleAdapter(nameRules);
       stop.Reset();IntPtr handle=marshal.Handle;
       Form intervalForm=null;Icon settingsArtwork=null;Icon artwork=null;string themeFolder=ThemeDirectory();var random=new Random();
       var themes=new TitleSyncThemes.ThemeService(TitleSyncThemes.ThemeService.PreferenceKey,delegate{return DateTimeOffset.Now;},delegate(int count){return random.Next(count);},delegate(int id){using(var checkedIcon=LoadThemeIcon(themeFolder,id)){}},null);
@@ -226,11 +234,15 @@ namespace ChatGptTitle {
        } catch(Exception ex){config.ChatGptWindowTitleEnabled=previous;MessageBox.Show(ex.Message,"ChatGPT-TitleSync");}
       };
       menu.Items.Add(enabled);
+      ToolStripMenuItem nameMenu=null;
       var intervals=new ToolStripMenuItem("扫描间隔设置… / Scan intervals…");
       intervals.Click+=delegate{if(intervalForm!=null&&!intervalForm.IsDisposed){ScanSettings.ShowPrepared(intervalForm);return;}intervalForm=ScanSettings.CreateForm(config,startupState.Enabled,themes.Current,delegate(int foreground,int background,bool autoStart,TitleSyncThemes.ThemeChoice requested){
        Icon prepared=ScanSettings.ApplyThemeSettings(settings,config,monitor,startupState,themes,foreground,background,autoStart,requested,delegate(int id){return LoadThemeIcon(themeFolder,id);});try{useIcon(prepared);prepared=null;}finally{if(prepared!=null)prepared.Dispose();}
-      });if(artwork!=null){settingsArtwork=(Icon)artwork.Clone();intervalForm.Icon=settingsArtwork;}intervalForm.FormClosed+=delegate{if(settingsArtwork!=null){settingsArtwork.Dispose();settingsArtwork=null;}};ScanSettings.ShowPrepared(intervalForm);};
+      });var nameButton=new Button{Name="NameReplacement",Text="Name replacement… / 名称替换…",Location=new Point(16,365),Size=new Size(250,28)};nameButton.Click+=delegate{nameMenu.PerformClick();};intervalForm.Controls.Add(nameButton);if(artwork!=null){settingsArtwork=(Icon)artwork.Clone();intervalForm.Icon=settingsArtwork;}intervalForm.FormClosed+=delegate{if(settingsArtwork!=null){settingsArtwork.Dispose();settingsArtwork=null;}};ScanSettings.ShowPrepared(intervalForm);};
       menu.Items.Add(intervals);
+      Action openNameRules=delegate{try{string language=System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName=="zh"?"name-replacement.zh-CN.html":"name-replacement.html";string help= new[]{Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"docs",language),Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"..","..","docs",language)),Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"..","docs",language))}.FirstOrDefault(File.Exists);if(help==null)throw new FileNotFoundException("Packaged name-replacement help is unavailable.");nameRules.OpenEditor(help);}catch(Exception error){MessageBox.Show(error.Message,"ChatGPT-TitleSync — Name replacement");}};
+      nameMenu=new ToolStripMenuItem("Name replacement… / 名称替换…");nameMenu.Click+=delegate{openNameRules();};menu.Items.Add(nameMenu);
+
       menu.Items.Add(startupState.CreateMenu(delegate{return intervalForm;},delegate(Exception e){MessageBox.Show(e.Message,"ChatGPT-TitleSync — Auto-start");}));
       menu.Items.Add("Exit and restore titles",null,delegate{stop.Set();Application.ExitThread();});
       tray.ContextMenuStrip=menu;tray.Visible=true;monitor.Start();

@@ -562,6 +562,25 @@
       },
       "expected": "Original name",
       "exit_code": 2
+    },
+    {
+      "id": "split-surrogate-fallback",
+      "raw": "😀",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^.",
+            "replacement": ""
+          }
+        ]
+      },
+      "expected": "😀",
+      "exit_code": 2
     }
   ]
 }

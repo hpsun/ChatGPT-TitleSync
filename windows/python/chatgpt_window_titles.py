@@ -21,6 +21,7 @@ import sys
 import time
 import uuid
 from icon_preferences import IconPreferences
+from name_replacement import NameReplacement
 
 # Keep console/piped metadata Unicode-safe, including conversation emoji.
 for _stream in (sys.stdout, sys.stderr):
@@ -326,7 +327,7 @@ def restore(record, emit):
             emit("restore_failed", info, Error=str(error))
     return False
 
-def update_caption(info, title, records, emit):
+def update_caption(info, title, records, emit, rules=None):
     """Acquire ownership only after verified write; relinquish external changes."""
     if not is_active(info):
         emit("inactive_result_discarded", info)
@@ -352,7 +353,7 @@ def update_caption(info, title, records, emit):
             records.pop(ident, None)
         emit("generic_page", info)
         return
-    wanted = title + " — ChatGPT"
+    wanted = (rules.display(title) if rules else title) + " — ChatGPT"
     if current == wanted:
         return
     try:
@@ -367,7 +368,7 @@ def update_caption(info, title, records, emit):
     except Exception as error:
         emit("write_failed", info, Error=str(error))
 
-def maintain_background(known, records, emit, readonly=False):
+def maintain_background(known, records, emit, readonly=False, rules=None):
     """Restore only a generic native reset from a previously verified name."""
     for ident, item in list(known.items()):
         info = item["Identity"]
@@ -392,7 +393,7 @@ def maintain_background(known, records, emit, readonly=False):
             CUSTOM_BACKOFF[ident] = float("inf")
             continue  # another owner or a custom caption; never overwrite it
         CUSTOM_BACKOFF.pop(ident,None)
-        desired = title + " — ChatGPT"
+        desired = (rules.display(title) if rules else title) + " — ChatGPT"
         try:
             if is_active(info) or key(identity(info["Hwnd"])) != ident or caption(info["Hwnd"]) != current:
                 continue
@@ -402,7 +403,7 @@ def maintain_background(known, records, emit, readonly=False):
         except Exception as error:
             emit("background_write_failed", info, Error=str(error))
 
-def apply_background(info, title, known, records, emit, readonly=False):
+def apply_background(info, title, known, records, emit, readonly=False, rules=None):
     ident = key(info)
     if key(identity(info["Hwnd"])) != ident or is_active(info):
         emit("background_stale_result_discarded", info)
@@ -422,7 +423,7 @@ def apply_background(info, title, known, records, emit, readonly=False):
         CUSTOM_BACKOFF[ident] = float("inf")
         return
     CUSTOM_BACKOFF.pop(ident,None)
-    desired = title + " — ChatGPT"
+    desired = (rules.display(title) if rules else title) + " — ChatGPT"
     if current == desired:
         return
     try:
@@ -433,6 +434,30 @@ def apply_background(info, title, known, records, emit, readonly=False):
         emit("background_source_updated",info)
     except Exception as error:
         emit("background_write_failed",info,Error=str(error))
+
+def refresh_owned_displays(known, records, emit, rules):
+    """A display-only change never claims a generic reset or a manual caption."""
+    for ident, record in list(records.items()):
+        item = known.get(ident)
+        if not item or key(identity(record["Identity"]["Hwnd"])) != ident:
+            continue
+        current = caption(record["Identity"]["Hwnd"])
+        if current != record["Last"]:
+            continue
+        raw = item.get("Title", "")
+        if not raw.strip() or raw.strip().casefold() == "chatgpt":
+            continue
+        wanted = rules.display(raw) + " — ChatGPT"
+        if wanted != current:
+            try:
+                if caption(record["Identity"]["Hwnd"]) != current:
+                    continue
+                set_caption(record["Identity"], wanted)
+                record["Last"] = wanted  # Original and verified raw are unchanged.
+                emit("name_replacement_display_updated", record["Identity"])
+            except Exception as error:
+                emit("name_replacement_fallback", record["Identity"], Code="display_write_failed")
+
 
 class ReaderSlot:
     """One owned process per role; waiting never blocks the scheduler."""
@@ -619,9 +644,10 @@ def startup_error(message):
 class NativeTray:
     """Standard-library Win32 tray. Its UI never blocks the monitor scheduler."""
     CALLBACK = 0x8000 + 81
-    def __init__(self, settings, stop, visible=True, autostart=None, icons=None):
+    def __init__(self, settings, stop, visible=True, autostart=None, icons=None, rules=None):
         self.settings, self.stop, self.visible = settings, stop, visible
         self.autostart, self.auto_checkbox = autostart, 0
+        self.rules = rules
         self.icons, self.theme_controls, self.last_settings_error = icons, [], None
         self.ready = threading.Event()
         self.error = None
@@ -786,6 +812,8 @@ class NativeTray:
                     u32.SendMessageW(combo,0x143,0,C.cast(value,PTR).value)
                 u32.SendMessageW(combo,0x14e,selected,0)
                 self.theme_controls.append(combo)
+            u32.CreateWindowExW(0,"BUTTON","名称替换 / Name replacement…",0x50010000,
+                15,330,245,28,self.dialog,2120,instance,None)
             theme_fields_enabled()
             if icon:
                 u32.SendMessageW(self.dialog,0x80,0,icon)
@@ -797,10 +825,22 @@ class NativeTray:
         self.open_settings = settings_dialog
         self.dismiss_settings = dismiss
 
+        def open_rules():
+            try:
+                if self.rules is None:
+                    raise RuntimeError("Name replacement is unavailable in this mode.")
+                self.rules.open_editor()
+            except Exception as error:
+                if not self.visible:
+                    self.last_settings_error = str(error)
+                    return
+                u32.MessageBoxW(self.dialog or self.hwnd, str(error), "ChatGPT-TitleSync — Name replacement", 0x10)
+
         def popup():
             menu=u32.CreatePopupMenu()
             try:
                 u32.AppendMenuW(menu,0,1001,"扫描间隔设置… / Scan intervals…")
+                u32.AppendMenuW(menu,0,1004,"名称替换… / Name replacement…")
                 u32.AppendMenuW(menu,self.autostart.menu_flags() if self.autostart else 1,1003,"开机自启动 / Start at sign-in")
                 u32.AppendMenuW(menu,0x800,0,"ChatGPT 标题同步助手 — Python")
                 u32.AppendMenuW(menu,0,1002,"退出并恢复标题 / Exit and restore")
@@ -808,6 +848,7 @@ class NativeTray:
                 command=u32.TrackPopupMenu(menu,0x180,pt.x,pt.y,0,self.hwnd,None)
                 if command==1001: settings_dialog()
                 elif command==1003: toggle_startup()
+                elif command==1004: open_rules()
                 elif command==1002: k32.SetEvent(self.stop);u32.DestroyWindow(self.hwnd)
                 u32.PostMessageW(self.hwnd,0,0,0)
             finally: u32.DestroyMenu(menu)
@@ -825,12 +866,14 @@ class NativeTray:
                 if message==0x111 and hwnd==self.hwnd:
                     if (wparam & 0xffff)==1001: settings_dialog();return 0
                     if (wparam & 0xffff)==1003: toggle_startup();return 0
+                    if (wparam & 0xffff)==1004: open_rules();return 0
                     if (wparam & 0xffff)==1002:
                         k32.SetEvent(self.stop);u32.DestroyWindow(self.hwnd);return 0
                 if message==0x111 and hwnd==self.dialog:
                     command=wparam & 0xffff
                     if command==2110 and (wparam>>16)==1: theme_fields_enabled();return 0
                     if command==2002: dismiss();return 0
+                    if command==2120: open_rules();return 0
                     if command==2001:
                         first,second=(caption(h) for h in self.controls)
                         prior = self.autostart.enabled if self.autostart else None
@@ -1114,7 +1157,8 @@ def main():
     autostart=AutoStart() if not args.once and not args.read_only else None
     asset_root=icon_asset_root()
     icons=IconPreferences(AutoStart._read_value,AutoStart._write_value,asset_root,log=emit) if autostart else None
-    tray=NativeTray(settings,stop,autostart=autostart,icons=icons) if not args.once and not args.no_tray else None
+    rules=NameReplacement(settings.path,emit) if not args.once else None
+    tray=NativeTray(settings,stop,autostart=autostart,icons=icons,rules=rules) if not args.once and not args.no_tray else None
     known, background_due = {}, {}
     fg, bg = None, None
     next_native = next_foreground = 0.0
@@ -1132,6 +1176,8 @@ def main():
         live = []
         while k32.WaitForSingleObject(stop, 0) != 0:
             now = time.monotonic()
+            if rules and rules.pump() and not args.read_only:
+                refresh_owned_displays(known,records,emit,rules)
             foreground_interval,background_interval,current_revision=settings.snapshot()
             if current_revision != settings_revision:
                 for slot in (fg,bg):
@@ -1151,7 +1197,7 @@ def main():
                 for stale in list(background_due):
                     if stale not in live_keys:
                         background_due.pop(stale,None)
-                maintain_background(known,records,emit,args.read_only)
+                maintain_background(known,records,emit,args.read_only,rules)
             active = next((i for i in live if is_active(i)),None)
             if bg and is_active(bg.info):
                 bg.cancel()
@@ -1173,14 +1219,16 @@ def main():
                     if role == "foreground" and is_active(info):
                         known[key(info)] = {"Identity":info,"Title":title}
                         if not args.read_only:
-                            update_caption(info,title,records,emit)
+                            update_caption(info,title,records,emit,rules)
                     elif role == "background":
-                        apply_background(info,title,known,records,emit,args.read_only)
+                        apply_background(info,title,known,records,emit,args.read_only,rules)
                     emit("source_observed",info,Role=role)
                 else:
                     emit("read_failed",info,Role=role,Error=result.get("Error"))
                 if args.once and role == "foreground":
                     return 0
+            if rules:
+                rules.update_sources(known)
             if active and fg is None and (now >= next_foreground or getattr(main,"_active_key",None) != key(active)):
                 main._active_key = key(active)
                 next_foreground = now + args.interval
@@ -1200,6 +1248,7 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
+        if rules: rules.close()
         if tray: tray.close()
         for slot in (fg,bg):
             if slot:

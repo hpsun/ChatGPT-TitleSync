@@ -1,17 +1,20 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="chatgpt">发布准备：ChatGPT 标题同步助手</h1>
 <p><a href="release-readiness.md">English</a> · <a href="../README.zh-CN.md">项目主页</a></p>
-<p><strong>状态：用户已于2026-11-11明确批准公开发布，现正在执行；不宣称远端CI已通过。先前待批准快照保留为历史状态。</strong> 用户已选MIT，源码包必须包含仓库LICENSE。</p>
-<h2 id="_1">本次加入登录自启动</h2>
-<p>登录自启动已纳入本次修订，<strong>缺省已开</strong>；托盘／菜单可直接勾选，设置中同项按保存提交、取消不改。这不是延后版的语言功能。Windows各实现共用当前用户Run值和DWORD偏好；启用超长命令会被拒绝，退出不取消下次登录登记。见<a href="startup.zh-CN.md">启动说明</a>。当前真实Windows复测<strong>正在进行</strong>，此前九路线表是历史记录，不能替代新启动源码的验收。Mac LaunchAgent及偏好仅为Experimental源码，未在Mac编译或运行。</p>
-<h2 id="_2">目标协议与验收边界</h2>
+<p><strong>截至2026-11-12：<a href="https://github.com/hpsun/ChatGPT-TitleSync">ChatGPT-TitleSync仓库</a>与<a href="https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0">v0.1.0公开预览版</a>已经公开；名称替换功能分支正在验证，未建立新Release，产品名称与版本不变。</strong> 中文名为<strong>ChatGPT 标题同步助手</strong>。用户已选MIT，源码仍须包含仓库LICENSE。此前未发布／待批准说法保留为历史状态。</p>
+<h2 id="_1">既有登录自启动契约</h2>
+<p>登录自启动已经<strong>缺省已开</strong>；托盘／菜单可直接勾选，设置中同项按保存提交、取消不改。Windows各实现共用当前用户Run值和DWORD偏好；启用超长命令会被拒绝，退出不取消下次登录登记。见<a href="startup.zh-CN.md">启动说明</a>。名称替换不改变此契约。下方旧九路线设置／重置观测属于旧源码修订，不能证明新规则处理已经验收。Mac登录／LaunchAgent行为仍为Experimental，未完成真实Mac验收。</p>
+<h2 id="_2">名称替换候选</h2>
+<p>新增显示处理缺省为空规则，支持有序字面／正则规则，并使用共享系统Unicode配套程序；不内置个人规则或自动迁移。当前对话名示例来自已核实原名的快照，建议规则须明确点<strong>采用规则</strong>及<strong>保存</strong>。规则变化只使显示状态失效，不改变来源读取频率或原标题还原记录。见<a href="name-replacement.zh-CN.md">名称替换帮助</a>。</p>
+<p>本功能目前的Windows验证使用私有文件、模拟原生状态、自有控件和仅CLI工作进程，<strong>不是正常驻留或真实ChatGPT界面验收</strong>。最新C#／PowerShell／其它语言结果将按组件汇总，不借旧测试凑合计。</p>
+<h2 id="_3">目标协议与验收边界</h2>
 <p>最终目标分三层：</p>
 <ol>
 <li>前台ChatGPT窗口按可配置间隔直接fresh读取来源，缺省2秒，不能用记住的来源代替前台读取。</li>
 <li>每秒检查已知后台窗口的原生身份／标题。应用把标题改回generic时，直接用记住的标题恢复，不重新读来源；保留自定义标题，身份改变清缓存，未知窗口不凭空造缓存。</li>
 <li>后台来源低频刷新，每窗缺省5秒、可配置，单独一个串行worker；未知后台也可低频建缓存。前台优先，不能等待后台来源队列。完成时仅在身份一致且原生标题仍generic或本程序上次写入值时更新，保护自定义名。</li>
 </ol>
-<p>Windows分支已有三层来源／缓存的受控检查和本机构建／解析证据。这是本地源码候选的审核边界，不是所有语言的真实应用完整验收。Swift／Objective-C及Go／Rust的Mac后端仍为<strong>Experimental</strong>，没有Mac SDK原生构建或AX运行；旧foreground-only测试与新协议检查明确分开。</p>
-<h2 id="_3">离线审计与仓库文件选择</h2>
+<p>Windows分支已有三层来源／缓存的受控检查和本机构建／解析证据。这是本地源码候选的审核边界，不是所有语言的真实应用完整验收。全部Mac后端仍为<strong>Experimental</strong>。下列实际SDK编译／CLI检查点与当前待验证修订、真实AX／菜单／编辑器／登录验收必须分开；旧foreground-only测试与新协议检查明确分开。</p>
+<h2 id="_4">离线审计与仓库文件选择</h2>
 <p>只需Python 3.10及以上及标准库：</p>
 <pre><code class="language-powershell">python -m unittest discover -s tools/tests -p &quot;test_release_audit.py&quot; -v
 python tools/release_audit.py --allowlist --no-zip --output-dir &quot;$env:TEMP/ChatGPT-TitleSync-file-review&quot;
@@ -20,10 +23,44 @@ python tools/release_audit.py --allowlist --no-zip --output-dir &quot;$env:TEMP/
 <p>审计按<strong>实际包内文件集</strong>核对必需文件、文档相对链接／锚点、前台2秒/后台5秒缺省源码标记、45资源哈希、MIT及已有源码哈希索引。拒绝私有运行证据、validation、日志、备份、SDK、二进制、个人绝对路径和常见凭据形态。模式不能识别所有真实对话名或秘密，仍须人工审阅候选快照。</p>
 <p>核准后按正常目录逐文件提交源码、指南、共享45资源与必要伴随源码，<strong>本次不上传项目ZIP</strong>。可Git clone获取目录树，或在对应语言目录取得单文件并保留其文档要求的依赖。GitHub若自动提供源码归档，是平台生成内容，不是本项目上传的ZIP；先前本地审核压缩包仅作历史留证，不作为交付方式。</p>
 <p>审计使用<code>--no-zip</code>输出机读报告和选中文件清单，不生成压缩包。发布方核对每个文件字节，再建立对应blob/tree。根<code>.gitattributes</code>使用<code>* -text</code>保持已审核字节；私有运行数据、下载SDK等不进入仓库。</p>
-<p>用户于<strong>2026-11-11</strong>明确批准本次公开仓库文件发布；这不等于远端CI结果或Mac原生验收。实际创建仓库、逐文件推送和CI结果由根发布方负责，核实后补入正式URL。</p>
+<p>用户于<strong>2026-11-11</strong>明确批准的仓库文件及首个v0.1.0预览版现已公开。这不等于远端CI结果或Mac原生验收；名称替换功能分支单独验证，未建立其它Release。</p>
 <p><a id="local-validation"></a></p>
-<h2 id="_4">本地验证</h2>
-<p>当前本地证据范围如下：</p>
+<h2 id="_5">本地验证</h2>
+<p>本功能证据与历史检查分开记录：</p>
+<table>
+<thead>
+<tr>
+<th>功能组件</th>
+<th>当前证据</th>
+<th>范围／未完成项</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Go适配</td>
+<td>15项规则／三层选测通过；带固定45资源的Windows trimpath release构建成功</td>
+<td>私有文件／内存状态及仅属自身的无界面工作进程。缺失配套程序补齐时只改变显示代次，原名、来源期限、还原记录不变；新适配尚未在此检查点完成Mac编译。</td>
+</tr>
+<tr>
+<td>Rust适配</td>
+<td>3项规则／客户端＋13项三层测试通过；离线Windows release构建成功，无新crate</td>
+<td>同为受控／CLI范围；新Mac适配等待下一完整CI。</td>
+</tr>
+<tr>
+<td>C#、PowerShell及其它Windows组件</td>
+<td>正在汇总本功能的分组件结果</td>
+<td>此处不合计总数，也不宣称当前正常GUI验收。</td>
+</tr>
+<tr>
+<td>共享Mac helper／原生客户端</td>
+<td>下列远端检查点通过30项共享CLI，并编译helper及新增Swift／Objective-C客户端集成</td>
+<td>仅适用于该次精确提交，不替代更新后的helper／客户端修订；未AppKit编辑器／AX／登录运行验收。</td>
+</tr>
+</tbody>
+</table>
+<p>上述Go／Rust选测使用私有文件、内存状态和仅属自身的无界面协议进程。此前两次未筛选Go测试还执行了自行清理的GUID临时注册表夹具，不称纯文件测试，未使用真实产品Run／偏好键。</p>
+<h3 id="_6">历史本地源码检查</h3>
+<p>以下计数保留自此前源码／设置修订，不计作名称替换验证：</p>
 <table>
 <thead>
 <tr>
@@ -64,34 +101,31 @@ python tools/release_audit.py --allowlist --no-zip --output-dir &quot;$env:TEMP/
 <td>实际STARTUPINFO Hidden；首次原生Show隐藏，显式显示后可见；离屏、不激活、不访问ChatGPT。</td>
 </tr>
 <tr>
-<td>Swift／Objective-C及Mac后端</td>
-<td style="text-align: right;">仅静态复核</td>
-<td>Experimental，不是原生构建或AX验证</td>
+<td>当时源码冻结的Mac后端</td>
+<td style="text-align: right;">当时仅静态复核</td>
+<td>后续编译范围由下列有日期的远端检查点补证；真实AX／运行证据仍缺失</td>
 </tr>
 </tbody>
 </table>
 <p>原始执行证据、真实进程标识和对话名称留在本地，公共包不链接、不包含。源码／构建／模拟检查与真实应用时延、Mac原生验收严格区分。</p>
-<h2 id="cici">CI定义不是CI结果</h2>
-<p>两份workflow均仅contents:read，checkout不保留凭据，无上传／release action。</p>
-<ul>
-<li>Windows：源码审计、Go／Rust构建及模拟／自有窗口检查、C#应用编译与假状态、PowerShell语法／原生编译／模拟状态。</li>
-<li>macOS：Swift、Objective-C、Rust、Go仅做<strong>Experimental编译</strong>，不启动AX监听。不会把失败隐藏成Mac验证通过。</li>
-<li>workflow<strong>尚未远程执行</strong>，不得提前展示CI通过或Mac原生通过。</li>
-</ul>
+<h2 id="ci">实际CI检查点与后续门槛</h2>
+<p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">macOS CI run43124672990</a>，提交<code>19cec8080908a15f0d0a8ccefa66209cb207bf71</code>，实际编译共享Foundation helper及新增Swift／Objective-C RulesClient集成，并通过同一套<strong>30项共同格式CLI用例</strong>。该次AppleScript编译失败；Go／Rust当时仍为旧baseline适配，不能以此证明新名称替换适配通过。共享用例只计一套，不按语言重复累计。</p>
+<p>当前helper修订<code>4B614FB1…D2C67DE</code>、AppleScript修订<code>9127B78F…7855E99</code>、新增第31个Unicode回退用例、客户端负缓存恢复与新Go／Rust适配，仍等待下一完整CI结果。编译及CLI通过不等于真实Mac AX、菜单、AppKit编辑器、登录自启动、长期运行或真实标题还原验收；Mac继续标Experimental。</p>
+<p>验证workflow检查源码／审计／构建和受控用例，不启动正常AX监听。其只读检查及checkout不保留凭据的要求，与独立<code>release-preview.yml</code>任务分开：后者只在<code>main</code>的Windows检查成功后，按守卫建立已授权首版v0.1.0 Release；已有v0.1.0时保持不变。它不为功能分支发布，也不构成其它Release的批准。失败步骤仍按失败记录，不能由个别job成功推导整套成功。</p>
 <p>已核对官方<a href="https://github.com/actions/checkout">checkout v7</a>和<a href="https://github.com/actions/setup-go">setup-go v7</a>。CI有意固定到本机使用的Go 1.27.3和Rust 1.82.0，不宣称它们是最新语言版本。Rust使用官方<a href="https://rust-lang.github.io/rustup/concepts/toolchains.html">rustup工具链机制</a>；Windows链接器要求见<a href="https://rust-lang.org/tools/install/">Rust安装说明</a>。</p>
-<h2 id="_5">图标与交付</h2>
+<h2 id="_7">图标与交付</h2>
 <p>45号为共享基准：<a href="../assets/chatgpt-titlesync-icon.png">PNG</a>、<a href="../assets/chatgpt-titlesync.ico">Windows ICO</a>、<a href="../assets/chatgpt-titlesync.icns">macOS ICNS</a>。运行时固定／随机配色用于程序自身托盘及设置窗口；EXE内嵌资源及固定快捷方式保持固定。各实现构建及原生验证范围分别说明，见<a href="icon-themes.zh-CN.md">图标设置</a>。Mac .app封装、签名、公证仍未验证。</p>
 <p>审计/文件选择工具不写网络或更改启动项；实际仓库创建和逐文件发布由获授权的根发布方单独执行，不上传审核ZIP。</p>
-<h2 id="_6">发布边界</h2>
+<h2 id="_8">发布边界</h2>
 <ul>
-<li>审阅最终选中文件/目录树及逐文件哈希。</li>
-<li>用户已于2026-11-11明确批准，本次公开仓库文件发布进行中。</li>
-<li>不上传本地项目审核ZIP；核实发布结果后补正式URL。</li>
-<li>远程CI尚未运行；Mac原生编译／运行留待后续，继续标Experimental。</li>
+<li><a href="https://github.com/hpsun/ChatGPT-TitleSync">仓库</a>及<a href="https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0">v0.1.0预览版</a>已公开；名称替换功能分支未建立新Release。</li>
+<li>合并前重新核对本功能选中文件／目录树、逐文件哈希、配套程序包装和当前CI；旧冻结及旧真实专项不能替代变更文件的验证。</li>
+<li>不上传本地项目审核ZIP；仓库按普通源码／文档／资源文件组织。私有证据、实际规则、来源快照、标题、身份及日志继续排除。</li>
+<li>Windows受控／CLI与Mac SDK／CLI证据分开记录；本功能当前正常Windows GUI及真实Mac AX／菜单／编辑器／登录验收仍未完成。</li>
 </ul>
 <!-- BEGIN TARGETED_WINDOWS_REAL -->
-<h2 id="windows-2026-11-11">Windows真实窗口专项验收 — 2026-11-11</h2>
-<p>9个Windows运行时案例复用同3个现存ChatGPT窗口，各案例比对1个来源/页头目标、有效注入1次前台通用标题重置及1次后台重置，并检查正常退出后3窗为原通用标题。设置经绑定原生指令/同一菜单处理器调用，不冒称系统托盘物理右键已实测。下列为单次重置到首次匹配观测，不是基准、冷读取时限或长期/安装/任务栏保证；没有Mac原生编译或运行。</p>
+<h2 id="windows-2026-11-11">历史Windows真实窗口专项验收 — 2026-11-11</h2>
+<p>以下测量属于此前冻结修订，不属于名称替换候选。9个Windows运行时案例复用同3个现存ChatGPT窗口，各案例比对1个来源/页头目标、有效注入1次前台通用标题重置及1次后台重置，并检查正常退出后3窗为原通用标题。设置经绑定原生指令/同一菜单处理器调用，不冒称系统托盘物理右键已实测。下列为单次重置到首次匹配观测，不是基准、冷读取时限或长期/安装/任务栏保证；这组历史Windows案例本身没有Mac原生编译或运行，后续Mac CI另见上方。</p>
 <table>
 <thead>
 <tr>

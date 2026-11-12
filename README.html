@@ -4,9 +4,13 @@
 
 <h1 id="chatgpt-titlesync-chatgpt">ChatGPT-TitleSync · ChatGPT 标题同步助手</h1>
 <p><img alt="Illustrated Windows taskbar before and after, using fictitious Example chat A, B and C titles" src="assets/feature-before-after.png" /></p>
+<p>Illustration only: the program changes plain window-title text; button width, font, grouping, theme and truncation are controlled by Windows.</p>
 <p><a href="README.zh-CN.md">简体中文</a> · <a href="README.html">HTML</a> · <a href="support-matrix.md">Support matrix</a> · <a href="docs/guides-index.md">Guide index</a> · <a href="docs/release-notes-v0.1.0.md">v0.1.0 notes</a> · <a href="docs/roadmap.md">Roadmap</a></p>
 <p>Label native ChatGPT windows with their conversation names. Initial public preview: v0.1.0. Chinese product name: <strong>ChatGPT 标题同步助手</strong>. The foreground source interval defaults to <strong>2 seconds</strong>, background native-caption maintenance to <strong>1 second</strong>, and source refresh to <strong>5 seconds per background window</strong>.</p>
 <p>The user approved public publication on <strong>2026-11-11</strong>. Confirmed repository: <a href="https://github.com/hpsun/ChatGPT-TitleSync">ChatGPT-TitleSync</a>. Start at sign-in is enabled by default; see the <a href="docs/startup.md">startup guide</a>. Verification coverage differs by implementation.</p>
+<h2 id="configurable-name-replacement-feature-branch">Configurable name replacement — feature branch</h2>
+<p>Use <strong>Name replacement…</strong> in the tray menu or Settings to choose plain-text or regular-expression rules. The list starts empty. Select an already-observed conversation name, preview the result, or ask for locally generated suggestions; only an explicit Save applies the draft. No personal prefixes or rules are bundled or imported.</p>
+<p>Read the <a href="docs/name-replacement.md">English guide</a> or <a href="docs/name-replacement.zh-CN.md">中文帮助</a>. The shared Unicode companion keeps rule behavior consistent across the Windows language implementations; macOS uses its Foundation companion and remains Experimental for real AX/editor runtime behavior. This feature is under branch validation, with no new Release or product rename implied.</p>
 <h2 id="getting-the-files">Getting the files</h2>
 <p>This publication pushes normal repository files under each language directory, plus shared documentation and assets. <strong>No project-produced ZIP is uploaded or offered as the project download.</strong> Obtain the directory tree with Git, then follow the chosen <a href="docs/guides-index.md">implementation guide</a>:</p>
 <pre><code class="language-sh">git clone https://github.com/hpsun/ChatGPT-TitleSync.git
@@ -93,7 +97,7 @@ cd ChatGPT-TitleSync
 </tr>
 </tbody>
 </table>
-<p>Windows branches provide tray scan settings; Go/Rust and Python also offer optional CLI operation. Swift/Objective-C native menus and the public Go/Rust macOS osascript companion remain Experimental and have not been compiled or exercised on a Mac.</p>
+<p>Windows branches provide tray scan settings; Go/Rust and Python also offer optional CLI operation. Swift/Objective-C clients have the CI compilation evidence below. Native menus and the public Go/Rust macOS osascript companion remain Experimental; real Mac menu/editor/AX/login behavior is not accepted.</p>
 <h2 id="quick-start">Windows C# quick start</h2>
 
 <p>Build both local executables, then run the application:</p>
@@ -141,10 +145,10 @@ powershell.exe -NoProfile -File .\Build.ps1
 <p>Normal exit restores only an identity-matching window whose current caption equals the last write. External changes are preserved. All language implementations have their own monitoring logic; PowerShell's in-memory Add-Type bridge is standard FFI, not an external C# executable dependency.</p>
 <h2 id="validation">Validation status</h2>
 
-<p><strong>Current revision:</strong> real Windows retesting of default-on startup is in progress. The nine-runtime record below belongs to earlier sources and does not establish that this revision has completed all cases. Mac startup/native runtime remains unverified.</p>
+<p><strong>Current feature:</strong> the <a href="https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0">v0.1.0 preview</a> is public; name replacement remains on its feature branch with no new Release. The current Windows Unicode companion passed all <strong>31/31 shared format-CLI cases</strong>. That is one shared suite, not a per-frontend total. A new full desktop retest of the eight independent Windows frontend implementations remains pending; earlier nine-runtime records below belong to older sources and do not establish current acceptance.</p>
 <p>The <a href="support-matrix.md">support matrix</a> distinguishes current controlled fixtures, historical read-only checks and unverified targets. Earlier C# component checks included <strong>41 policy/timing cases, 13 watch/helper lifecycle cases, 8 source-interval protocol cases and 12 settings checks</strong>. The public policy fixture duplicates that same 41-case set.</p>
 <p>Fake or self-owned-window evidence is not full standalone tray, installation, long-term or taskbar visual acceptance. Current live acceptance and release gates are tracked in the <a href="docs/release-readiness.md#local-validation">local validation summary</a>.</p>
-<p>Swift, Objective-C and macOS Go/Rust remain <strong>Experimental: no Mac build or real AX/window-title acceptance</strong>. Shared models are not native Mac tests. Remote CI definitions are not remote CI results.</p>
+<p>At <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">CI checkpoint <code>19cec808</code></a> and <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444">checkpoint <code>97858710</code></a>, the Foundation helper and new Swift/Objective-C client integrations actually compiled and the same <strong>30 common format-CLI cases</strong> passed. Go/Rust still used older baseline adapters at those checkpoints. The latest AppleScript <code>launch</code> fix, helper input/I/O boundaries, client recovery and new Go/Rust adapter integration await the next complete CI run. All Mac routes remain <strong>Experimental</strong>: real AX/window-title, menu, editor and login behavior are still unaccepted. Shared models and compilation are not native runtime tests.</p>
 <p>Private caches, diagnostics and snapshots can contain conversation names and process identities. Keep them local. Generated binaries, SDK/runtime downloads, logs and validation evidence are excluded from the source package. See the <a href="docs/guides-index.md">guide index</a>.</p>
 <p>Earlier targeted real-window checks passed for the preceding C# revision: foreground title transitions, background reset repair, configurable background scheduling, and normal stop/helper cleanup. Single observations were about 0.516s from the source timestamp to the first native-caption sample and 0.937s for background repair. These do not establish long-term, installation, complete tray or taskbar visual acceptance.</p>
 <h2 id="icon">Selected icon</h2>
@@ -170,7 +174,7 @@ source-sha256.txt        Relative-path source/build-file hashes
 <p>The source uses the <a href="LICENSE">MIT license</a>. See the <a href="docs/release-notes-v0.1.0.md">v0.1.0 notes</a>, <a href="docs/roadmap.md">roadmap</a> and <a href="docs/release-readiness.md">release readiness</a>.</p>
 <!-- BEGIN TARGETED_WINDOWS_REAL -->
 <h2 id="targeted-real-windows-acceptance-earlier-revision-2026-11-11">Targeted real Windows acceptance — earlier revision, 2026-11-11</h2>
-<p>Nine Windows runtime cases used the same three existing ChatGPT windows, reused across runs. Each case compared one source/header target, exercised one foreground generic-caption reset and one background reset, and checked three original generic captions after normal exit. Settings were invoked through the bound native command/same menu handler; this is not a physical shell-right-click claim. The numbers below are individual reset-to-first-match observations, not benchmarks, cold-reader deadlines or long-term/install/taskbar guarantees. No Mac source was compiled or run.</p>
+<p>Nine Windows runtime cases used the same three existing ChatGPT windows, reused across runs. Each case compared one source/header target, exercised one foreground generic-caption reset and one background reset, and checked three original generic captions after normal exit. Settings were invoked through the bound native command/same menu handler; this is not a physical shell-right-click claim. The numbers below are individual reset-to-first-match observations, not benchmarks, cold-reader deadlines or long-term/install/taskbar guarantees. No Mac source was compiled or run as part of those historical Windows cases; later CI checkpoints are recorded above.</p>
 <table>
 <thead>
 <tr>

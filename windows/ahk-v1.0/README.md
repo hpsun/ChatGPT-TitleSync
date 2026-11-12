@@ -18,11 +18,11 @@ Local pre-release draft. Run the source with its matching interpreter. The sourc
 
 - Windows; runtime: **AutoHotkey Basic 1.0.48.05**, **ANSI x86 only**.
 - OS-provided Windows UI Automation and Win32 APIs.
-- No external COM library, model/API connection, or C# helper.
+- No external COM library or model/API connection. Optional name replacement uses the separately built shared C# companion below.
 
 Only the official Basic 1.0.48.05 ANSI 32-bit runtime was tested. This is not the Unicode v1.1 or v2 script. Script, runtime, and IPC paths must be ASCII. Caption/source/original values stay in UTF-16 binary buffers, including surrogate pairs; tray labels and text metadata remain ASCII.
 
-The source uses direct 32-bit COM vtables and Win32 calls, without ComObjCreate, StrGet/StrPut, WStr, an external COM library, or a C# helper. A suspended worker is placed in a KILL_ON_JOB_CLOSE job before being resumed. Its owned-window tests cover visible/hidden state, Chinese/emoji binary roundtrip, original restoration, external-caption protection, binary IPC, timeout, and focus cancellation.
+Native title reading uses direct 32-bit COM vtables and Win32 calls, without ComObjCreate, StrGet/StrPut, WStr or an external COM library. Optional name replacement uses the shared Unicode companion below. A suspended worker is placed in a KILL_ON_JOB_CLOSE job before being resumed. Its owned-window tests cover visible/hidden state, Chinese/emoji binary roundtrip, original restoration, external-caption protection, binary IPC, timeout, and focus cancellation.
 
 The current scheduling and validation boundaries are described below.
 
@@ -148,3 +148,27 @@ Basic 1.0.48.05 ANSI x86 source-only; no accepted Basic EXE. Targeted real 2/5 s
 
 One accepted FG and one BG reset; the same three existing windows were reused and matched their original generic captions after exit. Native settings/menu-handler checks do not establish physical shell right-click, long-term use or installation acceptance. See the project support matrix for the precise scope.
 <!-- END TARGETED_WINDOWS_REAL -->
+
+## Name replacement — shared Unicode companion
+
+The tray **Name replacement… / 名称替换…** and the settings window's same-named button open the **same** shared editor: ordered literal/regex rows, preview, already-read raw-name dropdown, generic regex suggestions and local help. Suggestions require explicit **Use rule**, then Save. Defaults are empty/identity; no personal or machine-specific presets are built in or migrated.
+
+Build the companion first, from this branch directory:
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "..\..\shared\windows\Build.ps1"
+
+This builds [TitleRules.cs](../../shared/windows/TitleRules.cs) with the Windows .NET Framework compiler. Retain `ChatGPT-TitleSync.Rules.exe` beside the main EXE, or at the exact repository location `../../shared/windows`; it is never searched through PATH or a preference-supplied command. Keep [English help](../../docs/name-replacement.md) and [中文帮助](../../docs/name-replacement.zh-CN.md), including their HTML siblings, available locally.
+
+Rules are separate at `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`. Reading, opening and previewing do not create it; only successful editor Save writes it. Timing/startup/icon saves do not overwrite rules. No file means unchanged raw name. Existing rules plus an unavailable companion mean whole-raw fallback with a diagnostic.
+
+Formatting runs on the **verified raw name before** the standard ` — ChatGPT` suffix. Raw-source cache and original native-caption restoration stay unchanged. A separate display revision refreshes only a caption still owned by this run and equal to its last write, protecting manual and generic captions. Normal source schedules and 1-second cached repair remain separate. A nonblocking, pinned, caller-owned format child has a 1500 ms deadline; unchanged success/fallback is cached and stale results are discarded. Signatures are checked on a bounded 1-second cadence without extra ChatGPT reads.
+
+`title-rule-sources.bin` is a **private** CTS1 snapshot in the monitor runtime/settings directory. It contains verified raw names only, is updated on name/window-set changes and must not be committed or published. It populates the editor dropdown without extra UIA reads.
+
+Keep [NameReplacementBasic.ahk](NameReplacementBasic.ahk) beside the main source; its `#Include` is required. Matching modern Ahk2Exe embeds the include, but **does not embed the shared rules EXE or local help**. A compiled deployment needs `ChatGPT-TitleSync.Rules.exe` beside the main EXE and both help pages in a sibling `docs` directory. The existing icon include and theme assets remain required.
+
+The matching official interpreter passed early `--check` parsing. A separate private fixture passed **22** checks with fictional names, the real shared format companion, a disposable owned timeout child and stubbed identity/caption operations.
+
+Basic remains **source-only**. Script, interpreter, helper/runtime and IPC paths retain their ASCII restriction; names, input/output and CTS1 snapshots use UTF-16 binary buffers, including Chinese and surrogate pairs, without ANSI conversion. No Basic compiled EXE is accepted by this update.
+
+These are format/protocol and controlled-ownership checks. They do not open the editor, start a normal resident, read ChatGPT, change production startup/preferences or claim new real-desktop/menu acceptance. The linked help defines limits, strict replacement references, OS regex differences and complete-raw fallback.

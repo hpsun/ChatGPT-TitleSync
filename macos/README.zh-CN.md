@@ -2,23 +2,43 @@
 
 [English](README.md) · [项目主页](../README.zh-CN.md)
 
-**Experimental：Swift、Objective-C及AppleScript伴随程序均未在Mac进行原生编译或运行。** 源码复核和Windows侧模型不能证明Mac兼容性、AX行为、界面像素或实际时延。
+**运行时仍为 Experimental；原生编译和 CLI 检查分开记录。** 在[已核实的 SDK 检查点](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990)（功能提交 `19cec8080908a15f0d0a8ccefa66209cb207bf71`）中，新增客户端依赖后的 Swift、Objective-C 程序均已编译，共享 Unicode 规则格式化程序通过 **30/30** 项 CLI；同一 Swift job 后续独立的 AppleScript 编译仍失败。这不证明编辑器/菜单 GUI、ChatGPT AX、像素、自启动或时序已经验收；最新源码变更仍须核对后续实际 CI。
 
 ## 环境与构建
 需要Mac、Xcode命令行工具及macOS SDK。预期目标bundle标识为com.openai.chat，须在目标Mac核对，也可用--bundle-id覆盖。
 
-### Swift
-```sh
-swiftc ChatGPTWindowTitles.swift -framework AppKit -framework ApplicationServices -o chatgpt-titlesync-swift
-./chatgpt-titlesync-swift --interval 2 --background-interval 5 --bundle-id com.openai.chat
-```
+### 一次构建两个原生程序及辅助程序
 
-### Objective-C
-```sh
-clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices ChatGPTWindowTitles.m -o chatgpt-titlesync-objc
-./chatgpt-titlesync-objc --interval 2 --background-interval 5 --bundle-id com.openai.chat
-```
-这些是构建指引，不代表已完成原生编译。
+在目标 Mac 的本目录执行：
+
+    bash build.sh
+
+[build.sh](build.sh) 先调用 [shared/macos/build.sh](../shared/macos/build.sh)，编译仅依赖 Foundation 的 [RulesClient.m](../shared/macos/RulesClient.m)，通过 [RulesClient.h](../shared/macos/RulesClient.h) 导入 Swift，并为两个原生程序链接该客户端。构建不启动程序，输出同目录三项：
+
+    chatgpt-titlesync-swift
+    chatgpt-titlesync-objc
+    chatgpt-titlesync-rules
+
+可用 `bash build.sh /absolute/output-directory` 指定输出目录；三项及下述资源/帮助布局须一起保留。旧的单源 `swiftc`/`clang` 命令缺少新客户端依赖，不再是完整构建命令。脚本不生成已签名的 `.app`。
+
+仅当明确准备启动选定前端时执行：
+
+    ./chatgpt-titlesync-swift --interval 2 --background-interval 5 --bundle-id com.openai.chat
+    ./chatgpt-titlesync-objc --interval 2 --background-interval 5 --bundle-id com.openai.chat
+
+### 名称替换
+
+菜单栏 **Name replacement… / 名称替换…** 及设置中同名按钮打开同一个共享编辑器。[TitleRules.m](../shared/macos/TitleRules.m) 提供有序字面/正则规则、手工预览、当前名称选择、通用建议与帮助。建议须明确“使用规则”并保存才生效。缺省为空，不内置个人或本机规则，也不从其它软件导入。
+
+规则位于 `~/Library/Application Support/ChatGPT-TitleSync/title-rules.json`；读取、打开、预览不创建配置，只有编辑器成功保存才写入。文件缺失时原样显示；已有规则但辅助程序不可用时完整回退原名并记诊断。
+
+监控程序独立保留核实原名和原生原标题恢复凭据；异步自有辅助进程先格式化原名，再加标准 ` — ChatGPT` 后缀，调用方 1500 毫秒截止。签名/修订缓存避免对相同成功或回退重复启动格式化。规则变化只更新仍由本实例拥有且匹配上次写值的标题，不新增 AX 来源读取或重置来源计时。
+
+`title-rule-sources.bin` 是各实现运行/状态目录中的私有 CTS1 原名快照。Swift/Objective-C 使用 `~/Library/Application Support/ChatGPT-TitleSync/runtime` 的分支子目录，Go/Rust 设置桥使用间隔/配置所在目录。真实快照不得提交或发布。下拉列表只复用正常监控已读名称，不遍历聊天历史。
+
+移动原生程序后，须在旁边保留可执行的 `chatgpt-titlesync-rules`；仓库布局也可使用已知的 `../shared/macos` 或 `../../shared/macos`。两份帮助 HTML 放在同级 `docs`，或保留仓库 `../docs`。不从 PATH 或偏好里的命令寻找辅助程序。
+
+严格引用、完整原名回退、限制及 Foundation 与 Windows .NET 正则差异，见[中文帮助](../docs/name-replacement.zh-CN.md)与 [English help](../docs/name-replacement.md)。SDK/CLI 证据不代表真实用户 Mac 的编辑器、菜单或 ChatGPT AX 标题写入已可用。
 
 ## 三层维护
 窗口元数据维护每1秒调度。--interval控制前台来源读取，默认2秒，范围1..3600秒。--background-interval控制各后台窗口来源刷新，默认5秒，范围5..3600秒；设为15即15秒。
@@ -50,7 +70,7 @@ clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices ChatGP
 
 仅这些来源读取间隔互不共用，也不与Go/Rust的AppleScript设置桥共用；图标及自启动使用下述共享域。启动时，有效的显式 `--interval`、`--background-interval` 参数优先于保存值；省略参数则采用有效保存值，没有保存值时用缺省值。之后通过菜单保存的新值立即用于后续调度并持久化。自启动复选框和图标控件随保存提交，见下文；间隔设置不持久化对话标题缓存，也不修改辅助功能权限。
 
-新增面板、输入检查、偏好设置、锁和代次校验仅经过静态源码复核。Swift的 `application.run()` 与Objective-C的 `main` / `[application run]` 入口仍完整保留。这些检查不代表Mac原生编译、界面效果、偏好设置运行行为或AX时序验收，仍需真实Mac验证。
+**历史主题修订边界：** 最初新增面板、输入检查、偏好设置、锁和代次校验仅经过静态源码复核。Swift的 `application.run()` 与Objective-C的 `main` / `[application run]` 入口仍完整保留。这些检查不代表Mac原生编译、界面效果、偏好设置运行行为或AX时序验收，仍需真实Mac验证。
 
 ## 实验性登录自启动——缺省已开
 
@@ -58,7 +78,7 @@ clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices ChatGP
 
 四个Mac实现共享 `NSUserDefaults` 域 `io.github.hpsun.ChatGPTTitleSync` 的 `AutoStartEnabled`（缺项开启），以及 `~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist`。草稿采用绝对可执行路径、`RunAtLoad=true`、`KeepAlive=false`，为下次登录准备，不立即bootstrap第二个常驻实例。Swift／Objective-C仍保留前述独立 `ScanIntervals` 域。Go／Rust菜单伴随源码还保存 `autostart_enabled`；内部启动契约现为**11个参数**，新增自启动布尔值和可执行路径，应使用当前分支启动器，不沿用旧9参数调用。
 
-本项仍为**Experimental源码**，未在Mac编译或运行，不能证明登录启动、权限或AX行为已通过。见[启动说明](../docs/startup.zh-CN.md)。
+**历史主题修订边界：** 本项当时为未在 Mac 编译/运行的 Experimental 源码。后续原生编译检查点也不能证明登录启动、真实偏好设置、权限或 AX 行为已通过。见[启动说明](../docs/startup.zh-CN.md)。
 
 ## 暂停、退出与权限
 通过菜单栏选择暂停并还原、恢复监听、退出并还原，以及检查／请求辅助功能权限。草稿未实现--stop命令行参数。正常退出仅还原仍与本实例写入值匹配的自有标题；强制结束可能无法还原。由用户决定辅助功能权限，程序不自动修改隐私设置。
@@ -105,6 +125,9 @@ ChatGPT-TitleSync/
     ChatGPTWindowTitles.swift
     ChatGPTWindowTitles.m
     TraySettings.applescript
+    build.sh
+    chatgpt-titlesync-rules   # 共享运行时辅助程序
+    chatgpt-titlesync-objc
     chatgpt-titlesync-swift   # 本机编译示例
 ```
 
@@ -116,6 +139,8 @@ Go／Rust伴随程序保持**原11参数接口**，从第8项基础PNG路径的�
 
 ## 验证边界
 
+当前原生编译、30 项 CLI 通过及独立 AppleScript 失败见本页开头；下面模型/静态记录保留为**历史主题修订证据**，不作为当前编译状态。
+
 见[发布验证说明](../docs/release-readiness.zh-CN.md#local-validation)。历史**13项标题行为模型**早于三层实现，仅保留为模型证据。新增[23项图标契约模型](test_icon_policy.py)使用假偏好／资源、注入时间／随机选择，覆盖同slot重启、时段边界、无连重、保存／取消及自启动／间隔／主题回滚，全部通过。原13项标题模型也再次通过，执行时未在源码树产生新回执。
 
 ```sh
@@ -125,6 +150,6 @@ python3 -B -m unittest discover -s . -p test_macos_behavior.py
 
 静态比对确认原AX／标题算法正文未变，Swift的application.run()、Objective-C的main／[application run]入口保留，AppleScript仍为11参数。词法括号／handler结构检查和状态模型**不等于原生编译或运行测试**。
 
-本轮没有在Mac验证Swift／Objective-C编译、osacompile、AppleScriptObjC桥接、AppKit控件／图像及ARC／对象寿命、真实UserDefaults持久化与回滚、LaunchAgent／登录启动、辅助功能权限、实际ChatGPT AX层级／标题可写性、像素、焦点／暂停时序或封装。产品版本仍为**0.1.0**，这些Mac前端继续标为**Experimental**；声明原生支持前仍需Mac SDK构建及受控实机验收。
+在当时的历史主题修订冻结点，未在 Mac 验证 Swift／Objective-C 编译、osacompile、AppleScriptObjC桥接、AppKit控件／图像及ARC／对象寿命、真实UserDefaults持久化与回滚、LaunchAgent／登录启动、辅助功能权限、实际ChatGPT AX层级／标题可写性、像素、焦点／暂停时序或封装。产品版本仍为**0.1.0**，这些Mac前端继续标为**Experimental**；声明运行时支持前，仍需对后续变更源码核对 SDK 构建，并完成受控 AX/GUI 实机验收。
 
 静态复核还保留逐窗口的状态队列来源修订号，在新读取和观测到前后台角色变化时递增；提交必须同时匹配该修订号与暂停／退出代次。外部标题变化会释放旧写入所有权但保留核实名称缓存。仅在同PID与启动身份的AXWindows完整成功且未被数量上限截断的快照中，才退役关闭窗口；失败／截断枚举保守保留原记录。元数据AX调用占用共享状态队列时可能延后提交，独立来源队列不构成硬实时保证。

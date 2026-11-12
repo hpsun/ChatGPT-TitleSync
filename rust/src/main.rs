@@ -2,6 +2,7 @@
 #[cfg(windows)]
 mod autostart_windows;
 mod lease;
+mod name_rules;
 mod settings;
 #[cfg(windows)]
 mod theme_windows;
@@ -360,11 +361,14 @@ fn run() -> Result<(), String> {
     let live = std::sync::Arc::new(settings::Live::with_startup(path, initial, startup));
     let _ = settings::LIVE.set(live.clone());
     let work = || {
-        let cache = three_layer::Cache::new(
+        let mut cache = three_layer::Cache::new(
             Native,
             has("--read-only"),
             Duration::from_secs(initial.background),
         );
+        if !has("--read-only") {
+            cache.rules = Some(name_rules::Client::new(dir.clone()));
+        }
         let read: three_layer::Read = std::sync::Arc::new(|w, fg, cancel| {
             #[cfg(windows)]
             {

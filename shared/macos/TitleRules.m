@@ -16,7 +16,11 @@ static BOOL BoolValue(id x){return x&&CFGetTypeID((__bridge CFTypeRef)x)==CFBool
 static BOOL ValidName(NSString *s){
     if(!s||s.length>MaxUnits||![[s stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] length])return NO;
     if([[s stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] caseInsensitiveCompare:@"ChatGPT"]==NSOrderedSame)return NO;
-    for(NSUInteger i=0;i<s.length;i++){unichar c=[s characterAtIndex:i];if(c<32||(c>=127&&c<=159))return NO;}
+    for(NSUInteger i=0;i<s.length;i++){
+        unichar c=[s characterAtIndex:i];if(c<32||(c>=127&&c<=159))return NO;
+        if(c>=0xD800&&c<=0xDBFF){if(i+1>=s.length)return NO;unichar low=[s characterAtIndex:i+1];if(low<0xDC00||low>0xDFFF)return NO;i++;}
+        else if(c>=0xDC00&&c<=0xDFFF)return NO;
+    }
     return YES;
 }
 static NSString *Decode(NSData *data,BOOL optionalBOM){
@@ -29,7 +33,14 @@ static NSData *Packet(NSString *s){return [s dataUsingEncoding:NSUTF16LittleEndi
 static NSData *ReadBounded(NSString *path,NSUInteger limit,NSError **error){
     NSFileHandle *f=[NSFileHandle fileHandleForReadingAtPath:path];
     if(!f){if(error)*error=[NSError errorWithDomain:@"TitleRules" code:3 userInfo:@{NSLocalizedDescriptionKey:@"Cannot open file"}];return nil;}
-    NSData *d=[f readDataOfLength:limit+1];[f closeFile];if(d.length>limit){if(error)*error=[NSError errorWithDomain:@"TitleRules" code:4 userInfo:@{NSLocalizedDescriptionKey:@"File limit exceeded"}];return nil;}return d;
+    NSData *d=nil;
+    @try {d=[f readDataOfLength:limit+1];[f closeFile];}
+    @catch(NSException *exception){
+        @try {[f closeFile];} @catch(NSException *ignored){(void)ignored;}
+        if(error)*error=[NSError errorWithDomain:@"TitleRules" code:3 userInfo:@{NSLocalizedDescriptionKey:@"Cannot read file"}];
+        (void)exception;return nil;
+    }
+    if(d.length>limit){if(error)*error=[NSError errorWithDomain:@"TitleRules" code:4 userInfo:@{NSLocalizedDescriptionKey:@"File limit exceeded"}];return nil;}return d;
 }
 static BOOL Template(NSString *s,NSUInteger groups,NSArray **tokens,NSString **error){
     NSMutableArray *out=[NSMutableArray array];NSMutableString *literal=[NSMutableString string];
@@ -117,10 +128,10 @@ static NSDictionary *Load(NSString *path,NSData **bytes,NSString **failure){
     if(!attributes){
         if([attributeError.domain isEqual:NSCocoaErrorDomain]&&(attributeError.code==NSFileNoSuchFileError||attributeError.code==NSFileReadNoSuchFileError)){if(bytes)*bytes=nil;return DefaultRules();}
         if([attributeError.domain isEqual:NSPOSIXErrorDomain]&&attributeError.code==ENOENT){if(bytes)*bytes=nil;return DefaultRules();}
-        if(failure)*failure=@"RulesReadError";return nil;
+        if(failure)*failure=@"RulesReadFailed";return nil;
     }
     NSError *error=nil;NSData *data=ReadBounded(path,MaxBytes,&error);if(bytes)*bytes=data;
-    if(!data){if(failure)*failure=@"RulesReadError";return nil;}
+    if(!data){if(failure)*failure=([error.domain isEqual:@"TitleRules"]&&error.code==4)?@"RulesTooLarge":@"RulesReadFailed";return nil;}
     id result=[NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
     if(![result isKindOfClass:NSDictionary.class]){if(failure)*failure=@"ParseError";return nil;}return result;
 }
@@ -147,7 +158,7 @@ static int FormatCLI(NSDictionary *args){
     if(![result writeToFile:output options:0 error:&io])return 3;
     NSString *code=failure?[@"fallback:" stringByAppendingString:failure]:@"ok";
     if(![[code dataUsingEncoding:NSASCIIStringEncoding] writeToFile:status options:0 error:&io])return 3;
-    return failure?2:0;
+    return [failure isEqual:@"RulesReadFailed"]?3:(failure?2:0);
 }
 static NSArray *Sources(NSString *path,NSDate **modified){
     NSDictionary *attrs=[NSFileManager.defaultManager attributesOfItemAtPath:path error:nil];if(modified)*modified=attrs[NSFileModificationDate];

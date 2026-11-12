@@ -53,6 +53,13 @@ jobs:
         run: |
           & ./windows/csharp/Build.ps1
           & ./tools/test-csharp.ps1 -OutputDirectory "$env:RUNNER_TEMP/csharp-fake"
+      - name: Verify Unicode name-rule formatting without app access
+        shell: pwsh
+        run: |
+          python tools/test_name_replacement.py --worker ./windows/csharp/ChatGPT-TitleSync.Rules.exe --report "$env:RUNNER_TEMP/name-rules-report.json"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -m unittest discover -s windows/python/tests -p "test_name_replacement.py" -v
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - name: PowerShell parse, embedded native compile and fake foreground checks
         shell: pwsh
         run: |

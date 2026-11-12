@@ -99,3 +99,25 @@ AutoHotkey64.exe /ErrorStdOut "chatgpt_window_titles.ahk" --icon-self-test
 
 有效前台/后台重置各1次，复用同3个现存窗口并在退出后匹配原通用标题；原生设置/菜单处理器验证不等于系统托盘物理右键、长期驻留或安装验收。具体范围见项目支持矩阵。
 <!-- END TARGETED_WINDOWS_REAL -->
+
+## 名称替换：共享 Unicode 辅助程序
+
+托盘 **名称替换… / Name replacement…** 与设置窗口中的同名按钮打开**同一个**共享编辑器：有序字面/正则规则、预览、已读原名下拉列表、通用正则建议及本地帮助。建议必须明确点击“使用规则”，再保存才生效。缺省为空规则/原样显示，不内置本机或个人规则，也不从无关软件迁移。
+
+先从本分支目录构建辅助程序：
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "..\..\shared\windows\Build.ps1"
+
+该命令用 Windows .NET Framework 编译器编译 [TitleRules.cs](../../shared/windows/TitleRules.cs)。运行时保留 `ChatGPT-TitleSync.Rules.exe`：放在主 EXE 旁，或保持仓库 `../../shared/windows` 布局；不会从 PATH 或偏好指定的命令寻找程序。须保留[中文帮助](../../docs/name-replacement.zh-CN.md)与 [English help](../../docs/name-replacement.md)，包括同名 HTML。
+
+规则独立保存在 `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`；打开、读取、预览不创建配置，只有编辑器成功保存才写入。间隔、启动项和图标保存不覆盖规则。文件缺失时原样显示；已有规则但辅助程序不可用时完整回退原名并记诊断，不假报成功。
+
+先对**已核实原名**格式化，再拼接标准 ` — ChatGPT` 后缀。原始来源缓存、原生原标题恢复凭据不改；独立显示修订只更新仍由本次运行拥有且等于上次写值的标题，保护手工及通用原生标题。来源计划与每秒缓存修复仍独立；格式化是异步、自有句柄绑定的子进程，1500 毫秒截止，只终止该自有进程；成功和回退均缓存，旧代丢弃。规则签名按有界每秒节拍核对，不新增 ChatGPT 来源读取。
+
+运行/设置目录中的 `title-rule-sources.bin` 是**私有** CTS1 快照，仅含已核实原名，仅在名称/窗口集合变化后更新，不得提交或公开。编辑器下拉框读取它，不另读辅助树。
+
+源码部署须将 [NameReplacement.ahk](NameReplacement.ahk) 与主脚本放在同一目录，`#Include` 依赖此文件。匹配的现代 Ahk2Exe 会嵌入 include，**不会嵌入共享规则 EXE 或本地帮助**。编译主 EXE 旁须保留 `ChatGPT-TitleSync.Rules.exe`，其旁 `docs` 目录保留两份帮助页面。原图标 include 与主题资源依旧需要。
+
+匹配官方解释器已通过 `--check` 早退解析。另一个私有夹具通过 **18** 项检查，输入为虚构名称，调用真实共享格式化程序，并使用可丢弃的自有超时子进程及模拟身份/标题操作。
+
+以上是格式化、协议和受控所有权检查，不启动编辑器或正常驻留，不读 ChatGPT，不改生产启动项/偏好，不表示本轮真实桌面/菜单已经复测。限制、严格替换引用、操作系统正则差异与完整原名回退规则见所链接帮助。

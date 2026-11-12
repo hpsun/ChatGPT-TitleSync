@@ -131,7 +131,28 @@
     "assets/feature-before-after.zh-CN.svg",
     "assets/feature-before-after.png",
     "assets/feature-before-after.zh-CN.png",
-    "tools/diagnose-applescript.swift"
+    "tools/diagnose-applescript.swift",
+    "shared/windows/TitleRules.cs",
+    "shared/windows/Build.ps1",
+    "shared/windows/tests/test_format_cli.py",
+    "shared/macos/TitleRules.m",
+    "shared/macos/RulesClient.h",
+    "shared/macos/RulesClient.m",
+    "shared/macos/build.sh",
+    "macos/build.sh",
+    "windows/python/name_replacement.py",
+    "windows/python/tests/test_name_replacement.py",
+    "windows/ahk-v1.0/NameReplacementBasic.ahk",
+    "windows/ahk-v1.1/NameReplacement.ahk",
+    "windows/ahk-v2/NameReplacement.ahk",
+    "tools/tests/name-replacement-cases.json",
+    "tools/test_name_replacement.py",
+    "docs/name-replacement.md",
+    "docs/name-replacement.html",
+    "docs/name-replacement.zh-CN.md",
+    "docs/name-replacement.zh-CN.html",
+    "tools/tests/macos_rules_client_fixture.m",
+    "tools/test_macos_name_rules_io.py"
   ],
   "required": [
     ".github/workflows/macos-experimental.yml",
@@ -294,7 +315,28 @@
     "assets/feature-before-after.zh-CN.svg",
     "assets/feature-before-after.png",
     "assets/feature-before-after.zh-CN.png",
-    "tools/diagnose-applescript.swift"
+    "tools/diagnose-applescript.swift",
+    "shared/windows/TitleRules.cs",
+    "shared/windows/Build.ps1",
+    "shared/windows/tests/test_format_cli.py",
+    "shared/macos/TitleRules.m",
+    "shared/macos/RulesClient.h",
+    "shared/macos/RulesClient.m",
+    "shared/macos/build.sh",
+    "macos/build.sh",
+    "windows/python/name_replacement.py",
+    "windows/python/tests/test_name_replacement.py",
+    "windows/ahk-v1.0/NameReplacementBasic.ahk",
+    "windows/ahk-v1.1/NameReplacement.ahk",
+    "windows/ahk-v2/NameReplacement.ahk",
+    "tools/tests/name-replacement-cases.json",
+    "tools/test_name_replacement.py",
+    "docs/name-replacement.md",
+    "docs/name-replacement.html",
+    "docs/name-replacement.zh-CN.md",
+    "docs/name-replacement.zh-CN.html",
+    "tools/tests/macos_rules_client_fixture.m",
+    "tools/test_macos_name_rules_io.py"
   ],
   "source_rules": [
     {
@@ -562,7 +604,7 @@
     "No runtime SDK, binary, execution log, validation artifact, snapshot, backup or private JSON is part of the source package.",
     "Static source markers are review checks, not runtime acceptance tests.",
     "Adding a public file requires an explicit policy review.",
-    "Local source candidate has controlled Windows protocol checks; macOS remains Experimental/uncompiled. User approval on 2026-11-11 authorizes the root publisher; audit success alone never grants authorization.",
+    "v0.1.0 is public. The name-replacement feature branch has controlled Windows checks and native macOS compile/CLI checkpoints; GUI/AX/login acceptance remains unverified. Audit success does not authorize a new Release.",
     "Targeted Windows settings/caption-repair receipts supplement controlled checks; they do not imply native Mac, physical shell click, installation, long-term acceptance or publication approval.",
     "User explicitly requested normal repository directory/file publication, not a project ZIP upload; GitHub automatic source archives are platform-generated."
   ],
@@ -601,5 +643,10 @@
     "assets/chatgpt-titlesync.ico": "700cfe7a1ef6f3e72753441bcf9b5bea59362a54601e95a3e62a1babab986ccf",
     "assets/chatgpt-titlesync-legacy.ico": "6b50e2989f3e306a9a989eec7f8bf4447bceeba2fb36b388e3e2e4b5ef167133",
     "assets/chatgpt-titlesync.icns": "7517b1aa0efd865f09ca62ef01c0923c3297ea0f5e5dad52e74800de9a53c9e0"
+  },
+  "name_replacement": {
+    "defaults": "empty; no personal rules or automatic import",
+    "shared_companion": true,
+    "scope": "controlled verification; real desktop acceptance tracked separately"
   }
 }

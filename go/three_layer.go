@@ -4,17 +4,22 @@ import (
 	"context"
 	"errors"
 	"sort"
+	"strings"
 	"time"
 )
 
 // All cache/native decisions run on the controller. Source workers never hold its state.
 type cachedTitle struct {
-	W                            Window
-	Title, LastWritten, Original string
-	Own                          bool
-	Version                      uint64
-	NextBackground               time.Time
-	Pending                      uint64
+	W                                                   Window
+	Title, LastWritten, Original                        string
+	RawName                                             string
+	RuleEpoch                                           uint64
+	PendingDisplay, PendingForeground, NeedsFreshSource bool
+	PendingVersion                                      uint64
+	Own                                                 bool
+	Version                                             uint64
+	NextBackground                                      time.Time
+	Pending                                             uint64
 }
 type sourceJob struct {
 	W                  Window
@@ -32,6 +37,7 @@ type titleCache struct {
 	ReadOnly      bool
 	Clock         func() time.Time
 	Background    time.Duration
+	Rules         *nameRuleClient
 	nextID, Epoch uint64
 }
 
@@ -58,7 +64,7 @@ func (c *titleCache) maintain() {
 			delete(c.Entries, key)
 			continue
 		}
-		if e.Title == "" || c.B.Active(e.W) {
+		if (c.Rules != nil && (e.PendingDisplay || e.NeedsFreshSource || e.RuleEpoch != c.Rules.Epoch)) || e.Title == "" || c.B.Active(e.W) {
 			continue
 		}
 		current, err := c.B.Caption(e.W)
@@ -147,21 +153,20 @@ func (c *titleCache) apply(r sourceResult) {
 	} else if c.B.Active(r.Job.W) || e.Version != r.Job.Version {
 		return
 	}
-	title, err := cleanName(r.Title)
+	raw, err := cleanName(r.Title)
 	if err != nil {
 		return
 	}
 	current, err := c.B.Caption(e.W)
-	if err != nil || !c.B.Same(e.W) {
+	if err != nil || !c.B.Same(e.W) || (r.Job.Foreground && !c.B.Active(e.W)) {
 		return
 	}
-	if r.Job.Foreground && !c.B.Active(e.W) {
-		return
-	}
-	previous := e.LastWritten
 	e.Version++
 	e.NextBackground = c.Clock().Add(c.Background)
-	if genericCaption(title) {
+	e.NeedsFreshSource = false
+	if genericCaption(raw) {
+		e.RawName = ""
+		e.PendingDisplay = false
 		e.Title = ""
 		if e.Own && current == e.LastWritten && !c.ReadOnly {
 			_ = c.B.Set(e.W, current, e.Original)
@@ -171,16 +176,91 @@ func (c *titleCache) apply(r sourceResult) {
 		e.Original = ""
 		return
 	}
-	desired := title
-	if len(desired) < len(" — ChatGPT") || desired[len(desired)-len(" — ChatGPT"):] != " — ChatGPT" {
+	e.RawName = raw
+	e.PendingDisplay = true
+	e.PendingForeground = r.Job.Foreground
+	e.PendingVersion = e.Version
+	e.RuleEpoch = 0
+	c.resolveSourceDisplay(e)
+}
+func (c *titleCache) resolveSourceDisplay(e *cachedTitle) {
+	if !e.PendingDisplay {
+		return
+	}
+	display, ready := e.RawName, true
+	if c.Rules != nil {
+		display, ready = c.Rules.Display(e.RawName)
+	}
+	if !ready {
+		return
+	}
+	e.PendingDisplay = false
+	if e.PendingVersion != e.Version || !c.B.Same(e.W) || c.B.Active(e.W) != e.PendingForeground {
+		e.NeedsFreshSource = true
+		return
+	}
+	c.writeDisplay(e, display, e.PendingForeground, false)
+}
+func (c *titleCache) pollNameRules(write bool) {
+	if c.Rules == nil {
+		return
+	}
+	names := []string{}
+	for _, e := range c.Entries {
+		if e.RawName != "" {
+			names = append(names, e.RawName)
+		}
+	}
+	keys := []string{}
+	for key := range c.Entries {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	c.Rules.SourceSetKey = strings.Join(keys, "\x00")
+	c.Rules.Poll(names)
+	if !write {
+		return
+	}
+	for _, e := range c.Entries {
+		if e.RawName == "" || e.NeedsFreshSource {
+			continue
+		}
+		if e.PendingDisplay {
+			c.resolveSourceDisplay(e)
+			continue
+		}
+		if e.RuleEpoch != c.Rules.Epoch {
+			value, ready := c.Rules.Display(e.RawName)
+			if ready {
+				c.writeDisplay(e, value, c.B.Active(e.W), true)
+			}
+		}
+	}
+}
+func (c *titleCache) writeDisplay(e *cachedTitle, value string, foreground, ownedOnly bool) {
+	if !c.B.Same(e.W) || c.B.Active(e.W) != foreground {
+		return
+	}
+	current, err := c.B.Caption(e.W)
+	if err != nil || !c.B.Same(e.W) {
+		return
+	}
+	desired := value
+	if !strings.HasSuffix(desired, " — ChatGPT") {
 		desired += " — ChatGPT"
 	}
+	previous := e.LastWritten
 	e.Title = desired
+	if c.Rules != nil {
+		e.RuleEpoch = c.Rules.Epoch
+	}
 	if current == desired {
 		e.LastWritten = desired
 		return
 	}
-	// First discovery does not make an unrelated native custom caption ours.
+	if ownedOnly && (!e.Own || current != previous) {
+		return
+	}
 	if !genericCaption(current) && (previous == "" || current != previous) {
 		e.Own = false
 		e.Original = ""
@@ -190,7 +270,7 @@ func (c *titleCache) apply(r sourceResult) {
 	if c.ReadOnly {
 		return
 	}
-	if r.Job.Foreground {
+	if foreground {
 		if !c.B.Active(e.W) {
 			return
 		}
@@ -308,7 +388,15 @@ func runThreeLayer(ctx context.Context, c *titleCache, interval time.Duration, f
 	}
 	go worker(fgIn, false)
 	go worker(bgIn, true)
-	defer func() { cancel(); <-done; <-done; c.restore() }()
+	defer func() {
+		cancel()
+		<-done
+		<-done
+		if c.Rules != nil {
+			c.Rules.Close()
+		}
+		c.restore()
+	}()
 	next := time.Now()
 	nextNative := next
 	poll := time.NewTicker(50 * time.Millisecond)
@@ -374,6 +462,7 @@ func runThreeLayer(ctx context.Context, c *titleCache, interval time.Duration, f
 				}
 			}
 			p := paused()
+			c.pollNameRules(!p)
 			if p {
 				if !wasPaused {
 					c.Epoch++

@@ -29,6 +29,8 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
     NSLock *_lock;
     NSString *_executable,*_rulesPath,*_stateDirectory;
     NSData *_signature,*_sourceBytes;
+    NSString *_helperSignature;
+    NSTimeInterval _nextPollUptime;
     NSMutableDictionary<NSString *,NSString *> *_display;
     NSMutableSet<NSString *> *_pending;
     NSMutableDictionary<NSString *,NSTask *> *_children;
@@ -48,6 +50,15 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
 }
 - (uint64_t)displayRevision {[_lock lock];uint64_t value=_displayRevision;[_lock unlock];return value;}
 - (void)poll {
+    // A monitor can resolve many windows per heartbeat. Read the independent
+    // rule/helper signatures once per low-cost heartbeat, not once per window.
+    NSTimeInterval now=NSProcessInfo.processInfo.systemUptime;
+    [_lock lock];
+    if(_closed||(_initialized&&now<_nextPollUptime)){[_lock unlock];return;}
+    _nextPollUptime=now+0.9;[_lock unlock];
+    NSDictionary *helper=[NSFileManager.defaultManager attributesOfItemAtPath:_executable error:nil];
+    NSTimeInterval helperModified=[helper[NSFileModificationDate] timeIntervalSince1970];
+    NSString *helperStamp=[NSString stringWithFormat:@"%d|%@|%@|%.9f|%@|%@",[NSFileManager.defaultManager isExecutableFileAtPath:_executable],helper[NSFileType],helper[NSFileSize],helperModified,helper[NSFileSystemFileNumber],helper[NSFilePosixPermissions]];
     // Bound reads before allocation. An unreadable/malformed existing file is
     // sent to the validator and produces a raw-name fallback, never old rules.
     NSDictionary *attributes=[NSFileManager.defaultManager attributesOfItemAtPath:_rulesPath error:nil];
@@ -62,8 +73,10 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
         if(!data)data=[@"invalid-rules-file" dataUsingEncoding:NSUTF8StringEncoding];
     }
     [_lock lock];
-    if(_closed||(_initialized&&((_signature==data)||[_signature isEqualToData:data]))){[_lock unlock];return;}
-    _initialized=YES;_signature=data.copy;_rulesGeneration++;_displayRevision++;[_display removeAllObjects];
+    if(_closed||(_initialized&&((_signature==data)||[_signature isEqualToData:data])&&[_helperSignature isEqualToString:helperStamp])){[_lock unlock];return;}
+    // Restoring a missing/repaired packaged helper must invalidate a cached raw
+    // fallback even when the user has not changed the rule file or source name.
+    _initialized=YES;_signature=data.copy;_helperSignature=helperStamp.copy;_rulesGeneration++;_displayRevision++;[_display removeAllObjects];
     _hasRules=data!=nil;
     if(data) {
         id object=[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
