@@ -84,6 +84,9 @@ on run argv
     set settingItem to current application's NSMenuItem's alloc()'s initWithTitle:"扫描间隔设置…" action:"openSettings:" keyEquivalent:""
     settingItem's setTarget:me
     trayMenu's addItem:settingItem
+    set rulesItem to current application's NSMenuItem's alloc()'s initWithTitle:"Name replacement… / 名称替换…" action:"openNameReplacement:" keyEquivalent:""
+    rulesItem's setTarget:me
+    trayMenu's addItem:rulesItem
     trayMenu's addItem:(current application's NSMenuItem's separatorItem())
     set quitItem to current application's NSMenuItem's alloc()'s initWithTitle:"退出并还原标题" action:"quitHelper:" keyEquivalent:""
     quitItem's setTarget:me
@@ -152,6 +155,13 @@ on openSettings:sender
         startupCheckbox's setButtonType:3
         startupCheckbox's setTitle:"开机自启动 / Start at sign-in"
         contentView's addSubview:startupCheckbox
+        -- This entry only launches the audited Unicode editor; it never reads ChatGPT UI.
+        set rulesButton to current application's NSButton's alloc()'s initWithFrame:{{20, 63}, {395, 30}}
+        rulesButton's setTitle:"Name replacement… / 名称替换…"
+        rulesButton's setBezelStyle:1
+        rulesButton's setTarget:me
+        rulesButton's setAction:"openNameReplacement:"
+        contentView's addSubview:rulesButton
         set saveButton to current application's NSButton's alloc()'s initWithFrame:{{245, 20}, {80, 30}}
         saveButton's setTitle:"保存"
         saveButton's setBezelStyle:1
@@ -180,7 +190,7 @@ on openSettings:sender
         set iconPeriodChoice to item 3 of iconChoices
         iconModeChoice's setTarget:me
         iconModeChoice's setAction:"iconModeChanged:"
-        settingsPanel's center()
+        settingsPanel's |center|()
     end if
     startupCheckbox's setState:(autoStartEnabled as integer)
     set selectedModeIndex to 0
@@ -397,7 +407,7 @@ on prepareTheme(modeValue, fixedValue, periodValue)
     set nextRandom to randomIcon
     set nextSlot to iconSlot
     if modeValue is "random" then
-        set nextSlot to my iconSlotFor(periodValue, current application's NSDate's date())
+        set nextSlot to my iconSlotFor(periodValue, current application's NSDate's |date|())
         if iconMode is not "random" or iconPeriod is not periodValue or iconSlot is not nextSlot then set nextRandom to my chooseIconAvoiding(randomIcon)
     end if
     return {modeValue, fixedValue, periodValue, nextRandom, nextSlot}
@@ -512,7 +522,7 @@ on noteIconError(slotValue)
 end noteIconError
 on iconTimerFired:sender
     if iconMode is not "random" then return
-    set slotValue to my iconSlotFor(iconPeriod, current application's NSDate's date())
+    set slotValue to my iconSlotFor(iconPeriod, current application's NSDate's |date|())
     if slotValue is iconSlot or slotValue is iconErrorSlot then return
     try
         set nextValues to my prepareTheme(iconMode, fixedIcon, iconPeriod)
@@ -571,3 +581,46 @@ on restoreStartup(beforeValues)
     end if
     if not (startupPreferences's synchronize() as boolean) then error "Could not restore login preference."
 end restoreStartup
+
+-- All paths are fixed package locations, never a command or path from preferences.
+on openNameReplacement:sender
+    try
+        set manager to current application's NSFileManager's defaultManager()
+        set executableText to current application's NSString's stringWithString:launchExecutable
+        set executableDirectory to executableText's stringByDeletingLastPathComponent() as text
+        set packageRoots to {executableDirectory, executableDirectory & "/..", executableDirectory & "/../../.."}
+        set rulesHelper to missing value
+        repeat with packageRoot in packageRoots
+            set helperCandidate to (packageRoot as text) & "/shared/macos/chatgpt-titlesync-rules"
+            if (manager's isExecutableFileAtPath:helperCandidate as boolean) then
+                set rulesHelper to helperCandidate
+                exit repeat
+            end if
+        end repeat
+        set besideHelper to executableDirectory & "/chatgpt-titlesync-rules"
+        if (manager's isExecutableFileAtPath:besideHelper as boolean) then set rulesHelper to besideHelper
+        if rulesHelper is missing value then error "Packaged name-replacement companion is unavailable."
+        set helpFile to missing value
+        repeat with packageRoot in packageRoots
+            set helpCandidate to (packageRoot as text) & "/docs/name-replacement.zh-CN.html"
+            if not (manager's fileExistsAtPath:helpCandidate as boolean) then set helpCandidate to (packageRoot as text) & "/docs/name-replacement.html"
+            if (manager's fileExistsAtPath:helpCandidate as boolean) then
+                set helpFile to helpCandidate
+                exit repeat
+            end if
+        end repeat
+        if helpFile is missing value then error "Packaged name-replacement help is unavailable."
+        set homePath to current application's NSHomeDirectory() as text
+        set rulesPath to homePath & "/Library/Application Support/ChatGPT-TitleSync/title-rules.json"
+        set configText to current application's NSString's stringWithString:configPath
+        set namesPath to (configText's stringByDeletingLastPathComponent() as text) & "/title-rule-sources.bin"
+        set editorTask to current application's NSTask's alloc()'s init()
+        editorTask's setLaunchPath:rulesHelper
+        editorTask's setArguments:{"--edit", "--rules", rulesPath, "--sources", namesPath, "--help", helpFile}
+        editorTask's setStandardOutput:(current application's NSFileHandle's fileHandleWithNullDevice())
+        editorTask's setStandardError:(current application's NSFileHandle's fileHandleWithNullDevice())
+        editorTask's launch()
+    on error errorText
+        my showError(errorText)
+    end try
+end openNameReplacement:

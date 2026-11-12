@@ -212,7 +212,7 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
     NSButton *b=[[NSButton alloc]initWithFrame:frame];b.title=title;b.bezelStyle=NSBezelStyleRounded;b.target=self;b.action=action;[self.window.contentView addSubview:b];return b;
 }
 - (void)applicationDidFinishLaunching:(NSNotification*)note{
-    (void)note;NSString *failure=nil;NSDictionary *config=Load(self.rulesPath,&_baseBytes,&failure);if(!config)config=DefaultRules();
+    (void)note;NSString *failure=nil;NSData *baseData=nil;NSDictionary *config=Load(self.rulesPath,&baseData,&failure);self.baseBytes=baseData;if(!config)config=DefaultRules();
     if(![config[@"rules"] isKindOfClass:NSArray.class]||[config[@"rules"] count]>MaxRules){failure=@"InvalidConfiguration";config=DefaultRules();}
     self.rows=[NSMutableArray array];for(NSDictionary *r in config[@"rules"]?:@[])if([r isKindOfClass:NSDictionary.class])[self.rows addObject:[r mutableCopy]];
     self.window=[[NSWindow alloc]initWithContentRect:NSMakeRect(0,0,1100,800) styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable backing:NSBackingStoreBuffered defer:NO];

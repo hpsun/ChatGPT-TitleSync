@@ -1,4 +1,4 @@
-name: Experimental macOS compile only
+name: Experimental macOS compile and rule tests
 on:
   push:
   pull_request:
@@ -57,6 +57,9 @@ jobs:
               (cd go && CGO_ENABLED=1 go build -trimpath -o "$RUNNER_TEMP/chatgpt-titlesync-go" .)
               ;;
           esac
+      - name: Verify Unicode name rules without UI or AX
+        if: ${{ always() && matrix.language == 'swift' }}
+        run: python3 tools/test_name_replacement.py --worker "$RUNNER_TEMP/chatgpt-titlesync-rules" --report "$RUNNER_TEMP/name-rules-report.json"
       - name: Compile the shared menu script without launching it
         id: applescript_compile
         if: ${{ always() && matrix.language == 'swift' }}
