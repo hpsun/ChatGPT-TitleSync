@@ -23,6 +23,8 @@ import (
 
 const ruleMaxBytes = 131072
 const ruleMaxUnits = 512
+const ruleCaptionSuffix = " — ChatGPT"
+const ruleMaxCaptionUnits = 522
 
 type ruleMemo struct{ Value, Status string }
 type ruleJob struct {
@@ -43,6 +45,7 @@ type ruleAnswer struct {
 type nameRuleClient struct {
 	RulesPath, StateDirectory, Helper, Help string
 	Epoch                                   uint64
+	CaptionMode                             bool
 	signature                               [32]byte
 	initialized, missing                    bool
 	readFailure                             string
@@ -100,7 +103,8 @@ func ruleCompanionPaths(exe string) (string, string) {
 func newNameRuleClient(parent context.Context, stateDirectory string) *nameRuleClient {
 	exe, _ := os.Executable()
 	helper, help := ruleCompanionPaths(exe)
-	c := newNameRuleClientAt(parent, stateDirectory, sharedRulesPath(), helper, help, formatRuleWorker)
+	c := newNameRuleClientAt(parent, stateDirectory, sharedRulesPath(), helper, help, formatCaptionRuleWorker)
+	c.CaptionMode = true
 	c.resolveHelper = func() string { p, _ := ruleCompanionPaths(exe); return p }
 	return c
 }
@@ -179,6 +183,11 @@ func (c *nameRuleClient) Poll(rawNames []string) {
 			key = append(key, 0)
 		}
 		key = append(key, []byte(ruleHelperSignature(c.Helper))...)
+		if c.CaptionMode {
+			key = append(key, 2)
+		} else {
+			key = append(key, 3)
+		}
 		sig := sha256.Sum256(key)
 		if !c.initialized || sig != c.signature {
 			c.epochCancel()
@@ -222,7 +231,7 @@ func (c *nameRuleClient) Display(raw string) (string, bool) {
 		c.Poll([]string{raw})
 	}
 	if c.missing || c.readFailure != "" {
-		return raw, true
+		return localRuleRaw(raw, c.CaptionMode), true
 	}
 	if v, ok := c.memo[raw]; ok {
 		return v.Value, true
@@ -233,7 +242,7 @@ func (c *nameRuleClient) Display(raw string) (string, bool) {
 		case c.jobs <- job:
 			c.pending[raw] = true
 		default:
-			return raw, true
+			return localRuleRaw(raw, c.CaptionMode), true
 		}
 	}
 	return "", false
@@ -252,8 +261,9 @@ func encodeRulePacket(s string) ([]byte, error) {
 	}
 	return b, nil
 }
-func decodeRulePacket(b []byte) (string, error) {
-	if len(b)%2 != 0 || len(b) > ruleMaxUnits*2 {
+func decodeRulePacket(b []byte) (string, error) { return decodeRulePacketLimit(b, ruleMaxUnits) }
+func decodeRulePacketLimit(b []byte, maxUnits int) (string, error) {
+	if len(b)%2 != 0 || len(b) > maxUnits*2 {
 		return "", errors.New("packet")
 	}
 	units := make([]uint16, len(b)/2)
@@ -287,6 +297,21 @@ func validRuleDisplay(s string) bool {
 	}
 	return true
 }
+
+// The companion is the only suffix owner in caption mode. Body fixtures retain their API.
+func localRuleRaw(raw string, caption bool) string {
+	if caption && validRuleDisplay(raw) {
+		return raw + ruleCaptionSuffix
+	}
+	return raw
+}
+func validRuleCaption(value string) bool {
+	if len(utf16.Encode([]rune(value))) > ruleMaxCaptionUnits {
+		return false
+	}
+	body := strings.TrimSuffix(value, ruleCaptionSuffix)
+	return validRuleDisplay(body)
+}
 func ownedRuleCleanup(parent, dir string) {
 	parent, _ = filepath.Abs(parent)
 	dir, _ = filepath.Abs(dir)
@@ -310,7 +335,13 @@ func boundedRuleFile(path string, limit int) ([]byte, error) {
 	return b, nil
 }
 func formatRuleWorker(parent context.Context, state, helper string, rules []byte, missing bool, raw string) ruleMemo {
-	fallback := func(code string) ruleMemo { return ruleMemo{raw, "fallback:" + code} }
+	return formatRuleWorkerMode(parent, state, helper, rules, missing, raw, false)
+}
+func formatCaptionRuleWorker(parent context.Context, state, helper string, rules []byte, missing bool, raw string) ruleMemo {
+	return formatRuleWorkerMode(parent, state, helper, rules, missing, raw, true)
+}
+func formatRuleWorkerMode(parent context.Context, state, helper string, rules []byte, missing bool, raw string, caption bool) ruleMemo {
+	fallback := func(code string) ruleMemo { return ruleMemo{localRuleRaw(raw, caption), "fallback:" + code} }
 	input, e := encodeRulePacket(raw)
 	if e != nil {
 		return fallback("InvalidRaw")
@@ -337,7 +368,12 @@ func formatRuleWorker(parent context.Context, state, helper string, rules []byte
 	}
 	ctx, cancel := context.WithTimeout(parent, 1500*time.Millisecond)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, helper, "--format", "--rules", rp, "--input", ip, "--output", op, "--status", sp)
+	args := []string{"--format"}
+	if caption {
+		args = append(args, "--caption")
+	}
+	args = append(args, "--rules", rp, "--input", ip, "--output", op, "--status", sp)
+	cmd := exec.CommandContext(ctx, helper, args...)
 	hideChild(cmd)
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
@@ -364,21 +400,29 @@ func formatRuleWorker(parent context.Context, state, helper string, rules []byte
 		}
 	}
 	text = strings.TrimSpace(text)
-	b, e := boundedRuleFile(op, ruleMaxUnits*2)
+	limit := ruleMaxUnits
+	if caption {
+		limit = ruleMaxCaptionUnits
+	}
+	b, e := boundedRuleFile(op, limit*2)
 	if e != nil {
 		return fallback("WorkerProtocol")
 	}
-	value, e := decodeRulePacket(b)
+	value, e := decodeRulePacketLimit(b, limit)
 	if e != nil {
 		return fallback("WorkerProtocol")
 	}
 	if code == 2 && strings.HasPrefix(text, "fallback:") {
-		if value != raw {
+		if value != raw && (!caption || value != raw+ruleCaptionSuffix) {
 			return fallback("WorkerProtocol")
 		}
-		return ruleMemo{raw, text}
+		return ruleMemo{value, text}
 	}
-	if code != 0 || text != "ok" || !validRuleDisplay(value) {
+	valid := validRuleDisplay(value)
+	if caption {
+		valid = validRuleCaption(value)
+	}
+	if code != 0 || text != "ok" || !valid {
 		return fallback("WorkerProtocol")
 	}
 	return ruleMemo{value, "ok"}

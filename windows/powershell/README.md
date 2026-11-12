@@ -18,6 +18,14 @@ After a client has been constructed, the display signature includes rule bytes p
 
 See [name-replacement help](../../docs/name-replacement.md) and the packaged [local HTML help](../../docs/name-replacement.html).
 
+### Optional ChatGPT suffix
+
+**Append — ChatGPT / 标题末尾显示ChatGPT** is checked by default. Clear it to show only the derived conversation name. It is independent of the rule master switch; empty or disabled rules can still omit the suffix. Save applies it; Cancel preserves saved bytes. Schema-1 files may omit append_chatgpt_suffix (default true); a present value must be a JSON Boolean.
+
+The raw-name cache, original caption and source schedule remain unchanged. Saving re-renders owned captions at maintenance without another source read; external manual captions remain protected. Valid body/caption limits are 512/522 UTF-16 units. Decodable invalid sources (overlong or containing control characters) return the entire raw name without a suffix or truncation. The CLI keeps --format body-only; --format --caption returns the complete caption. Read failures default to adding the suffix, while valid false remains effective when rule matching falls back. Normal C#/PowerShell consumers do not append another suffix.
+
+Workers retain the 1,500 ms deadline. Success and fallback results are cached for unchanged raw name plus rule/helper signature, until that signature changes, another raw name is observed or the resident restarts. Saving creates a new rule revision. Private parallel runs recorded WorkerTimeout; one sequential low-load retry per PowerShell host then returned ok and actually applied false. This does not prove a universal response-time guarantee. The original failure evidence remains.
+
 ### New-feature verification boundary
 
 The new companion has pure Unicode/CLI tests, including whole-pipeline fallback and malformed surrogate output. Injected display-only checks prove cached repaint does not add a source read. PowerShell 5.1/7 client checks use private files and fake window backends. Editor renders use fictional examples and never-shown owned controls at 100%, 125% and 150% simulated font/geometry scales; header glyph bounds fit. A separate offscreen NOACTIVATE/Hidden check verifies the candidate's explicit native reveal without changing the foreground. These checks do **not** claim a new normal-desktop, sign-in, physical tray-menu or all-live-UIA acceptance run. Earlier real-window results below retain their original dates and scope.

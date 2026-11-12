@@ -58,10 +58,10 @@ static BOOL Template(NSString *s,NSUInteger groups,NSArray **tokens,NSString **e
     }
     if(literal.length)[out addObject:[literal copy]];if(tokens)*tokens=out;return YES;
 }
-static NSDictionary *DefaultRules(void){return @{@"schema_version":@1,@"enabled":@YES,@"revision":@"",@"rules":@[]};}
+static NSDictionary *DefaultRules(void){return @{@"schema_version":@1,@"enabled":@YES,@"append_chatgpt_suffix":@YES,@"revision":@"",@"rules":@[]};}
 static NSArray *Compile(NSDictionary *config,NSString **failure){
     if(![config isKindOfClass:NSDictionary.class]||![config[@"schema_version"] isKindOfClass:NSNumber.class]||
-       BoolValue(config[@"schema_version"])||[config[@"schema_version"] doubleValue]!=1.0||![config[@"enabled"] isKindOfClass:NSNumber.class]||!BoolValue(config[@"enabled"])||
+       BoolValue(config[@"schema_version"])||(config[@"append_chatgpt_suffix"]&&!BoolValue(config[@"append_chatgpt_suffix"]))||[config[@"schema_version"] doubleValue]!=1.0||![config[@"enabled"] isKindOfClass:NSNumber.class]||!BoolValue(config[@"enabled"])||
        ![config[@"revision"] isKindOfClass:NSString.class]||![config[@"rules"] isKindOfClass:NSArray.class]||[config[@"rules"] count]>MaxRules){if(failure)*failure=@"InvalidConfiguration";return nil;}
     NSMutableArray *compiled=[NSMutableArray array];
     for(id raw in config[@"rules"]){
@@ -145,7 +145,7 @@ static BOOL AtomicData(NSData *data,NSString *path,NSError **error){
     if(!ok){unlink(temp.fileSystemRepresentation);if(error)*error=[NSError errorWithDomain:@"TitleRules" code:5 userInfo:@{NSLocalizedDescriptionKey:@"Atomic save failed"}];}
     return ok;
 }
-static int FormatCLI(NSDictionary *args){
+static int FormatCLI(NSDictionary *args,BOOL caption){
     NSString *rules=args[@"--rules"],*input=args[@"--input"],*output=args[@"--output"],*status=args[@"--status"];
     if(!Absolute(rules)||!Absolute(input)||!Absolute(output)||!Absolute(status))return 3;
     NSSet *paths=[NSSet setWithArray:@[rules.stringByStandardizingPath,input.stringByStandardizingPath,output.stringByStandardizingPath,status.stringByStandardizingPath]];
@@ -154,7 +154,17 @@ static int FormatCLI(NSDictionary *args){
     const unsigned char *p=rawData.bytes;if(rawData.length>=2&&p[0]==255&&p[1]==254)rawData=[rawData subdataWithRange:NSMakeRange(2,rawData.length-2)];
     NSString *raw=Decode(rawData,NO),*failure=nil;NSDictionary *config=Load(rules,NULL,&failure);NSString *value=raw;
     if(!raw)failure=@"InvalidUtf16";else if(config)value=Format(config,raw,&failure);
-    NSData *result=failure?rawData:Packet(value);if(!result)return 3;
+    // Only valid source names enter caption composition. Invalid source bytes are
+    // returned intact, so a malformed input is never truncated to fit a caption.
+    NSData *result=failure?rawData:Packet(value);
+    if(caption&&ValidName(raw)){
+        BOOL shapeError=[failure isEqual:@"InvalidConfiguration"]||[failure isEqual:@"InvalidRule"]||[failure isEqual:@"EmptyPattern"];
+        BOOL append=YES;
+        if(!shapeError&&config&&BoolValue(config[@"append_chatgpt_suffix"]))append=[config[@"append_chatgpt_suffix"] boolValue];
+        NSString *body=failure?raw:value;
+        result=Packet(append?[body stringByAppendingString:@" — ChatGPT"]:body);
+    }
+    if(!result)return 3;
     if(![result writeToFile:output options:0 error:&io])return 3;
     NSString *code=failure?[@"fallback:" stringByAppendingString:failure]:@"ok";
     if(![[code dataUsingEncoding:NSASCIIStringEncoding] writeToFile:status options:0 error:&io])return 3;
@@ -178,19 +188,19 @@ static BOOL EditorClosing=NO;
 static void StopOwnedWorkers(void){
     @synchronized(OwnedWorkers){EditorClosing=YES;for(NSTask *task in OwnedWorkers)if(task.running)kill(task.processIdentifier,SIGKILL);}
 }
-static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
+static NSDictionary *RunChildMode(NSString *exe,NSData *rules,NSString *sample,BOOL caption){
     static dispatch_once_t once;dispatch_once(&once,^{OwnedWorkers=[NSMutableSet set];});
     NSString *dir=[NSTemporaryDirectory() stringByAppendingPathComponent:[@"ChatGPT-TitleSync-rules-preview-" stringByAppendingString:NSUUID.UUID.UUIDString]];
     NSError *error=nil;if(![NSFileManager.defaultManager createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:&error])return @{@"status":@"fallback:PreviewIO",@"value":sample};
     NSString *rp=[dir stringByAppendingPathComponent:@"rules.json"],*ip=[dir stringByAppendingPathComponent:@"input.bin"],*op=[dir stringByAppendingPathComponent:@"output.bin"],*sp=[dir stringByAppendingPathComponent:@"status.txt"];
     if(rules)[rules writeToFile:rp atomically:NO];[Packet(sample) writeToFile:ip atomically:NO];
-    NSTask *task=[NSTask new];task.executableURL=[NSURL fileURLWithPath:exe];task.arguments=@[@"--format",@"--rules",rp,@"--input",ip,@"--output",op,@"--status",sp];
+    NSTask *task=[NSTask new];task.executableURL=[NSURL fileURLWithPath:exe];task.arguments=caption?@[@"--format",@"--caption",@"--rules",rp,@"--input",ip,@"--output",op,@"--status",sp]:@[@"--format",@"--rules",rp,@"--input",ip,@"--output",op,@"--status",sp];
     task.standardOutput=NSFileHandle.fileHandleWithNullDevice;task.standardError=NSFileHandle.fileHandleWithNullDevice;
     BOOL launched=NO,timeout=NO;
     @synchronized(OwnedWorkers){if(!EditorClosing){[OwnedWorkers addObject:task];launched=[task launchAndReturnError:&error];}}
     if(launched){NSTimeInterval until=NSProcessInfo.processInfo.systemUptime+1.5;while(task.running&&NSProcessInfo.processInfo.systemUptime<until)[NSThread sleepForTimeInterval:0.01];if(task.running){timeout=YES;kill(task.processIdentifier,SIGKILL);}[task waitUntilExit];}
     NSString *status=timeout?@"fallback:WorkerTimeout":[NSString stringWithContentsOfFile:sp encoding:NSASCIIStringEncoding error:nil];
-    NSString *value=Decode(ReadBounded(op,MaxUnits*2,NULL),NO);
+    NSString *value=Decode(ReadBounded(op,(MaxUnits+(caption?10:0))*2,NULL),NO);
     if(timeout){status=@"fallback:WorkerTimeout";value=sample;}
     else if(!launched||!status||!value){status=@"fallback:PreviewIO";value=sample;}
     @synchronized(OwnedWorkers){[OwnedWorkers removeObject:task];}
@@ -198,13 +208,15 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
     [NSFileManager.defaultManager removeItemAtPath:dir error:nil];return result;
 }
 
+static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){return RunChildMode(exe,rules,sample,NO);}
+
 @interface RulesEditor:NSObject<NSApplicationDelegate,NSWindowDelegate,NSTableViewDataSource,NSTableViewDelegate,NSTextFieldDelegate>
 @property NSString *rulesPath,*sourcesPath,*helpPath,*exe;
 @property NSData *baseBytes;
 @property NSMutableArray<NSMutableDictionary*> *rows;
 @property NSWindow *window;
 @property NSTableView *table;
-@property NSButton *enabled,*save,*useRule,*cancelButton;
+@property NSButton *enabled,*appendSuffix,*save,*useRule,*cancelButton;
 @property BOOL saving;
 @property NSRange sampleSelection;
 @property NSString *selectionSample;
@@ -230,6 +242,9 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
     self.window.title=Local(@"ChatGPT-TitleSync — Name replacement",@"ChatGPT-TitleSync — 名称替换");self.window.releasedWhenClosed=NO;self.window.delegate=self;[self.window center];
     self.enabled=[self button:Local(@"Enable name replacement",@"启用名称替换") frame:NSMakeRect(20,752,220,28) action:@selector(changed:)];
     [self.enabled setButtonType:NSButtonTypeSwitch];self.enabled.state=[config[@"enabled"] boolValue]?NSControlStateValueOn:NSControlStateValueOff;
+    self.appendSuffix=[self button:Local(@"Append — ChatGPT",@"标题末尾显示 ChatGPT") frame:NSMakeRect(20,720,230,28) action:@selector(changed:)];
+    [self.appendSuffix setButtonType:NSButtonTypeSwitch];
+    self.appendSuffix.state=(!config[@"append_chatgpt_suffix"]||[config[@"append_chatgpt_suffix"] boolValue])?NSControlStateValueOn:NSControlStateValueOff;
     self.current=[[NSPopUpButton alloc]initWithFrame:NSMakeRect(260,752,660,28) pullsDown:NO];self.current.target=self;self.current.action=@selector(chooseSource:);[self.window.contentView addSubview:self.current];
     [self button:Local(@"Refresh names",@"刷新名称") frame:NSMakeRect(940,752,135,28) action:@selector(refreshSources:)];
     self.timestamp=[self field:@"" frame:NSMakeRect(260,725,810,22) editable:NO];
@@ -274,12 +289,12 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
 - (BOOL)windowShouldClose:(NSWindow*)window{(void)window;return !self.saving;}
 - (void)controlTextDidChange:(NSNotification*)note{(void)note;[self changed:nil];}
 - (NSDictionary*)draft{
-    return @{@"schema_version":@1,@"enabled":@(self.enabled.state==NSControlStateValueOn),@"revision":NSUUID.UUID.UUIDString,@"rules":[self.rows copy]};
+    return @{@"schema_version":@1,@"enabled":@(self.enabled.state==NSControlStateValueOn),@"append_chatgpt_suffix":@(self.appendSuffix.state==NSControlStateValueOn),@"revision":NSUUID.UUID.UUIDString,@"rules":[self.rows copy]};
 }
 - (void)changed:(id)sender{(void)sender;[NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(preview) object:nil];[self performSelector:@selector(preview) withObject:nil afterDelay:0.12];}
 - (void)preview{
     NSUInteger generation=++self.previewGeneration;NSData *data=[NSJSONSerialization dataWithJSONObject:self.draft options:0 error:nil];NSString *sample=self.sample.stringValue?:@"",*exe=self.exe;
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),^{NSDictionary *r=RunChild(exe,data,sample);dispatch_async(dispatch_get_main_queue(),^{if(generation!=self.previewGeneration)return;self.output.stringValue=r[@"value"];self.output.toolTip=r[@"status"];});});
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),^{NSDictionary *r=RunChildMode(exe,data,sample,YES);dispatch_async(dispatch_get_main_queue(),^{if(generation!=self.previewGeneration)return;self.output.stringValue=r[@"value"];self.output.toolTip=r[@"status"];});});
 }
 - (void)add:(id)sender{(void)sender;if(self.rows.count>=MaxRules){[self alert:@"At most 32 rules."];return;}[self.rows addObject:[@{@"enabled":@YES,@"mode":@"literal",@"pattern":@"",@"replacement":@""} mutableCopy]];[self.table reloadData];[self changed:nil];}
 - (void)remove:(id)sender{(void)sender;NSInteger i=self.table.selectedRow;if(i>=0){[self.rows removeObjectAtIndex:i];[self.table reloadData];[self changed:nil];}}
@@ -316,9 +331,9 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
 }
 - (void)chooseSuggestion:(id)sender{
     (void)sender;NSInteger i=self.candidate.indexOfSelectedItem;if(i<0||(NSUInteger)i>=self.suggestions.count)return;NSDictionary *s=self.suggestions[i];self.explanation.stringValue=s[@"explanation"];self.suggestPattern.stringValue=s[@"pattern"];self.suggestReplacement.stringValue=s[@"replacement"];self.useRule.enabled=YES;
-    NSDictionary *config=@{@"schema_version":@1,@"enabled":@YES,@"revision":NSUUID.UUID.UUIDString,@"rules":@[@{@"enabled":@YES,@"mode":@"regex",@"pattern":s[@"pattern"],@"replacement":s[@"replacement"]}]};
+    NSDictionary *config=@{@"schema_version":@1,@"enabled":@YES,@"append_chatgpt_suffix":@(self.appendSuffix.state==NSControlStateValueOn),@"revision":NSUUID.UUID.UUIDString,@"rules":@[@{@"enabled":@YES,@"mode":@"regex",@"pattern":s[@"pattern"],@"replacement":s[@"replacement"]}]};
     NSData *data=[NSJSONSerialization dataWithJSONObject:config options:0 error:nil];NSString *sample=self.sample.stringValue,*exe=self.exe;NSDictionary *selected=s;
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),^{NSDictionary *r=RunChild(exe,data,sample);dispatch_async(dispatch_get_main_queue(),^{if(self.candidate.indexOfSelectedItem==i&&self.suggestions[i]==selected)self.suggestResult.stringValue=r[@"value"];});});
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),^{NSDictionary *r=RunChildMode(exe,data,sample,YES);dispatch_async(dispatch_get_main_queue(),^{if(self.candidate.indexOfSelectedItem==i&&self.suggestions[i]==selected)self.suggestResult.stringValue=r[@"value"];});});
 }
 - (void)useSuggestion:(id)sender{
     (void)sender;NSInteger i=self.candidate.indexOfSelectedItem;if(i<0||(NSUInteger)i>=self.suggestions.count||self.rows.count>=MaxRules)return;NSDictionary *s=self.suggestions[i];[self.rows addObject:[@{@"enabled":@YES,@"mode":@"regex",@"pattern":s[@"pattern"],@"replacement":s[@"replacement"]} mutableCopy]];[self.table reloadData];[self changed:nil];
@@ -327,7 +342,7 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
 - (void)saveRules:(id)sender{
     (void)sender;[self.window makeFirstResponder:nil];NSDictionary *draft=self.draft;NSData *data=[NSJSONSerialization dataWithJSONObject:draft options:NSJSONWritingSortedKeys error:nil];
     if(!data||data.length>MaxBytes){[self alert:@"The rules file is too large."];return;}
-    self.saving=YES;self.cancelButton.enabled=NO;self.save.enabled=NO;self.table.enabled=NO;self.enabled.enabled=NO;NSString *exe=self.exe,*path=self.rulesPath;NSData *base=self.baseBytes;
+    self.saving=YES;self.cancelButton.enabled=NO;self.save.enabled=NO;self.table.enabled=NO;self.enabled.enabled=NO;self.appendSuffix.enabled=NO;NSString *exe=self.exe,*path=self.rulesPath;NSData *base=self.baseBytes;
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0),^{
         NSDictionary *check=RunChild(exe,data,@"Example name");NSString *status=check[@"status"],*failure=nil;
         if(![status isEqual:@"ok"]&&![status isEqual:@"fallback:InvalidOutput"]&&![status isEqual:@"fallback:AggregateTimeout"])failure=[@"Validation failed: " stringByAppendingString:status?:@"Unknown"];
@@ -347,7 +362,7 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
             }
             if(lockfd>=0)close(lockfd);
         }
-        dispatch_async(dispatch_get_main_queue(),^{self.saving=NO;self.cancelButton.enabled=YES;self.save.enabled=YES;self.table.enabled=YES;self.enabled.enabled=YES;if(failure)[self alert:failure];else{self.baseBytes=data;[self cancel:nil];}});
+        dispatch_async(dispatch_get_main_queue(),^{self.saving=NO;self.cancelButton.enabled=YES;self.save.enabled=YES;self.table.enabled=YES;self.enabled.enabled=YES;self.appendSuffix.enabled=YES;if(failure)[self alert:failure];else{self.baseBytes=data;[self cancel:nil];}});
     });
 }
 - (void)help:(id)sender{(void)sender;NSString *path=self.helpPath;if([[[NSLocale preferredLanguages] firstObject] hasPrefix:@"zh"]){NSString *zh=[path.stringByDeletingPathExtension stringByAppendingString:@".zh-CN.html"];if([NSFileManager.defaultManager fileExistsAtPath:zh])path=zh;}if(Absolute(path)&&[NSFileManager.defaultManager fileExistsAtPath:path])[NSWorkspace.sharedWorkspace openURL:[NSURL fileURLWithPath:path]];else[self alert:@"The packaged local help page is unavailable."];}
@@ -355,10 +370,10 @@ static NSDictionary *RunChild(NSString *exe,NSData *rules,NSString *sample){
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app{(void)app;return YES;}
 @end
 int main(int argc,const char *argv[]){@autoreleasepool{
-    NSMutableDictionary *args=[NSMutableDictionary dictionary];BOOL format=NO,edit=NO;
-    for(int i=1;i<argc;i++){NSString *key=[NSString stringWithUTF8String:argv[i]];if([key isEqual:@"--format"]){format=YES;continue;}if([key isEqual:@"--edit"]){edit=YES;continue;}if(i+1>=argc)return 3;args[key]=[NSString stringWithUTF8String:argv[++i]];}
-    if(format&&!edit&&argc==10&&args.count==4)return FormatCLI(args);
-    if(!edit||format||argc!=8||args.count!=3||!Absolute(args[@"--rules"])||!Absolute(args[@"--sources"])||!Absolute(args[@"--help"]))return 3;
+    NSMutableDictionary *args=[NSMutableDictionary dictionary];BOOL format=NO,edit=NO,caption=NO;
+    for(int i=1;i<argc;i++){NSString *key=[NSString stringWithUTF8String:argv[i]];if([key isEqual:@"--format"]){format=YES;continue;}if([key isEqual:@"--caption"]){if(caption)return 3;caption=YES;continue;}if([key isEqual:@"--edit"]){edit=YES;continue;}if(i+1>=argc)return 3;args[key]=[NSString stringWithUTF8String:argv[++i]];}
+    if(format&&!edit&&argc==(caption?11:10)&&args.count==4)return FormatCLI(args,caption);
+    if(!edit||format||caption||argc!=8||args.count!=3||!Absolute(args[@"--rules"])||!Absolute(args[@"--sources"])||!Absolute(args[@"--help"]))return 3;
     RulesEditor *editor=[RulesEditor new];editor.rulesPath=args[@"--rules"];editor.sourcesPath=args[@"--sources"];editor.helpPath=args[@"--help"];editor.exe=[NSString stringWithUTF8String:argv[0]];
     if(!editor.exe.isAbsolutePath)editor.exe=[NSFileManager.defaultManager.currentDirectoryPath stringByAppendingPathComponent:editor.exe];
     NSApplication *app=[NSApplication sharedApplication];app.delegate=editor;[app setActivationPolicy:NSApplicationActivationPolicyRegular];[app run];return 0;

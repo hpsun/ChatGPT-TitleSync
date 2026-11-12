@@ -16,9 +16,13 @@
 
 ## 可配置名称替换——功能分支
 
-在托盘菜单或设置中选择**名称替换…**，支持普通文字与正则表达式。规则默认空白；可从已观测到的对话名选择示例、预览结果或请求本地生成的建议，明确保存后才生效。不附带或自动导入个人规则与前缀。
+有序普通文字/正则规则缺省为空，不导入私人预设；当前名称复用私有已核实快照，预览和通用建议须明确**使用规则→保存**。
 
-详见[中文帮助](docs/name-replacement.zh-CN.md)或[English guide](docs/name-replacement.md)。Windows各语言实现共用Unicode处理组件，macOS使用Foundation组件；Mac真实AX与编辑器运行继续标为Experimental。本功能仍在分支验证中，不表示已建立新Release或决定改名。
+共享编辑器的 **Append — ChatGPT / 标题末尾显示ChatGPT** 复选框缺省勾选，按**保存**生效，与 **Enable name replacement** 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 `append_chatgpt_suffix` 缺项按 `true`，不属于扫描、图标或启动项偏好。
+
+原始名/原标题恢复数据、手工标题保护与来源节拍不改。`--format`保留主体，附加`--caption`返回完整标题，见[后缀、来源边界与协议](docs/name-replacement.zh-CN.md#chatgpt-suffix)。Python与三AHK产品当前`--once`忽略这些已保存显示设置，须与常驻模式及旧API范围区分。
+
+开发树版本仍为 **0.1.0**，下一目标为 **0.2.0**；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。
 
 ## 获取文件
 
@@ -110,14 +114,14 @@ C# 前台保持分别发布心跳`Seq`/`HeartbeatUtc`和来源`SourceSeq`/`Obser
 
 <h2 id="validation">验证状态</h2>
 
-**当前功能状态：** [v0.1.0预览版](https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0)已经公开；名称替换仍在功能分支，未建立新Release。当前Windows Unicode配套程序的**31／31项共享格式CLI用例**全部通过，只计一套，不按前端重复累计。八种独立Windows前端实现的新一轮完整桌面复测仍待开展；下方九运行时记录属于旧源码，不能替代本功能验收。
+**当前功能状态：**Windows通过 **46／46项共同CLI**（31 body＋15 caption）；另有helper专项 **37项**（22保留body＋15 caption），两套有重叠，不能相加为83。C#显示10项、始终隐藏编辑器13项通过；均为受控组件结果，不是正常桌面验收。负载下1.5秒WorkerTimeout可使已保存false仍显示缺省尾巴，失败缓存须由规则/helper身份、原名变化或重启刷新。两host低载单项成功不能称无条件通过，见[确切负载边界](KNOWN_ISSUES.zh-CN.md#format-worker-deadline-under-load)。
 
 
 [支持矩阵](support-matrix.zh-CN.md) 区分当前受控夹具、历史只读与未验证目标。当前 C# 组件检查含 **41项策略/计时、13项watch/工作进程生命周期、8项来源间隔协议及12项设置检查**。公开策略夹具复现同一组41项，不另重复累计。
 
 fake／自有窗口证据不等于完整的独立托盘、安装、长期驻留或任务栏视觉验收。真实窗口验收及发布门槛另见[本地验证摘要](docs/release-readiness.zh-CN.md#local-validation)。
 
-在[CI检查点`19cec808`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990)及[检查点`97858710`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444)，Foundation helper及新增Swift／Objective-C客户端集成已实际编译，同一套**30项共同格式CLI用例**通过。Go／Rust当时仍为旧baseline适配。最新AppleScript的`launch`修复、helper输入／I/O边界、客户端恢复及新Go／Rust适配集成仍等待下一完整CI。所有Mac路线继续标**Experimental**：真实AX／窗口标题、菜单、编辑器及登录行为未验收；共享模型或编译不代表原生运行实测。
+在 [Mac CI 检查点 `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229)，**四种原生语言构建**（Swift、Objective-C、Go、Rust）、**31项共同格式化**、**5项文件I/O**及**3项客户端恢复**均通过；共享 AppleScript 编译仍在报告位置 `:64` 的 `application` 变量附近报 **-10003**，最小修正待验证。更新后缀修订的 **46项共同用例及7项客户端**仍须另一轮原生整合CI，**不在此检查点覆盖范围内**。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。
 
 私有缓存、诊断和工作快照可能含对话名及进程身份，应留在本地。生成的二进制、SDK／运行时下载、日志和验证证据不进入源码包。见[指南索引](docs/guides-index.zh-CN.md)。
 

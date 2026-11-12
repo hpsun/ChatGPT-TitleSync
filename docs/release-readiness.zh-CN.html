@@ -1,11 +1,12 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="chatgpt">发布准备：ChatGPT 标题同步助手</h1>
 <p><a href="release-readiness.md">English</a> · <a href="../README.zh-CN.md">项目主页</a></p>
-<p><strong>截至2026-11-12：<a href="https://github.com/hpsun/ChatGPT-TitleSync">ChatGPT-TitleSync仓库</a>与<a href="https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0">v0.1.0公开预览版</a>已经公开；名称替换功能分支正在验证，未建立新Release，产品名称与版本不变。</strong> 中文名为<strong>ChatGPT 标题同步助手</strong>。用户已选MIT，源码仍须包含仓库LICENSE。此前未发布／待批准说法保留为历史状态。</p>
+<p><strong>截至2026-11-12：</strong><a href="https://github.com/hpsun/ChatGPT-TitleSync">仓库</a>与<a href="https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0">v0.1.0公开预览</a>已存在。开发树版本仍为 <strong>0.1.0</strong>，下一目标为 <strong>0.2.0</strong>；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。产品名保持ChatGPT-TitleSync／ChatGPT标题同步助手；用户选定的MIT及仓库LICENSE仍须保留，此前未发布/待批准条目作为历史。</p>
 <h2 id="_1">既有登录自启动契约</h2>
 <p>登录自启动已经<strong>缺省已开</strong>；托盘／菜单可直接勾选，设置中同项按保存提交、取消不改。Windows各实现共用当前用户Run值和DWORD偏好；启用超长命令会被拒绝，退出不取消下次登录登记。见<a href="startup.zh-CN.md">启动说明</a>。名称替换不改变此契约。下方旧九路线设置／重置观测属于旧源码修订，不能证明新规则处理已经验收。Mac登录／LaunchAgent行为仍为Experimental，未完成真实Mac验收。</p>
 <h2 id="_2">名称替换候选</h2>
-<p>新增显示处理缺省为空规则，支持有序字面／正则规则，并使用共享系统Unicode配套程序；不内置个人规则或自动迁移。当前对话名示例来自已核实原名的快照，建议规则须明确点<strong>采用规则</strong>及<strong>保存</strong>。规则变化只使显示状态失效，不改变来源读取频率或原标题还原记录。见<a href="name-replacement.zh-CN.md">名称替换帮助</a>。</p>
-<p>本功能目前的Windows验证使用私有文件、模拟原生状态、自有控件和仅CLI工作进程，<strong>不是正常驻留或真实ChatGPT界面验收</strong>。最新C#／PowerShell／其它语言结果将按组件汇总，不借旧测试凑合计。</p>
+<p>共享编辑器的 <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> 复选框缺省勾选，按<strong>保存</strong>生效，与 <strong>Enable name replacement</strong> 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 <code>append_chatgpt_suffix</code> 缺项按 <code>true</code>，不属于扫描、图标或启动项偏好。</p>
+<p>显示链缺省无私人规则或自动迁移；当前样例来自私有已核实原名快照，建议须使用规则再保存。<code>--format</code>保留主体，<code>--format --caption</code>返回完整标题；合法原名/主体限512个UTF-16码元，正常完整标题最多522；可解码非法来源完整无修饰回退，不截断。原名/恢复/手工标题守卫与来源节拍不改，四种Python／AHK一次检查模式限制见<a href="name-replacement.zh-CN.md#caption-protocol">帮助</a>。</p>
+<p><strong>Windows 负载边界：</strong>自有格式化 worker 的截止仍为 <strong>1.5 秒</strong>。负载竞争或启动缓慢可导致超时，回退为完整原名加<strong>缺省后缀</strong>，因此保存的 <code>false</code> 可能尚未生效。失败按原名及规则/辅助程序身份缓存，条件不变的轮询不会重试；重新保存规则、替换/改变辅助程序身份、重启监听，或观测到不同原名，才会刷新该缓存。降低负载后，两种 PowerShell host（5.1、7）分别单独复测同项成功，之前 WorkerTimeout 现场仍保留；不能据此宣称无条件通过，也不承诺完整界面响应必在1.5秒内完成。</p>
 <h2 id="_3">目标协议与验收边界</h2>
 <p>最终目标分三层：</p>
 <ol>
@@ -26,38 +27,60 @@ python tools/release_audit.py --allowlist --no-zip --output-dir &quot;$env:TEMP/
 <p>用户于<strong>2026-11-11</strong>明确批准的仓库文件及首个v0.1.0预览版现已公开。这不等于远端CI结果或Mac原生验收；名称替换功能分支单独验证，未建立其它Release。</p>
 <p><a id="local-validation"></a></p>
 <h2 id="_5">本地验证</h2>
-<p>本功能证据与历史检查分开记录：</p>
+<p><a id="current-suffix-verification"></a>
+当前逐组件证据与历史分开；46／37重叠测试不相加，共同用例不按前端重复计数，嵌套子例不升级为顶层数量。</p>
 <table>
 <thead>
 <tr>
-<th>功能组件</th>
+<th>组件</th>
 <th>当前证据</th>
-<th>范围／未完成项</th>
+<th>范围</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Go适配</td>
-<td>15项规则／三层选测通过；带固定45资源的Windows trimpath release构建成功</td>
-<td>私有文件／内存状态及仅属自身的无界面工作进程。缺失配套程序补齐时只改变显示代次，原名、来源期限、还原记录不变；新适配尚未在此检查点完成Mac编译。</td>
+<td>Windows共同CLI</td>
+<td>46／46：31 body＋15 caption</td>
+<td>一套共同测试，不按语言重复累计。</td>
 </tr>
 <tr>
-<td>Rust适配</td>
-<td>3项规则／客户端＋13项三层测试通过；离线Windows release构建成功，无新crate</td>
-<td>同为受控／CLI范围；新Mac适配等待下一完整CI。</td>
+<td>Windows helper专项</td>
+<td>37项：22保留body＋15 caption</td>
+<td>与共同46有重叠，不得把两总数相加。</td>
 </tr>
 <tr>
-<td>C#、PowerShell及其它Windows组件</td>
-<td>正在汇总本功能的分组件结果</td>
-<td>此处不合计总数，也不宣称当前正常GUI验收。</td>
+<td>C#／共享编辑器</td>
+<td>显示10项；始终隐藏编辑器13项</td>
+<td>自有虚构状态/控件，无正常ChatGPT GUI。</td>
 </tr>
 <tr>
-<td>共享Mac helper／原生客户端</td>
-<td>下列远端检查点通过30项共享CLI，并编译helper及新增Swift／Objective-C客户端集成</td>
-<td>仅适用于该次精确提交，不替代更新后的helper／客户端修订；未AppKit编辑器／AX／登录运行验收。</td>
+<td>PowerShell5.1／7</td>
+<td>低载下分别单独复测同项关闭尾巴成功</td>
+<td>保留此前WorkerTimeout／缺省尾巴缓存，不称无条件通过。</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>23项单元＋14项真实helper私有检查</td>
+<td>自有文件/进程与模拟所有权。</td>
+</tr>
+<tr>
+<td>AHK Basic／1.1／2</td>
+<td>每分支17项caption；旧body分别23／19／19</td>
+<td>Basic仍仅源码，虚构原生状态，无正常桌面。</td>
+</tr>
+<tr>
+<td>Go／Rust</td>
+<td>20顶层／21测试函数，单函数包含9项CLI矩阵</td>
+<td>Windows受控测试/构建，新suffix Mac原生CI待验。</td>
+</tr>
+<tr>
+<td>Mac pre-suffix检查点1b7c33b</td>
+<td>四原生构建、31共同CLI、5 I/O、3恢复</td>
+<td>未AX／GUI／登录验收，更新的suffix46／client7须独立CI。</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Windows 负载边界：</strong>自有格式化 worker 的截止仍为 <strong>1.5 秒</strong>。负载竞争或启动缓慢可导致超时，回退为完整原名加<strong>缺省后缀</strong>，因此保存的 <code>false</code> 可能尚未生效。失败按原名及规则/辅助程序身份缓存，条件不变的轮询不会重试；重新保存规则、替换/改变辅助程序身份、重启监听，或观测到不同原名，才会刷新该缓存。降低负载后，两种 PowerShell host（5.1、7）分别单独复测同项成功，之前 WorkerTimeout 现场仍保留；不能据此宣称无条件通过，也不承诺完整界面响应必在1.5秒内完成。</p>
 <p>上述Go／Rust选测使用私有文件、内存状态和仅属自身的无界面协议进程。此前两次未筛选Go测试还执行了自行清理的GUID临时注册表夹具，不称纯文件测试，未使用真实产品Run／偏好键。</p>
 <h3 id="_6">历史本地源码检查</h3>
 <p>以下计数保留自此前源码／设置修订，不计作名称替换验证：</p>
@@ -109,6 +132,9 @@ python tools/release_audit.py --allowlist --no-zip --output-dir &quot;$env:TEMP/
 </table>
 <p>原始执行证据、真实进程标识和对话名称留在本地，公共包不链接、不包含。源码／构建／模拟检查与真实应用时延、Mac原生验收严格区分。</p>
 <h2 id="ci">实际CI检查点与后续门槛</h2>
+<p>在 <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229">Mac CI 检查点 <code>1b7c33b</code></a>，<strong>四种原生语言构建</strong>（Swift、Objective-C、Go、Rust）、<strong>31项共同格式化</strong>、<strong>5项文件I/O</strong>及<strong>3项客户端恢复</strong>均通过；共享 AppleScript 编译仍在报告位置 <code>:64</code> 的 <code>application</code> 变量附近报 <strong>-10003</strong>，最小修正待验证。更新后缀修订的 <strong>46项共同用例及7项客户端</strong>仍须另一轮原生整合CI，<strong>不在此检查点覆盖范围内</strong>。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。</p>
+<h3 id="1b7c33b">1b7c33b之前的历史检查点</h3>
+<p>以下保留当时“当前/待验证”范围；已核实最新结果及更新后缀待验范围以上方为准。</p>
 <p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">macOS CI run43124672990</a>，提交<code>19cec8080908a15f0d0a8ccefa66209cb207bf71</code>，实际编译共享Foundation helper及新增Swift／Objective-C RulesClient集成，并通过同一套<strong>30项共同格式CLI用例</strong>。该次AppleScript编译失败；Go／Rust当时仍为旧baseline适配，不能以此证明新名称替换适配通过。共享用例只计一套，不按语言重复累计。</p>
 <p>当前helper修订<code>4B614FB1…D2C67DE</code>、AppleScript修订<code>9127B78F…7855E99</code>、新增第31个Unicode回退用例、客户端负缓存恢复与新Go／Rust适配，仍等待下一完整CI结果。编译及CLI通过不等于真实Mac AX、菜单、AppKit编辑器、登录自启动、长期运行或真实标题还原验收；Mac继续标Experimental。</p>
 <p>验证workflow检查源码／审计／构建和受控用例，不启动正常AX监听。其只读检查及checkout不保留凭据的要求，与独立<code>release-preview.yml</code>任务分开：后者只在<code>main</code>的Windows检查成功后，按守卫建立已授权首版v0.1.0 Release；已有v0.1.0时保持不变。它不为功能分支发布，也不构成其它Release的批准。失败步骤仍按失败记录，不能由个别job成功推导整套成功。</p>

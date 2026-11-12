@@ -8,6 +8,8 @@ FOUNDATION_EXPORT NSString *CTSRulesCompanionPath(NSString *monitorExecutable);
 FOUNDATION_EXPORT NSString *CTSRulesHelpPath(NSString *monitorExecutable);
 @interface CTSRulesClient : NSObject
 - (instancetype)initWithExecutablePath:(NSString *)executable rulesPath:(NSString *)rules stateDirectory:(NSString *)state NS_SWIFT_NAME(init(executablePath:rulesPath:stateDirectory:));
+- (instancetype)initWithExecutablePath:(NSString *)executable rulesPath:(NSString *)rules stateDirectory:(NSString *)state captionMode:(BOOL)captionMode NS_SWIFT_NAME(init(executablePath:rulesPath:stateDirectory:captionMode:));
+@property(nonatomic, readonly) BOOL captionMode;
 @property(nonatomic, readonly) uint64_t displayRevision;
 @property(nonatomic, readonly, copy) NSString *sourcePath;
 - (void)poll;

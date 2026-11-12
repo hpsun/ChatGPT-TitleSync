@@ -1,5 +1,5 @@
 ﻿; Unicode companion client. No UIA reads, regex engine, or preference writes here.
-RulesInit(rulesFile:="",runtimeDir:="",helper:="") {
+RulesInit(rulesFile:="",runtimeDir:="",helper:="",captionMode:=false) {
     global NR,G
     if (runtimeDir="") {
         SplitPath, % G.SettingsFile,, runtimeDir
@@ -8,7 +8,7 @@ RulesInit(rulesFile:="",runtimeDir:="",helper:="") {
         EnvGet, localData, LOCALAPPDATA
         rulesFile:=localData "\ChatGPT-TitleSync\title-rules.json"
     }
-    NR:={Rules:rulesFile,Dir:runtimeDir,Sources:runtimeDir "\title-rule-sources.bin",Override:helper
+    NR:={CaptionMode:!!captionMode,Rules:rulesFile,Dir:runtimeDir,Sources:runtimeDir "\title-rule-sources.bin",Override:helper
         ,Helper:"",Signature:"",Present:false,Generation:0,DisplayRevision:0,Cache:[],Queue:[]
         ,Worker:0,Dirty:false,Busy:false,NextSignature:0,NextSources:0,SourceSignature:"",Serial:0}
     RulesSignature()
@@ -45,21 +45,33 @@ RulesSignature() {
         RulesAbandon()
     }
 }
+RulesDefault(raw) {
+    global NR
+    return IsObject(NR) && NR.CaptionMode ? raw " — ChatGPT" : raw
+}
+RulesCaption(raw) {
+    global NR
+    return IsObject(NR) && NR.CaptionMode ? RulesDisplay(raw) : RulesDisplay(raw) " — ChatGPT"
+}
+RulesRawFallback(result,raw) {
+    global NR
+    return RulesExact(result,raw) || (NR.CaptionMode && RulesExact(result,raw " — ChatGPT"))
+}
 RulesDisplay(raw) {
     global NR
     if (!IsObject(NR) || !NR.Present)
-        return raw
+        return RulesDefault(raw)
     for i,item in NR.Cache
         if RulesExact(item.Raw,raw)
             return item.Display
     if (NR.Cache.Length()>=128)
-        return raw
-    item:={Raw:raw,Display:raw,Complete:false,Generation:NR.Generation},NR.Cache.Push(item)
+        return RulesDefault(raw)
+    item:={Raw:raw,Display:RulesDefault(raw),Complete:false,Generation:NR.Generation},NR.Cache.Push(item)
     if (NR.Helper="")
-        RulesComplete(item,raw,"companion_missing")
+        RulesComplete(item,RulesDefault(raw),"companion_missing")
     else
         NR.Queue.Push(item)
-    return raw
+    return RulesDefault(raw)
 }
 RulesComplete(item,display,code:="") {
     global NR
@@ -97,7 +109,7 @@ RulesStart(item) {
     input:=stem ".in",output:=stem ".out",status:=stem ".status"
     try {
         RulesWriteWide(input,item.Raw)
-        args:=Q(NR.Helper) " --format --rules " Q(NR.Rules) " --input " Q(input) " --output " Q(output) " --status " Q(status)
+        args:=Q(NR.Helper) " --format" (NR.CaptionMode?" --caption":"") " --rules " Q(NR.Rules) " --input " Q(input) " --output " Q(output) " --status " Q(status)
         handle:=RulesLaunch(NR.Helper,args,true)
         NR.Worker:={Handle:handle,Item:item,Started:Tick(),Input:input,Output:output,Status:status,Abandoned:false}
     } catch {
@@ -110,7 +122,7 @@ RulesStart(item) {
             }
         }
         }
-        RulesComplete(item,item.Raw,"worker_start_failed")
+        RulesComplete(item,RulesDefault(item.Raw),"worker_start_failed")
     }
 }
 RulesTick() {
@@ -126,19 +138,19 @@ RulesTick() {
             wait:=DllCall("WaitForSingleObject","Ptr",worker.Handle,"UInt",0)
             if (wait=258) {
                 if (!worker.Abandoned && Tick()-worker.Started>=1500) {
-                    RulesComplete(worker.Item,worker.Item.Raw,"worker_timeout")
+                    RulesComplete(worker.Item,RulesDefault(worker.Item.Raw),"worker_timeout")
                     RulesAbandon()
                 }
             } else {
                 if !worker.Abandoned {
-                    display:=worker.Item.Raw,failure:="worker_io",exitCode:=3
+                    display:=RulesDefault(worker.Item.Raw),failure:="worker_io",exitCode:=3
                     DllCall("GetExitCodeProcess","Ptr",worker.Handle,"UIntP",exitCode)
                     try {
-                        result:=RulesReadWide(worker.Output),tag:=Trim(RulesReadStatus(worker.Status))
+                        result:=RulesReadWide(worker.Output,NR.CaptionMode?522:512),tag:=Trim(RulesReadStatus(worker.Status))
                         if (exitCode=0 && tag="ok" && Trim(result)!="" && NRLower(Trim(result))!="chatgpt" && !RegExMatch(result,"[\x00-\x1F\x7F-\x9F]"))
                             display:=result,failure:=""
-                        else if (exitCode=2 && SubStr(tag,1,9)="fallback:" && RulesExact(result,worker.Item.Raw))
-                            failure:=SubStr(tag,10)
+                        else if (exitCode=2 && SubStr(tag,1,9)="fallback:" && RulesRawFallback(result,worker.Item.Raw))
+                            display:=result,failure:=SubStr(tag,10)
                     }
                     RulesComplete(worker.Item,display,failure)
                 }
@@ -173,7 +185,7 @@ RulesRefreshOwned() {
         raw:=state.VerifiedTitle
         if (Trim(raw)="" || NRLower(Trim(raw))="chatgpt")
             continue
-        wanted:=RulesDisplay(raw) " — ChatGPT"
+        wanted:=RulesCaption(raw)
         if (!RulesExact(wanted,current) && RulesExact(Caption(NRHwnd(state.Id)),current) && WriteCaption(state.Id,wanted))
             state.Last:=wanted ; Never change Original or VerifiedTitle.
     }
@@ -263,13 +275,13 @@ RulesWriteWide(path,value) {
     if (wrote!=units*2)
         throw "RulesInputWriteFailed"
 }
-RulesReadWide(path) {
+RulesReadWide(path,maximumUnits:=512) {
     file:=FileOpen(path,"r","CP0")
     if !IsObject(file)
         throw "RulesOutputOpenFailed"
     bytes:=file.Length
     file.Seek(0)
-    if (bytes>1024 || Mod(bytes,2)) {
+    if (bytes>maximumUnits*2 || Mod(bytes,2)) {
         file.Close()
         throw "RulesOutputLengthInvalid"
     }

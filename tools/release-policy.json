@@ -152,7 +152,8 @@
     "docs/name-replacement.zh-CN.md",
     "docs/name-replacement.zh-CN.html",
     "tools/tests/macos_rules_client_fixture.m",
-    "tools/test_macos_name_rules_io.py"
+    "tools/test_macos_name_rules_io.py",
+    "go/name_rules_caption_test.go"
   ],
   "required": [
     ".github/workflows/macos-experimental.yml",
@@ -336,7 +337,8 @@
     "docs/name-replacement.zh-CN.md",
     "docs/name-replacement.zh-CN.html",
     "tools/tests/macos_rules_client_fixture.m",
-    "tools/test_macos_name_rules_io.py"
+    "tools/test_macos_name_rules_io.py",
+    "go/name_rules_caption_test.go"
   ],
   "source_rules": [
     {
@@ -647,6 +649,11 @@
   "name_replacement": {
     "defaults": "empty; no personal rules or automatic import",
     "shared_companion": true,
-    "scope": "controlled verification; real desktop acceptance tracked separately"
+    "scope": "controlled verification; real desktop acceptance tracked separately",
+    "append_chatgpt_suffix": {
+      "default": true,
+      "optional_json_field": "append_chatgpt_suffix",
+      "caption_cli_flag": "--caption"
+    }
   }
 }

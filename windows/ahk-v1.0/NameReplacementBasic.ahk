@@ -1,6 +1,6 @@
 ; Unicode rules client for Basic 1.0. Raw names stay UTF-16 binary buffers.
 ; No UIA reads, local regex engine, or preference writes occur in this module.
-BasicRulesInit(rulesFile="",runtimeDir="",helper="") {
+BasicRulesInit(rulesFile="",runtimeDir="",helper="",captionMode=0) {
     global
     local root
     if (runtimeDir="")
@@ -9,7 +9,7 @@ BasicRulesInit(rulesFile="",runtimeDir="",helper="") {
         EnvGet, root, LOCALAPPDATA
         rulesFile := root . "\ChatGPT-TitleSync\title-rules.json"
     }
-    NBRReady := 1, NBRRules := rulesFile, NBRDir := runtimeDir
+    NBRReady := 1, NBRCaptionMode := !!captionMode, NBRRules := rulesFile, NBRDir := runtimeDir
     NBRSources := runtimeDir . "\title-rule-sources.bin", NBROverride := helper
     NBRSignature := "", NBRGeneration := 0, NBRDisplayRevision := 0
     NBRCount := 0, NBRDirty := 0, NBRBusy := 0, NBRNextSignature := 0
@@ -52,10 +52,40 @@ BasicRulesSignature() {
         NBRCount := 0
     }
 }
+BasicRulesDefault(ByRef raw,bytes,ByRef display,ByRef displayBytes) {
+    global NBRCaptionMode
+    if (NBRCaptionMode)
+        BuildRawWanted(raw,bytes,display,displayBytes)
+    else
+        CopyBinary(display,raw,bytes), displayBytes := bytes
+}
+BasicRulesCaption(ByRef raw,bytes,ByRef wanted,ByRef wantedBytes) {
+    global NBRCaptionMode
+    BasicRulesDisplay(raw,bytes,display,displayBytes)
+    if (NBRCaptionMode)
+        CopyBinary(wanted,display,displayBytes), wantedBytes := displayBytes
+    else
+        BuildRawWanted(display,displayBytes,wanted,wantedBytes)
+}
+BasicRulesIsRawFallback(ByRef result,resultBytes,ByRef raw,rawBytes) {
+    global NBRCaptionMode
+    if (BinaryEqual(result,resultBytes,raw,rawBytes))
+        return 1
+    if (!NBRCaptionMode)
+        return 0
+    BuildRawWanted(raw,rawBytes,expected,expectedBytes)
+    return BinaryEqual(result,resultBytes,expected,expectedBytes)
+}
+BasicRulesFallback(i,code) {
+    global
+    local display,bytes
+    BasicRulesDefault(NBRRaw%i%,NBRRawBytes%i%,display,bytes)
+    BasicRulesComplete(i,display,bytes,code)
+}
 BasicRulesDisplay(ByRef raw,bytes,ByRef display,ByRef displayBytes) {
     global
     local i
-    CopyBinary(display,raw,bytes), displayBytes := bytes
+    BasicRulesDefault(raw,bytes,display,displayBytes)
     if (!NBRReady || !NBRPresent)
         return
     Loop, %NBRCount%
@@ -71,10 +101,10 @@ BasicRulesDisplay(ByRef raw,bytes,ByRef display,ByRef displayBytes) {
         return
     NBRCount++, i := NBRCount
     CopyBinary(NBRRaw%i%,raw,bytes), NBRRawBytes%i% := bytes
-    CopyBinary(NBRDisplay%i%,raw,bytes), NBRDisplayBytes%i% := bytes
+    CopyBinary(NBRDisplay%i%,display,displayBytes), NBRDisplayBytes%i% := displayBytes
     NBRComplete%i% := 0, NBRItemGeneration%i% := NBRGeneration
     if (NBRHelper="")
-        BasicRulesComplete(i,raw,bytes,"companion_missing")
+        BasicRulesFallback(i,"companion_missing")
 }
 BasicRulesComplete(i,ByRef display,bytes,code="") {
     global
@@ -115,14 +145,14 @@ BasicRulesStart(i) {
     NBRInput := stem . ".in", NBROutput := stem . ".out", NBRStatus := stem . ".status"
     if (!BasicRulesWrite(NBRInput,NBRRaw%i%,NBRRawBytes%i%)) {
         BasicRulesClean()
-        BasicRulesComplete(i,NBRRaw%i%,NBRRawBytes%i%,"worker_start_failed")
+        BasicRulesFallback(i,"worker_start_failed")
         return
     }
-    args := Quote(NBRHelper) . " --format --rules " . Quote(NBRRules) . " --input " . Quote(NBRInput) . " --output " . Quote(NBROutput) . " --status " . Quote(NBRStatus)
+    args := Quote(NBRHelper) . " --format" . (NBRCaptionMode ? " --caption" : "") . " --rules " . Quote(NBRRules) . " --input " . Quote(NBRInput) . " --output " . Quote(NBROutput) . " --status " . Quote(NBRStatus)
     handle := BasicRulesLaunch(NBRHelper,args,1)
     if (!handle) {
         BasicRulesClean()
-        BasicRulesComplete(i,NBRRaw%i%,NBRRawBytes%i%,"worker_start_failed")
+        BasicRulesFallback(i,"worker_start_failed")
         return
     }
     NBRWorker := handle, NBRWorkerIndex := i, NBRWorkerGeneration := NBRGeneration
@@ -130,7 +160,7 @@ BasicRulesStart(i) {
 }
 BasicRulesTick() {
     global
-    local now,wait,elapsed,code,output,bytes,status,statusBytes,tag,i,reason
+    local now,wait,elapsed,code,output,bytes,status,statusBytes,tag,i,reason,accepted,maximum
     if (!NBRReady || NBRBusy)
         return
     NBRBusy := 1, now := A_TickCount
@@ -151,23 +181,23 @@ BasicRulesTick() {
             DllCall("TerminateProcess","UInt",NBRWorker,"UInt",124)
             NBRAbandoned := 1, i := NBRWorkerIndex
             if (NBRWorkerGeneration=NBRGeneration)
-                BasicRulesComplete(i,NBRRaw%i%,NBRRawBytes%i%,"worker_timeout")
+                BasicRulesFallback(i,"worker_timeout")
         } else if (wait!=258) {
             i := NBRWorkerIndex
             if (!NBRAbandoned && NBRWorkerGeneration=NBRGeneration) {
-                code := 3, reason := "worker_io"
+                code := 3, reason := "worker_io", accepted := 0, maximum := NBRCaptionMode ? 1044 : 1024
                 DllCall("GetExitCodeProcess","UInt",NBRWorker,"UIntP",code)
-                if (BasicRulesRead(NBROutput,output,bytes,1024) && BasicRulesRead(NBRStatus,status,statusBytes,256)) {
+                if (BasicRulesRead(NBROutput,output,bytes,maximum) && BasicRulesRead(NBRStatus,status,statusBytes,256)) {
                     tag := BasicRulesASCII(status,statusBytes)
-                    if (code=0 && tag="ok" && BasicRulesValidWide(output,bytes))
-                        reason := ""
-                    else if (code=2 && RegExMatch(tag,"^fallback:[a-z0-9_]+$") && BinaryEqual(output,bytes,NBRRaw%i%,NBRRawBytes%i%))
-                        reason := SubStr(tag,10)
+                    if (code=0 && tag="ok" && BasicRulesValidWide(output,bytes,maximum))
+                        reason := "", accepted := 1
+                    else if (code=2 && RegExMatch(tag,"^fallback:[A-Za-z0-9_-]+$") && BasicRulesIsRawFallback(output,bytes,NBRRaw%i%,NBRRawBytes%i%))
+                        reason := SubStr(tag,10), accepted := 1
                 }
-                if (reason="")
-                    BasicRulesComplete(i,output,bytes)
+                if (accepted)
+                    BasicRulesComplete(i,output,bytes,reason)
                 else
-                    BasicRulesComplete(i,NBRRaw%i%,NBRRawBytes%i%,reason)
+                    BasicRulesFallback(i,reason)
             }
             BasicRulesClean()
         }
@@ -250,8 +280,8 @@ BasicRulesASCII(ByRef data,bytes) {
     }
     return text
 }
-BasicRulesValidWide(ByRef data,bytes) {
-    if (!bytes || Mod(bytes,2) || bytes>1024 || WideEqualsASCII(&data,"ChatGPT"))
+BasicRulesValidWide(ByRef data,bytes,maximum=1024) {
+    if (!bytes || Mod(bytes,2) || bytes>maximum || WideEqualsASCII(&data,"ChatGPT"))
         return 0
     units := bytes//2, nonwhite := 0, low := 0
     Loop, %units%

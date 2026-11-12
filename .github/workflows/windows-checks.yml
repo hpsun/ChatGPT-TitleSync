@@ -12,6 +12,7 @@ jobs:
     env:
       GOTOOLCHAIN: local
       CGO_ENABLED: '0'
+      CTS_CAPTION_TEST_HELPER: '${{ runner.temp }}/ChatGPT-TitleSync.Rules.exe'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,6 +30,11 @@ jobs:
           python -m unittest discover -s tools/tests -p "test_release_audit.py" -v
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python tools/release_audit.py --no-zip --output-dir "$env:RUNNER_TEMP/source-audit"
+      - name: Build Unicode rules companion for isolated cross-language checks
+        shell: pwsh
+        run: |
+          & ./shared/windows/Build.ps1 -OutputDirectory "$env:RUNNER_TEMP"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
       - name: Go fake states, COM ABI and owned-window checks
         working-directory: go
         shell: pwsh
@@ -44,6 +50,8 @@ jobs:
         shell: pwsh
         run: |
           cargo +1.82.0 test --offline
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          cargo +1.82.0 test --offline name_rules::tests::caption_shared_companion_cases -- --ignored --exact
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo +1.82.0 build --release --offline
           if ($LASTEXITCODE) { exit $LASTEXITCODE }

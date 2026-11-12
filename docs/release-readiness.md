@@ -2,7 +2,7 @@
 
 [简体中文](release-readiness.zh-CN.md) · [Project home](../README.md)
 
-**Status as of 2026-11-12: [ChatGPT-TitleSync](https://github.com/hpsun/ChatGPT-TitleSync) and the [v0.1.0 public preview](https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0) are already public. The name-replacement feature branch is under verification; it has no new Release and does not change the product name or version.** The Chinese product name is **ChatGPT 标题同步助手**. MIT was selected by the user; the repository LICENSE remains required. Earlier unpublished/approval-pending statements are historical.
+**Status as of2026-11-12:** the [repository](https://github.com/hpsun/ChatGPT-TitleSync) and [v0.1.0 preview](https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0) already exist. The development tree remains **0.1.0**, with **0.2.0** as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes. Product name remains ChatGPT-TitleSync / ChatGPT 标题同步助手. The user-selected MIT license and repository LICENSE remain required; earlier unpublished/approval-pending entries are historical.
 
 ## Existing sign-in startup contract
 
@@ -10,9 +10,11 @@ Start at sign-in already **defaults on**, with a direct tray/menu check and a Sa
 
 ## Name-replacement candidate
 
-The new display pipeline has an empty rule list by default, supports ordered literal/regex rules, and includes the shared OS Unicode companion. It bundles no personal rules or automatic migration. Current-name examples come from already verified raw-name snapshots; suggestions require explicit **Use rule** and **Save**. Rule changes invalidate display state without changing the source cadence or original-title restoration lease. See [name-replacement help](name-replacement.md).
+The shared editor's **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox is checked by default and applies on **Save**. It is independent of **Enable name replacement** and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean `append_chatgpt_suffix` defaults to `true` when absent; it is not part of scan, icon or startup preferences.
 
-For this feature, Windows verification so far uses private files, fake native state, owned controls and CLI-only workers. It does **not** establish normal-resident or real ChatGPT GUI acceptance. The latest C#/PowerShell/other-language evidence will be consolidated by component; no combined count is inferred from earlier suites.
+The display pipeline starts with no private rules or automatic migration. Current-name samples come from private verified-raw snapshots; suggestions require explicit Use rule then Save. `--format` stays body-only; `--format --caption` returns a complete caption. Legal raw/body input is 512 UTF-16 units, normal captions at most 522; decodable invalid sources return whole raw without decoration, never truncation. Raw/restore/manual guards and source cadence stay unchanged. The four Python/AHK one-shot limitations are explicit in [the help](name-replacement.md#caption-protocol).
+
+**Windows load boundary:** the owned formatting worker keeps its **1.5-second** deadline. Under load or slow startup it can time out and return the entire raw name plus the **default suffix**, so a saved `false` may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.
 
 ## Target protocol and acceptance boundary
 The agreed target is three layers:
@@ -42,14 +44,22 @@ User approval on **2026-11-11** covered the now-public repository-file publicati
 
 <a id="local-validation"></a>
 ## Local validation
-Current feature evidence is separated from historical checks:
 
-| Feature component | Current evidence | Scope / remaining work |
+<a id="current-suffix-verification"></a>
+Current component evidence is separate from historical checks. Do not sum overlapping46/37 suites, duplicate shared cases per frontend or promote nested subcases to top-level counts.
+
+| Component | Current evidence | Scope |
 | --- | --- | --- |
-| Go adapter | 15 selected rule/three-layer tests passed; Windows trimpath release with the fixed 45 resource built | Private files/in-memory state and an exclusively owned no-UI worker. Missing-companion recovery changes display generation only; raw names, source deadlines and restore leases remain intact. New adapter has not yet been compiled on Mac at this checkpoint. |
-| Rust adapter | 3 rule/client + 13 three-layer tests passed; offline Windows release built without new crates | Same controlled/CLI boundary; new Mac adapter awaits the next complete CI. |
-| C#, PowerShell and other Windows components | Component-level results are being consolidated for this feature | No combined test total or current normal-GUI acceptance is claimed here. |
-| Shared Mac helper / native clients | The recorded remote checkpoint below passed 30 shared CLI cases and compiled the helper plus new Swift/Objective-C client integrations | That result applies to its exact commit, not to the newer helper/client revisions; no AppKit editor/AX/login runtime acceptance. |
+| Windows common CLI |46/46:31 body + 15 caption |One shared suite, not multiplied by language. |
+| Windows helper-specific suite |37 cases:22 retained body + 15 caption |Overlaps the common46; never add both totals. |
+| C# / shared editor |10 display checks;13 never-shown editor checks |Owned fictional state/controls, no normal ChatGPT GUI. |
+| PowerShell5.1 /7 |Same suffix-off case succeeded individually under lower load |Earlier WorkerTimeout/default-suffix-cache attempts remain; no unconditional pass. |
+| Python |23 unit tests +14 private actual-helper checks |Owned files/processes and simulated ownership. |
+| AHK Basic /1.1 /2 |17 caption checks per branch; old body fixtures23/19/19 |Basic remains source-only; fake native state, no normal desktop. |
+| Go / Rust |20 top-level /21 test functions; a nine-case CLI matrix is inside one test |Windows controlled tests/builds; new suffix-native Mac CI pending. |
+| Mac pre-suffix checkpoint1b7c33b |Four native builds;31 common CLI,5 I/O,3 recovery |No AX/GUI/login acceptance; newer suffix 46/client 7 needs its own CI. |
+
+**Windows load boundary:** the owned formatting worker keeps its **1.5-second** deadline. Under load or slow startup it can time out and return the entire raw name plus the **default suffix**, so a saved `false` may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.
 
 The selected Go/Rust checks above use private files and in-memory state, plus an exclusively owned no-UI protocol process. Two earlier unfiltered Go runs also exercised self-cleaning GUID-scoped temporary registry fixtures; those runs are not described as pure-file tests and did not use the real product Run/preference keys.
 
@@ -70,6 +80,12 @@ The following counts are retained from the earlier source/settings revision. The
 Raw execution evidence, real process identifiers and conversation names remain local and are not linked or included in the public package. Source/build/fake checks are distinct from real application latency and native-Mac acceptance.
 
 ## Actual CI checkpoint and remaining gates
+
+At [Mac CI checkpoint `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229), all **four native language builds** (Swift, Objective-C, Go and Rust), the **31 common formatter cases**, **five file-I/O cases** and **three client-recovery cases** passed. Shared AppleScript compilation still failed at reported location `:64` around variable `application` with error **-10003**; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's **46 common cases and seven client cases** require another native integration CI run and are **not covered by this checkpoint**. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.
+
+### Historical checkpoint before 1b7c33b
+
+These retained paragraphs describe their then-current/pending revisions; the latest verified result and new pending suffix scope are above.
 
 [macOS CI run 43124672990](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990), commit `19cec8080908a15f0d0a8ccefa66209cb207bf71`, actually compiled the shared Foundation helper and the new Swift/Objective-C RulesClient integrations and passed the same **30 common format-CLI cases**. AppleScript compilation failed in that run. Go/Rust were still their older baseline adapters there; this checkpoint cannot be used for their new name-replacement adapters. A shared suite is counted once rather than multiplied by language.
 

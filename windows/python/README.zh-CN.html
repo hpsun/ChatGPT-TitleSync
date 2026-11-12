@@ -95,4 +95,9 @@ Copy-Item "..\..\docs\name-replacement.html","..\..\docs\name-replacement.zh-CN.
 python -B tests/test_name_replacement.py -v
 </code></pre>
 <p>适配器已通过 14 项自有文件/进程检查，另通过 8 项调用真实共享格式化程序的私有检查；覆盖 Unicode CTS1、完整回退、缓存失效、超时、旧代丢弃和模拟所有权保护。</p>
-<p>以上是格式化、协议和受控所有权检查，不启动编辑器或正常驻留，不读 ChatGPT，不改生产启动项/偏好，不表示本轮真实桌面/菜单已经复测。限制、严格替换引用、操作系统正则差异与完整原名回退规则见所链接帮助。</p></body></html>
+<p>以上是格式化、协议和受控所有权检查，不启动编辑器或正常驻留，不读 ChatGPT，不改生产启动项/偏好，不表示本轮真实桌面/菜单已经复测。限制、严格替换引用、操作系统正则差异与完整原名回退规则见所链接帮助。</p>
+<h3 id="chatgpt">可选 ChatGPT 后缀：缺省已开</h3>
+<p>共享名称替换编辑器新增独立的 <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> 复选框，缺省勾选。取消勾选并<strong>保存</strong>，程序就不再追加 <code>— ChatGPT</code>；即使替换规则为空或关闭 <strong>Enable name replacement</strong>，后缀开关仍生效。此项不会删除原始对话名本身已有的同样文字。</p>
+<p>共享 <code>title-rules.json</code> 的可选布尔项为 <code>append_chatgpt_suffix</code>，缺项按 <code>true</code> 处理，不写入扫描间隔、图标或启动项偏好。前端使用 <code>--format --caption</code> 向共享辅助程序请求<strong>完整标题</strong>并直接采用，不再重复拼接尾巴；原有仅返回名称主体的 <code>--format</code> 调用保持兼容。核实原名仍限制为 512 个 UTF-16 码元，包含可选 10 码元后缀的完整标题最多 522 个码元。</p>
+<p>保存只改变显示代次，热更新仍由本次运行拥有且等于上次写值的标题，不增加来源读取、不重置来源计时，也不改原名/原标题恢复数据。caption 模式下只要配置文件存在就调用辅助程序，包括空规则和规则停用，确保取消后缀确实有效。已处理回退只接收完整原名，或完整原名加固定后缀；辅助程序无法运行或超时时，本地安全回退按缺省追加后缀并记诊断。相同回退会缓存，直到规则/辅助程序签名变化、观测到不同原名或重新启动监控。</p>
+<p>后缀修订已通过 <strong>23</strong> 项 Python 自有单元测试及 <strong>14</strong> 项调用真实复制 Windows 辅助程序的私有检查；属于文件/进程与模拟所有权检查，不冒充新一轮正常桌面/编辑器验收。</p></body></html>

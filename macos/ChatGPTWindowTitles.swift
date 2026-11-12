@@ -271,7 +271,7 @@ final class Monitor: NSObject, NSApplicationDelegate {
     lazy var nameRules: CTSRulesClient = {
         let executable = CommandLine.arguments[0]
         let state = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/ChatGPT-TitleSync/runtime/swift").path
-        return CTSRulesClient(executablePath: CTSRulesCompanionPath(executable), rulesPath: CTSRulesDefaultPath(), stateDirectory: state)
+        return CTSRulesClient(executablePath: CTSRulesCompanionPath(executable), rulesPath: CTSRulesDefaultPath(), stateDirectory: state, captionMode: true)
     }()
     var lastRulesDisplayRevision: UInt64 = 0
     let timingLock = NSLock()
@@ -630,7 +630,7 @@ final class Monitor: NSObject, NSApplicationDelegate {
         record.rawSourceName = name
         nameRules.publishSources(records.compactMap { $0.rawSourceName })
         guard let display = nameRules.resolve(name) else { record.cachedTitle = nil; return }
-        let wanted = display + " — ChatGPT"
+        let wanted = display
         record.cachedTitle = wanted
         if generic(current) { record.manualOverride = false }
         if current == wanted { return }
@@ -671,7 +671,7 @@ final class Monitor: NSObject, NSApplicationDelegate {
         lastRulesDisplayRevision = revision
         for record in records {
             guard let raw = record.rawSourceName, let display = nameRules.resolve(raw) else { continue }
-            let wanted = display + " — ChatGPT"
+            let wanted = display
             let previous = record.cachedTitle; record.cachedTitle = wanted
             guard previous != wanted, !record.manualOverride,
                   let current = axString(record.window, kAXTitleAttribute as CFString),

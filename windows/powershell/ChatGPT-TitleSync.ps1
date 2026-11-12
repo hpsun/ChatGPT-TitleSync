@@ -262,7 +262,7 @@ function Apply-CgtSource($backend,$states,$job,$result,[long]$epoch,[int]$backgr
   if($e.Own -and $current -ceq $e.Last -and !$readOnly){[void](& $backend.Set $w $current $e.Original)}
   $e.Own=$false;$e.Last=$null;$e.Original=$null;return
  }
- $e.Raw=$title;$desired=if($script:CgtNameRules){$script:CgtNameRules.Resolve($title)}else{$title};if(!$desired.EndsWith(' — ChatGPT')){$desired+=' — ChatGPT'};$e.Cached=$desired
+ $e.Raw=$title;$desired=if($script:CgtNameRules){$script:CgtNameRules.Resolve($title)}else{$title+' — ChatGPT'};$e.Cached=$desired
  if($current -ceq $desired){$e.Last=$desired;return}
  $generic=[string]::IsNullOrWhiteSpace($current) -or $current.Trim() -ieq 'ChatGPT'
  if(!$generic -and (!$previous -or $current -cne $previous)){$e.Own=$false;$e.Original=$null;$e.Last=$null;return}
@@ -377,7 +377,7 @@ function Open-CgtNameRules($state){
 }
 function Refresh-CgtRuleDisplays($backend,$states,[bool]$readOnly){
  if(!$script:CgtNameRules){return};$sources=[Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
- foreach($entry in $states.Values){$w=$entry.Window;if(!$entry.Raw -or !(& $backend.Same $w)){continue};$sources[$w.Key]=[string]$entry.Raw;$desired=$script:CgtNameRules.Resolve([string]$entry.Raw);if(!$desired.EndsWith(' — ChatGPT')){$desired+=' — ChatGPT'};$entry.Cached=$desired
+ foreach($entry in $states.Values){$w=$entry.Window;if(!$entry.Raw -or !(& $backend.Same $w)){continue};$sources[$w.Key]=[string]$entry.Raw;$desired=$script:CgtNameRules.Resolve([string]$entry.Raw);$entry.Cached=$desired
   if($readOnly -or !$entry.Own -or !$entry.Last){continue};$current=& $backend.Caption $w;if($current -cne $entry.Last -or $current -ceq $desired){continue};$active=& $backend.Active $w
   $ok=if($active){& $backend.SetActive $w $current $desired}else{& $backend.SetInactive $w $current $desired};if($ok){$entry.Last=$desired}
  }
@@ -517,7 +517,7 @@ try{
  if(!$ReadOnly -and !$BackgroundWorker){
   try{$rulesTool=Get-CgtRulesTool;[void][Reflection.Assembly]::LoadFrom($rulesTool)
    $emptyInspector=[TitleSyncRules.IdentityInspector]{param($bytes)$config=[Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF)|ConvertFrom-Json;if($config.schema_version -ne 1 -or $config.enabled -isnot [bool] -or $null -eq $config.rules){throw 'Invalid rule configuration'};return (!$config.enabled -or @($config.rules|Where-Object {$_.enabled}).Count -eq 0)}
-   $rulePath=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'ChatGPT-TitleSync/title-rules.json';$script:CgtNameRules=[TitleSyncRules.RulesClient]::new($rulesTool,$rulePath,[IO.Path]::GetFullPath($LogDirectory),$emptyInspector)
+   $rulePath=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'ChatGPT-TitleSync/title-rules.json';$script:CgtNameRules=[TitleSyncRules.RulesClient]::new($rulesTool,$rulePath,[IO.Path]::GetFullPath($LogDirectory),$emptyInspector,$true)
   }catch{$script:CgtNameRules=$null}
  }
  $ui.NameRules=$script:CgtNameRules

@@ -2,7 +2,9 @@
 
 [简体中文](README.zh-CN.md) · [Project home](../README.md)
 
-**Experimental runtime; native compilation and CLI checks are separate evidence.** At [the verified SDK checkpoint](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990) for feature commit `19cec8080908a15f0d0a8ccefa66209cb207bf71`, the new Swift and Objective-C native programs compiled and the shared Unicode rule formatter passed **30/30** CLI cases. The same Swift job later failed the separate AppleScript compilation step. This does not establish editor/menu GUI behavior, ChatGPT AX compatibility, pixels, startup or timing; the latest source changes require their own subsequent CI result.
+At [Mac CI checkpoint `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229), all **four native language builds** (Swift, Objective-C, Go and Rust), the **31 common formatter cases**, **five file-I/O cases** and **three client-recovery cases** passed. Shared AppleScript compilation still failed at reported location `:64` around variable `application` with error **-10003**; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's **46 common cases and seven client cases** require another native integration CI run and are **not covered by this checkpoint**. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.
+
+The development tree remains **0.1.0**, with **0.2.0** as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes.
 
 ## Requirements and build
 A Mac with Xcode Command Line Tools and the macOS SDK is required. The expected target bundle identifier is com.openai.chat; verify it on the target Mac or override --bundle-id.
@@ -39,6 +41,16 @@ The monitor retains the verified raw name and original native-title lease separa
 Keep executable `chatgpt-titlesync-rules` beside a relocated native program. Repository-native layout may also find it in the known `../shared/macos` or `../../shared/macos` directories. Keep both local help HTML files in a sibling `docs` directory, or retain the repository `../docs` layout. Companion discovery never uses PATH or a command stored in preferences.
 
 See [English rule help](../docs/name-replacement.md) and [中文帮助](../docs/name-replacement.zh-CN.md) for strict capture references, complete-raw fallback, limits and the difference between Foundation and Windows .NET regex behavior. Native SDK/CLI evidence does not establish that the editor, menu or actual ChatGPT AX title writes work on a user Mac.
+
+### Optional complete-caption suffix
+
+The shared editor's **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox is checked by default and applies on **Save**. It is independent of **Enable name replacement** and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean `append_chatgpt_suffix` defaults to `true` when absent; it is not part of scan, icon or startup preferences.
+
+The source client requests `--format --caption` and directly consumes the full caption; legacy `--format` stays body-only. Legal raw/body input is 512 UTF-16 units, normal caption output at most 522. A decodable invalid raw source is returned whole without decoration, never truncated. Raw caches, original leases, manual-title guards and source schedules are unchanged. The latest suffix-native CI is pending; see [the full suffix contract](../docs/name-replacement.md#chatgpt-suffix).
+
+### Windows evidence does not establish Mac runtime behavior
+
+**Windows load boundary:** the owned formatting worker keeps its **1.5-second** deadline. Under load or slow startup it can time out and return the entire raw name plus the **default suffix**, so a saved `false` may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.
 
 ## Three-layer maintenance
 The metadata maintenance timer runs once per second. --interval controls foreground source reads (default 2, range 1..3600 seconds). --background-interval controls each inactive window's source refresh (default 5, range 5..3600 seconds); use 15 for a 15-second refresh.
@@ -139,7 +151,7 @@ The build commands above produce executables, not signed `.app` bundles, and do 
 
 ## Validation
 
-The current native/30-case CLI checkpoint and its separate AppleScript failure are recorded at the top of this guide. The following model/static records are **historical theme-revision evidence**, not the current compilation status.
+The current four-build/31-case, five-I/O and three-recovery checkpoint and its separate AppleScript failure are recorded above; the newer suffix 46/client 7 integration still awaits native CI. The following model/static records are **historical theme-revision evidence**, not the current compilation status.
 
 See the [release validation summary](../docs/release-readiness.md#local-validation). The historical **13-case title behavior model** predates the three-layer implementation and remains model evidence only. The new [23-case icon contract model](test_icon_policy.py) passed with fake preferences/assets, injected time/random selection, same-slot restart, period boundaries, no repeats, Save/Cancel and startup/interval/theme rollback. The retained 13-case title model also passed when imported without generating source-tree receipts.
 

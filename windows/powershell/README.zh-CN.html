@@ -8,6 +8,10 @@
 <p>保存规则从raw缓存重新派生已知显示，不重置来源读取截止时间。重绘仍核验同一窗口身份及“当前标题等于本实例最后写入值”，保留外部手工标题。运行期 <code>title-rule-sources.bin</code> 包含私人对话名，不应发布。</p>
 <p>已建立客户端后，显示签名同时包含规则内容及worker文件的存在性、大小和修改时间；补回同路径worker可让相同raw重新格式化，不为此多读来源。PowerShell启动时若未找到共用工具，该功能保持不可用；补齐后须重启脚本。这里不提供缺包启动后的程序集热加载。</p>
 <p>参见<a href="../../docs/name-replacement.zh-CN.md">名称替换帮助</a>及打包的<a href="../../docs/name-replacement.zh-CN.html">本地HTML帮助</a>。</p>
+<h3 id="chatgpt">可关闭的 ChatGPT 后缀</h3>
+<p><strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> 缺省勾选；取消后只显示派生对话名。该项独立于规则总开关，空规则或停用规则时也能关闭后缀。保存才生效，取消不修改保存字节。旧schema-1配置可缺少 append_chatgpt_suffix（按true处理）；存在时必须是JSON布尔值。</p>
+<p>原始名缓存、原窗口标题和读取时序保持不变。保存后在维护节拍热更新已由程序管理的窗口，不增加来源读取；外部手工标题仍受保护。合法正文/完整标题上限为512/522个UTF-16单元。可解码但超长或含控制符的非法来源，完整回退原文，不附后缀也不截断。CLI的 --format 保留正文协议，--format --caption 返回完整标题；读取失败默认加后缀，配置合法且为false时规则匹配回退仍不附加。正常C#/PowerShell直接消费完整标题，不再重复拼接。</p>
+<p>子进程仍限1,500毫秒。同一原始名与规则/helper签名的成功或回退结果会缓存，直到签名变化、观察到别的原始名或驻留程序重启才重试；保存会生成新规则修订号。私有并行验证曾记录WorkerTimeout，随后两个PowerShell宿主各一次低载顺序复测均返回ok，false实际生效；不能据此承诺统一响应时延。失败原始证据保留。</p>
 <h3 id="_2">新功能验证边界</h3>
 <p>共用工具已有Unicode／CLI纯测试，覆盖整链回退和孤立代理项；注入后端证明缓存重绘不增加来源读取。PowerShell5.1／7客户端检查使用私有文件与模拟窗口后端。编辑器效果图仅用虚构示例、从未显示的自有控件，模拟100%、125%、150%字体与几何，表头字形内容区完整；另以自有离屏NOACTIVATE／Hidden夹具核验候选的显式原生显示且前台不变。这些检查<strong>不代表</strong>新增正常桌面、登录启动、物理托盘菜单或全部实时UIA验收；下方早期真实窗口结果保留原日期和范围。</p>
 <h3 id="powershell">共用工具与PowerShell加载</h3>
@@ -99,4 +103,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\ChatGPT-TitleSync.ps1 
 <h2 id="windows-2026-11-11">Windows真实窗口专项验收 — 2026-11-11</h2>
 <p>PowerShell5.1/7专项实测通过：2/5设置、保存重开还原、来源/页头/原生标题一致；FG复原881/342毫秒、BG794/282毫秒，各次正常退出后3窗为原通用标题。每主机32+9项受控及Hidden首显回归单列。</p>
 <p>有效前台/后台重置各1次，复用同3个现存窗口并在退出后匹配原通用标题；原生设置/菜单处理器验证不等于系统托盘物理右键、长期驻留或安装验收。具体范围见项目支持矩阵。</p>
-<!-- END TARGETED_WINDOWS_REAL --></body></html>
+<!-- END TARGETED_WINDOWS_REAL --></body>

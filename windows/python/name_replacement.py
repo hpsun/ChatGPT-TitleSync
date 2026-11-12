@@ -12,6 +12,7 @@ import uuid
 MAX_BYTES = 131072
 MAX_ENTRIES = 128
 MAX_UNITS = 512
+SUFFIX = " — ChatGPT"
 
 
 def encode_sources(rows):
@@ -42,7 +43,8 @@ def atomic_bytes(path, data):
 class NameReplacement:
     """One caller-owned format child, independent of source reader scheduling."""
     def __init__(self, settings_path, emit=None, *, rules_path=None, helper=None,
-                 source_file=None, launch=None, clock=None):
+                 source_file=None, launch=None, clock=None, caption_mode=False):
+        self.caption_mode = bool(caption_mode)
         self.runtime = Path(settings_path).resolve().parent
         self.sources_path = self.runtime / "title-rule-sources.bin"
         self.rules_path = Path(rules_path or Path(os.environ.get("LOCALAPPDATA", Path.home())) /
@@ -102,20 +104,23 @@ class NameReplacement:
             return True
         return False
 
+    def default_display(self, raw):
+        return raw + SUFFIX if self.caption_mode else raw
+
     def display(self, raw):
         if not self.present:
-            return raw
+            return self.default_display(raw)
         item = self.cache.get(raw)
         if item is not None:
             return item["display"]
         if len(self.cache) >= MAX_ENTRIES:
-            return raw
-        self.cache[raw] = {"display": raw, "complete": False}
+            return self.default_display(raw)
+        self.cache[raw] = {"display": self.default_display(raw), "complete": False}
         if self.helper is None:
-            self._complete(raw, raw, "companion_missing", self.generation)
+            self._complete(raw, self.default_display(raw), "companion_missing", self.generation)
         else:
             self.pending.append((raw, self.generation))
-        return raw
+        return self.default_display(raw)
 
     def _complete(self, raw, display, code, generation):
         if generation != self.generation or raw not in self.cache:
@@ -152,16 +157,16 @@ class NameReplacement:
             code = worker["process"].poll()
             if code is None:
                 if not worker["abandoned"] and self.clock() - worker["started"] >= 1.5:
-                    self._complete(worker["raw"], worker["raw"], "worker_timeout", worker["generation"])
+                    self._complete(worker["raw"], self.default_display(worker["raw"]), "worker_timeout", worker["generation"])
                     self._abandon()
                 return changed
             self.active = None
             if not worker["abandoned"]:
                 raw, generation = worker["raw"], worker["generation"]
-                display, failure = raw, "worker_io"
+                display, failure = self.default_display(raw), "worker_io"
                 try:
                     output, status = worker["output"], worker["status"]
-                    if output.stat().st_size > MAX_UNITS * 2 or status.stat().st_size > 256:
+                    if output.stat().st_size > (MAX_UNITS + (10 if self.caption_mode else 0)) * 2 or status.stat().st_size > 256:
                         raise ValueError("oversized result")
                     data = output.read_bytes()
                     if len(data) % 2:
@@ -172,7 +177,9 @@ class NameReplacement:
                         if not result.strip() or result.strip().casefold() == "chatgpt" or any(ord(c) < 32 or 127 <= ord(c) <= 159 for c in result):
                             raise ValueError("invalid display")
                         display, failure = result, None
-                    elif code == 2 and tag.startswith("fallback:") and result == raw:
+                    elif (code == 2 and tag.startswith("fallback:") and
+                          (result == raw or (self.caption_mode and result == raw + SUFFIX))):
+                        display = result
                         failure = tag.split(":", 1)[1] or "unspecified"
                 except (OSError, ValueError, UnicodeError):
                     pass
@@ -193,8 +200,9 @@ class NameReplacement:
                 inp.write_bytes(raw.encode("utf-16-le"))
                 if self.helper is None:
                     raise FileNotFoundError("companion missing")
-                argv = [str(self.helper), "--format", "--rules", str(self.rules_path),
-                        "--input", str(inp), "--output", str(output), "--status", str(status)]
+                argv = [str(self.helper), "--format"] + (["--caption"] if self.caption_mode else []) + [
+                        "--rules", str(self.rules_path), "--input", str(inp),
+                        "--output", str(output), "--status", str(status)]
                 process = self.launch(argv, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                       creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
                 self.active = {"process": process, "raw": raw, "generation": generation,
@@ -203,7 +211,7 @@ class NameReplacement:
             except (OSError, ValueError, UnicodeError):
                 for path in paths:
                     path.unlink(missing_ok=True)
-                self._complete(raw, raw, "worker_start_failed", generation)
+                self._complete(raw, self.default_display(raw), "worker_start_failed", generation)
                 changed = True
         return changed
 

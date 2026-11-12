@@ -197,3 +197,13 @@ Keep [name_replacement.py](name_replacement.py) beside the main source. PyInstal
 The adapter passed 14 owned-file/process tests plus 8 private checks with the real shared format companion. The checks include Unicode CTS1, exact fallback, cache invalidation, timeout, stale generations and simulated ownership guards.
 
 These are format/protocol and controlled-ownership checks. They do not open the editor, start a normal resident, read ChatGPT, change production startup/preferences or claim new real-desktop/menu acceptance. The linked help defines limits, strict replacement references, OS regex differences and complete-raw fallback.
+
+### Optional ChatGPT suffix — default enabled
+
+The shared name-replacement editor has an independent **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox, checked by default. Uncheck it and **Save** to stop adding the program's ` — ChatGPT` suffix. It remains effective when replacement rules are empty or **Enable name replacement** is off. This switch does not remove matching text that is part of the original conversation name.
+
+The optional JSON field `append_chatgpt_suffix` is a boolean in the shared `title-rules.json`; an omitted field defaults to `true`. It is not stored in scan-interval, icon or startup preferences. The frontend asks the shared formatter for the **complete caption** with `--format --caption`, then uses that output directly, avoiding a second suffix. Existing body-only `--format` clients keep their previous semantics. The verified raw source remains limited to 512 UTF-16 units; a complete caption is limited to 522 units including the optional 10-unit suffix.
+
+Saving this choice changes display generation only. It can refresh an owned caption still matching the last write, without extra source reads, source-timer resets or changes to raw/original restoration data. An existing configuration is always sent to the companion in caption mode, even with empty/disabled rules, so the unchecked suffix remains effective. A handled formatter fallback accepts only the entire raw name or that raw name plus the fixed suffix. If the companion cannot run or misses its deadline, the safe local fallback uses the default suffix and records a diagnostic; unchanged fallback stays cached until the rules/helper signature changes, a different raw name is observed or the monitor restarts.
+
+Caption revision checks: **23** owned Python unit tests and **14** private checks against the actual copied Windows companion passed. These are file/process and simulated ownership checks, not a fresh normal-desktop/editor acceptance.

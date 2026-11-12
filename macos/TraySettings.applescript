@@ -3,7 +3,7 @@
 use framework "AppKit"
 use framework "Foundation"
 use scripting additions
-property app : missing value
+property appInstance : missing value
 property statusItem : missing value
 property enableItem : missing value
 property settingsPanel : missing value
@@ -61,8 +61,8 @@ on run argv
     end try
     my applyStartup(autoStartEnabled)
     my persistValues()
-    set app to current application's NSApplication's sharedApplication()
-    app's setActivationPolicy:1
+    set appInstance to current application's NSApplication's sharedApplication()
+    appInstance's setActivationPolicy:1
     set statusItem to current application's NSStatusBar's systemStatusBar()'s statusItemWithLength:(current application's NSVariableStatusItemLength)
     try
         set selectedNumber to my themeNumber({iconMode, fixedIcon, iconPeriod, randomIcon, iconSlot})
@@ -97,7 +97,7 @@ on run argv
     set iconTimer to current application's NSTimer's scheduledTimerWithTimeInterval:1 target:me selector:"iconTimerFired:" userInfo:(missing value) repeats:true
     iconTimer's setTolerance:0.2
     my writeText("ready", readyPath)
-    app's |run|()
+    appInstance's |run|()
 end run
 on writeText(contentText, destinationPath)
     set nsText to current application's NSString's stringWithString:contentText
@@ -205,7 +205,7 @@ on openSettings:sender
     my iconModeChanged:me
     foregroundField's setStringValue:(foregroundSeconds as text)
     backgroundField's setStringValue:(backgroundSeconds as text)
-    app's activateIgnoringOtherApps:true
+    appInstance's activateIgnoringOtherApps:true
     settingsPanel's makeKeyAndOrderFront:me
 end openSettings:
 on positiveInteger(rawText)
@@ -296,7 +296,7 @@ on quitHelper:sender
     try
         my writeText("stop", stopPath)
         if iconTimer is not missing value then iconTimer's invalidate()
-        app's terminate:me
+        appInstance's terminate:me
     on error errorText
         my showError(errorText)
     end try
@@ -509,7 +509,7 @@ end initializeTheme
 on applyThemeImage(imageObject, numberValue)
     statusItem's button()'s setImage:imageObject
     statusItem's button()'s setTitle:""
-    app's setApplicationIconImage:imageObject
+    appInstance's setApplicationIconImage:imageObject
     set currentImage to imageObject
     set currentIconNumber to numberValue
 end applyThemeImage

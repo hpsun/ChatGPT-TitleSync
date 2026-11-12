@@ -353,7 +353,7 @@ def update_caption(info, title, records, emit, rules=None):
             records.pop(ident, None)
         emit("generic_page", info)
         return
-    wanted = (rules.display(title) if rules else title) + " — ChatGPT"
+    wanted = rules.display(title) if rules else title + " — ChatGPT"
     if current == wanted:
         return
     try:
@@ -393,7 +393,7 @@ def maintain_background(known, records, emit, readonly=False, rules=None):
             CUSTOM_BACKOFF[ident] = float("inf")
             continue  # another owner or a custom caption; never overwrite it
         CUSTOM_BACKOFF.pop(ident,None)
-        desired = (rules.display(title) if rules else title) + " — ChatGPT"
+        desired = rules.display(title) if rules else title + " — ChatGPT"
         try:
             if is_active(info) or key(identity(info["Hwnd"])) != ident or caption(info["Hwnd"]) != current:
                 continue
@@ -423,7 +423,7 @@ def apply_background(info, title, known, records, emit, readonly=False, rules=No
         CUSTOM_BACKOFF[ident] = float("inf")
         return
     CUSTOM_BACKOFF.pop(ident,None)
-    desired = (rules.display(title) if rules else title) + " — ChatGPT"
+    desired = rules.display(title) if rules else title + " — ChatGPT"
     if current == desired:
         return
     try:
@@ -447,7 +447,7 @@ def refresh_owned_displays(known, records, emit, rules):
         raw = item.get("Title", "")
         if not raw.strip() or raw.strip().casefold() == "chatgpt":
             continue
-        wanted = rules.display(raw) + " — ChatGPT"
+        wanted = rules.display(raw)
         if wanted != current:
             try:
                 if caption(record["Identity"]["Hwnd"]) != current:
@@ -1157,7 +1157,7 @@ def main():
     autostart=AutoStart() if not args.once and not args.read_only else None
     asset_root=icon_asset_root()
     icons=IconPreferences(AutoStart._read_value,AutoStart._write_value,asset_root,log=emit) if autostart else None
-    rules=NameReplacement(settings.path,emit) if not args.once else None
+    rules=NameReplacement(settings.path,emit,caption_mode=True) if not args.once else None
     tray=NativeTray(settings,stop,autostart=autostart,icons=icons,rules=rules) if not args.once and not args.no_tray else None
     known, background_due = {}, {}
     fg, bg = None, None

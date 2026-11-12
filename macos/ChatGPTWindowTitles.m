@@ -258,7 +258,7 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
         _autoStartEnabled=TitleSyncStartupEnabled();_icons=[TitleSyncIcons new];
         NSString *executable=NSProcessInfo.processInfo.arguments[0];
         NSString *rulesState=[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/ChatGPT-TitleSync/runtime/objc"];
-        _nameRules=[[CTSRulesClient alloc] initWithExecutablePath:CTSRulesCompanionPath(executable) rulesPath:CTSRulesDefaultPath() stateDirectory:rulesState];
+        _nameRules=[[CTSRulesClient alloc] initWithExecutablePath:CTSRulesCompanionPath(executable) rulesPath:CTSRulesDefaultPath() stateDirectory:rulesState captionMode:YES];
         _records = [NSMutableArray array]; _nextToken = 1; _interval = 2; _backgroundInterval = 5;
         // Legacy preferences domain retained so existing settings survive the product rename.
         _timingLock=[NSLock new];_scanPreferences=[[NSUserDefaults alloc] initWithSuiteName:@"org.chatgpt-title.objc"];
@@ -558,7 +558,7 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
     }
     record.rawSourceName=name;[self.nameRules publishSources:[self rawRuleNames]];
     NSString *display=[self.nameRules resolve:name];if(!display){record.cachedTitle=nil;return;}
-    NSString *wanted=[display stringByAppendingString:@" — ChatGPT"];record.cachedTitle=wanted;
+    NSString *wanted=display;record.cachedTitle=wanted;
     if([self generic:current])record.manualOverride=NO;
     if([current isEqualToString:wanted])return;
     if(![self generic:current]&&![current isEqualToString:record.lastWritten]){record.manualOverride=YES;[self log:@"custom_caption_preserved" record:record error:nil];return;}
@@ -588,7 +588,7 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
     if(revision==self.lastRulesDisplayRevision)return;self.lastRulesDisplayRevision=revision;
     for(WindowRecord *record in self.records) {
         if(!record.rawSourceName)continue;NSString *display=[self.nameRules resolve:record.rawSourceName];if(!display)continue;
-        NSString *wanted=[display stringByAppendingString:@" — ChatGPT"],*prior=record.cachedTitle;record.cachedTitle=wanted;
+        NSString *wanted=display,*prior=record.cachedTitle;record.cachedTitle=wanted;
         if([prior isEqualToString:wanted]||record.manualOverride||!record.lastWritten)continue;
         NSString *current=AXString(record.window,kAXTitleAttribute);
         if(![current isEqualToString:record.lastWritten])continue;

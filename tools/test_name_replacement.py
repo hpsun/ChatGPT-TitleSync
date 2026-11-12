@@ -29,7 +29,7 @@ def main() -> int:
             start = time.monotonic()
             try:
                 # Explicit private paths bypass all personal default preferences.
-                child = subprocess.run([str(worker),"--format","--rules",str(rules),
+                child = subprocess.run([str(worker),"--format"]+(["--caption"] if case.get("caption") else [])+["--rules",str(rules),
                     "--input",str(source),"--output",str(output),"--status",str(status)],
                     capture_output=True, timeout=3, check=False)
                 actual = output.read_bytes().decode("utf-16-le")

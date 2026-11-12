@@ -148,7 +148,7 @@ namespace ChatGptTitle {
    form.Controls.Add(new Label{Text="图标模式 / Icon mode",AutoSize=true,Location=new Point(16,147)});form.Controls.Add(mode);form.Controls.Add(new Label{Text="固定配色 / Fixed color",AutoSize=true,Location=new Point(16,189)});form.Controls.Add(fixedIcon);form.Controls.Add(new Label{Text="随机换色 / Random period",AutoSize=true,Location=new Point(16,231)});form.Controls.Add(period);return form;
   }
  }
- internal sealed class NameRuleAdapter:IChatGptNameRules {
+ internal sealed class NameRuleAdapter:IChatGptCaptionRules {
   readonly TitleSyncRules.RulesClient client;
   internal NameRuleAdapter(TitleSyncRules.RulesClient value){client=value;}
   public string Resolve(string raw){return client.Resolve(raw);}
@@ -212,7 +212,7 @@ namespace ChatGptTitle {
      using(var settingsEvent=new EventWaitHandle(false,EventResetMode.AutoReset,MutexName+".Settings"))
      using(var marshal=new Control())
      using(var tray=new NotifyIcon())
-     using(var nameRules=new TitleSyncRules.RulesClient(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"ChatGPT-TitleSync.Rules.exe"),TitleSyncRules.Engine.DefaultRulesPath,directory))
+     using(var nameRules=new TitleSyncRules.RulesClient(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"ChatGPT-TitleSync.Rules.exe"),TitleSyncRules.Engine.DefaultRulesPath,directory,true))
      using(var monitor=new ChatGptWindowTitleMonitor(config,delegate{return false;},helper,directory)) {
       monitor.NameRules=new NameRuleAdapter(nameRules);
       stop.Reset();IntPtr handle=marshal.Handle;

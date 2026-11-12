@@ -246,7 +246,7 @@ func (c *titleCache) writeDisplay(e *cachedTitle, value string, foreground, owne
 		return
 	}
 	desired := value
-	if !strings.HasSuffix(desired, " — ChatGPT") {
+	if (c.Rules == nil || !c.Rules.CaptionMode) && !strings.HasSuffix(desired, " — ChatGPT") {
 		desired += " — ChatGPT"
 	}
 	previous := e.LastWritten

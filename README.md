@@ -16,9 +16,13 @@ The user approved public publication on **2026-11-11**. Confirmed repository: [C
 
 ## Configurable name replacement — feature branch
 
-Use **Name replacement…** in the tray menu or Settings to choose plain-text or regular-expression rules. The list starts empty. Select an already-observed conversation name, preview the result, or ask for locally generated suggestions; only an explicit Save applies the draft. No personal prefixes or rules are bundled or imported.
+Ordered plain-text/regex rules start empty and import no private presets. Current-name choices use private verified-name snapshots; previews and generic suggestions require explicit **Use rule → Save**.
 
-Read the [English guide](docs/name-replacement.md) or [中文帮助](docs/name-replacement.zh-CN.md). The shared Unicode companion keeps rule behavior consistent across the Windows language implementations; macOS uses its Foundation companion and remains Experimental for real AX/editor runtime behavior. This feature is under branch validation, with no new Release or product rename implied.
+The shared editor's **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox is checked by default and applies on **Save**. It is independent of **Enable name replacement** and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean `append_chatgpt_suffix` defaults to `true` when absent; it is not part of scan, icon or startup preferences.
+
+Raw/original restoration data, manual-caption guards and source schedules stay unchanged. `--format` keeps body-only output; optional `--caption` supplies a complete title. See [suffix, source bounds and protocol](docs/name-replacement.md#chatgpt-suffix). Python and the three AHK products currently ignore these saved display settings in `--once`; resident mode and the legacy API are separate scopes.
+
+The development tree remains **0.1.0**, with **0.2.0** as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes.
 
 ## Getting the files
 
@@ -110,14 +114,14 @@ Normal exit restores only an identity-matching window whose current caption equa
 
 <h2 id="validation">Validation status</h2>
 
-**Current feature:** the [v0.1.0 preview](https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0) is public; name replacement remains on its feature branch with no new Release. The current Windows Unicode companion passed all **31/31 shared format-CLI cases**. That is one shared suite, not a per-frontend total. A new full desktop retest of the eight independent Windows frontend implementations remains pending; earlier nine-runtime records below belong to older sources and do not establish current acceptance.
+**Current feature:** Windows passed **46/46 common CLI cases** (31 body + 15 caption). The separate helper-specific **37-case** suite (22 retained body + 15 caption) overlaps those cases and is not added to46. C# display checks 10 and never-shown editor checks 13 passed; these are controlled component results, not normal-desktop acceptance. A 1.5-second WorkerTimeout under load can leave the default suffix visible even when false was saved. Unchanged failure stays cached until rules/helper identity, raw name or a restart refreshes it. Lower-load single-case success in both PowerShell hosts is not an unconditional pass; see [the exact load boundary](KNOWN_ISSUES.md#format-worker-deadline-under-load).
 
 
 The [support matrix](support-matrix.md) distinguishes current controlled fixtures, historical read-only checks and unverified targets. Earlier C# component checks included **41 policy/timing cases, 13 watch/helper lifecycle cases, 8 source-interval protocol cases and 12 settings checks**. The public policy fixture duplicates that same 41-case set.
 
 Fake or self-owned-window evidence is not full standalone tray, installation, long-term or taskbar visual acceptance. Current live acceptance and release gates are tracked in the [local validation summary](docs/release-readiness.md#local-validation).
 
-At [CI checkpoint `19cec808`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990) and [checkpoint `97858710`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444), the Foundation helper and new Swift/Objective-C client integrations actually compiled and the same **30 common format-CLI cases** passed. Go/Rust still used older baseline adapters at those checkpoints. The latest AppleScript `launch` fix, helper input/I/O boundaries, client recovery and new Go/Rust adapter integration await the next complete CI run. All Mac routes remain **Experimental**: real AX/window-title, menu, editor and login behavior are still unaccepted. Shared models and compilation are not native runtime tests.
+At [Mac CI checkpoint `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229), all **four native language builds** (Swift, Objective-C, Go and Rust), the **31 common formatter cases**, **five file-I/O cases** and **three client-recovery cases** passed. Shared AppleScript compilation still failed at reported location `:64` around variable `application` with error **-10003**; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's **46 common cases and seven client cases** require another native integration CI run and are **not covered by this checkpoint**. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.
 
 Private caches, diagnostics and snapshots can contain conversation names and process identities. Keep them local. Generated binaries, SDK/runtime downloads, logs and validation evidence are excluded from the source package. See the [guide index](docs/guides-index.md).
 

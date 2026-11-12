@@ -14,6 +14,8 @@ use std::{
 };
 const MAX_BYTES: usize = 131072;
 const MAX_UNITS: usize = 512;
+const CAPTION_SUFFIX: &str = " — ChatGPT";
+const MAX_CAPTION_UNITS: usize = 522;
 static NONCE: AtomicU64 = AtomicU64::new(1);
 #[derive(Clone, Debug)]
 pub struct Memo {
@@ -37,6 +39,7 @@ pub(crate) type Runner =
     Arc<dyn Fn(&AtomicBool, &Path, Option<&Path>, &[u8], bool, &str) -> Memo + Send + Sync>;
 pub struct Client {
     pub epoch: u64,
+    pub caption_mode: bool,
     rules_path: PathBuf,
     state: PathBuf,
     helper: Option<PathBuf>,
@@ -112,8 +115,9 @@ impl Client {
     pub fn new(state: PathBuf) -> Self {
         let exe = std::env::current_exe().unwrap_or_default();
         let (helper, _) = companion_paths(&exe);
-        let mut client = Self::at(state, rules_path(), helper, Arc::new(format_worker));
+        let mut client = Self::at(state, rules_path(), helper, Arc::new(format_caption_worker));
         client.auto_resolve = true;
+        client.caption_mode = true;
         client
     }
     pub(crate) fn at(
@@ -163,6 +167,7 @@ impl Client {
         }
         Self {
             epoch: 0,
+            caption_mode: false,
             rules_path,
             state,
             helper,
@@ -216,6 +221,7 @@ impl Client {
                 },
                 None => "missing".into(),
             };
+            let helper_signature = format!("{}|caption:{}", helper_signature, self.caption_mode);
             let (bytes, missing, failure) = match read_bounded(&self.rules_path, MAX_BYTES) {
                 Ok(bytes) => (bytes, false, String::new()),
                 Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -266,7 +272,7 @@ impl Client {
             self.poll(&[raw.to_owned()]);
         }
         if self.missing || !self.failure.is_empty() {
-            return Some(raw.to_owned());
+            return Some(local_raw(raw, self.caption_mode));
         }
         if let Some(v) = self.memo.get(raw) {
             return Some(v.value.clone());
@@ -284,7 +290,7 @@ impl Client {
                 Ok(()) => {
                     self.pending.insert(raw.into(), true);
                 }
-                Err(_) => return Some(raw.into()),
+                Err(_) => return Some(local_raw(raw, self.caption_mode)),
             }
         }
         None
@@ -359,7 +365,10 @@ fn encode_packet(s: &str) -> Result<Vec<u8>, String> {
     Ok(units.into_iter().flat_map(u16::to_le_bytes).collect())
 }
 fn decode_packet(b: &[u8]) -> Result<String, String> {
-    if b.len() % 2 != 0 || b.len() > MAX_UNITS * 2 {
+    decode_packet_limit(b, MAX_UNITS)
+}
+fn decode_packet_limit(b: &[u8], max: usize) -> Result<String, String> {
+    if b.len() % 2 != 0 || b.len() > max * 2 {
         return Err("packet".into());
     }
     let u: Vec<_> = b
@@ -373,6 +382,17 @@ fn valid_display(s: &str) -> bool {
         && !s.trim().eq_ignore_ascii_case("ChatGPT")
         && !s.chars().any(char::is_control)
         && s.encode_utf16().count() <= MAX_UNITS
+}
+fn local_raw(raw: &str, caption: bool) -> String {
+    if caption && valid_display(raw) {
+        format!("{}{}", raw, CAPTION_SUFFIX)
+    } else {
+        raw.into()
+    }
+}
+fn valid_caption(value: &str) -> bool {
+    value.encode_utf16().count() <= MAX_CAPTION_UNITS
+        && valid_display(value.strip_suffix(CAPTION_SUFFIX).unwrap_or(value))
 }
 fn owned_cleanup(state: &Path, dir: &Path) {
     if dir.is_absolute()
@@ -394,8 +414,29 @@ fn format_worker(
     missing: bool,
     raw: &str,
 ) -> Memo {
+    format_worker_mode(cancel, state, helper, rules, missing, raw, false)
+}
+fn format_caption_worker(
+    cancel: &AtomicBool,
+    state: &Path,
+    helper: Option<&Path>,
+    rules: &[u8],
+    missing: bool,
+    raw: &str,
+) -> Memo {
+    format_worker_mode(cancel, state, helper, rules, missing, raw, true)
+}
+fn format_worker_mode(
+    cancel: &AtomicBool,
+    state: &Path,
+    helper: Option<&Path>,
+    rules: &[u8],
+    missing: bool,
+    raw: &str,
+    caption: bool,
+) -> Memo {
     let fallback = |code: &str| Memo {
-        value: raw.into(),
+        value: local_raw(raw, caption),
         status: format!("fallback:{code}"),
     };
     let input = match encode_packet(raw) {
@@ -434,8 +475,12 @@ fn format_worker(
             return fallback("WorkerIO");
         }
         let mut command = Command::new(helper);
+        command.arg("--format");
+        if caption {
+            command.arg("--caption");
+        }
         command
-            .args(["--format", "--rules"])
+            .arg("--rules")
             .arg(&rp)
             .arg("--input")
             .arg(&ip)
@@ -480,20 +525,35 @@ fn format_worker(
             return fallback("WorkerProtocol");
         }
         let code = String::from_utf8_lossy(&status_bytes).trim().to_owned();
-        let value = match read_bounded(&op, MAX_UNITS * 2).and_then(|b| {
-            decode_packet(&b)
+        let max = if caption {
+            MAX_CAPTION_UNITS
+        } else {
+            MAX_UNITS
+        };
+        let value = match read_bounded(&op, max * 2).and_then(|b| {
+            decode_packet_limit(&b, max)
                 .map_err(|_| std::io::Error::new(std::io::ErrorKind::InvalidData, "packet"))
         }) {
             Ok(s) => s,
             Err(_) => return fallback("WorkerProtocol"),
         };
-        if status.code() == Some(2) && code.starts_with("fallback:") && value == raw {
+        if status.code() == Some(2)
+            && code.starts_with("fallback:")
+            && (value == raw || (caption && value == local_raw(raw, true)))
+        {
             return Memo {
-                value: raw.into(),
+                value,
                 status: code,
             };
         }
-        if status.code() != Some(0) || code != "ok" || !valid_display(&value) {
+        if status.code() != Some(0)
+            || code != "ok"
+            || !(if caption {
+                valid_caption(&value)
+            } else {
+                valid_display(&value)
+            })
+        {
             return fallback("WorkerProtocol");
         }
         Memo {
@@ -612,5 +672,185 @@ mod tests {
                 && x.file_name()
                     .to_string_lossy()
                     .starts_with("title-rule-worker-")));
+    }
+}
+
+#[cfg(test)]
+mod caption_tests {
+    use super::*;
+    use std::sync::atomic::AtomicUsize;
+    fn temp() -> PathBuf {
+        let d = std::env::temp_dir().join(format!(
+            "cts-caption-fixture-{}-{}",
+            std::process::id(),
+            NONCE.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir_all(&d).unwrap();
+        d
+    }
+    fn config(suffix: bool, enabled: bool, rules: &str) -> Vec<u8> {
+        format!(r#"{{"schema_version":1,"enabled":{},"revision":"11111111-1111-4111-8111-111111111111","append_chatgpt_suffix":{},"rules":{}}}"#,enabled,suffix,rules).into_bytes()
+    }
+    #[test]
+    fn caption_packet_limits_and_body_fixture_default() {
+        let d = temp();
+        let mut c = Client::at(
+            d.clone(),
+            d.join("absent.json"),
+            None,
+            Arc::new(format_worker),
+        );
+        assert!(!c.caption_mode);
+        c.close();
+        let full = format!("{}{}", "a".repeat(512), CAPTION_SUFFIX);
+        let bytes: Vec<_> = full.encode_utf16().flat_map(u16::to_le_bytes).collect();
+        assert!(decode_packet(&bytes).is_err());
+        assert_eq!(decode_packet_limit(&bytes, 522).unwrap(), full);
+        assert!(valid_caption(&full));
+        assert!(!valid_caption(&format!(
+            "{}{}",
+            "a".repeat(513),
+            CAPTION_SUFFIX
+        )));
+        assert!(valid_caption(&"a".repeat(512)));
+        assert!(!valid_caption("a\nb"));
+        assert_eq!(local_raw(&"a".repeat(513), true), "a".repeat(513));
+        assert_eq!(local_raw("a\nb", true), "a\nb");
+    }
+    #[test]
+    fn caption_missing_read_failure_and_helper_default() {
+        let d = temp();
+        let rules = d.join("absent/rules.json");
+        let count = Arc::new(AtomicUsize::new(0));
+        let calls = count.clone();
+        let mut c = Client::at(
+            d.clone(),
+            rules.clone(),
+            None,
+            Arc::new(move |_, _, _, _, _, _| {
+                calls.fetch_add(1, Ordering::Relaxed);
+                Memo {
+                    value: String::new(),
+                    status: "unexpected".into(),
+                }
+            }),
+        );
+        c.caption_mode = true;
+        c.poll(&["Example".into()]);
+        assert_eq!(
+            c.display("Example"),
+            Some(format!("Example{}", CAPTION_SUFFIX))
+        );
+        assert_eq!(count.load(Ordering::Relaxed), 0);
+        assert!(!rules.parent().unwrap().exists());
+        fs::create_dir_all(&rules).unwrap();
+        c.refresh_now();
+        c.poll(&["Example".into()]);
+        assert_eq!(
+            c.display("Example"),
+            Some(format!("Example{}", CAPTION_SUFFIX))
+        );
+        assert_eq!(count.load(Ordering::Relaxed), 0);
+        c.close();
+        let got = format_caption_worker(
+            &AtomicBool::new(false),
+            &d,
+            None,
+            &config(false, true, "[]"),
+            false,
+            "Example",
+        );
+        assert_eq!(got.value, format!("Example{}", CAPTION_SUFFIX));
+        assert_eq!(got.status, "fallback:CompanionMissing");
+    }
+    #[test]
+    fn caption_existing_empty_and_disabled_call_worker() {
+        for enabled in [true, false] {
+            let d = temp();
+            let rules = d.join("rules.json");
+            fs::write(&rules, config(false, enabled, "[]")).unwrap();
+            let count = Arc::new(AtomicUsize::new(0));
+            let calls = count.clone();
+            let mut c = Client::at(
+                d.clone(),
+                rules,
+                None,
+                Arc::new(move |_, _, _, bytes, _, raw| {
+                    assert!(
+                        String::from_utf8_lossy(bytes).contains("\"append_chatgpt_suffix\":false")
+                    );
+                    calls.fetch_add(1, Ordering::Relaxed);
+                    Memo {
+                        value: raw.into(),
+                        status: "ok".into(),
+                    }
+                }),
+            );
+            c.caption_mode = true;
+            c.poll(&["Example".into()]);
+            let until = Instant::now() + Duration::from_secs(1);
+            loop {
+                if let Some(v) = c.display("Example") {
+                    assert_eq!(v, "Example");
+                    assert_eq!(count.load(Ordering::Relaxed), 1);
+                    break;
+                };
+                assert!(Instant::now() < until);
+                thread::sleep(Duration::from_millis(1));
+                c.poll(&["Example".into()]);
+            }
+            c.close();
+        }
+    }
+    #[test]
+    #[ignore = "requires shared caption companion, private format-only test"]
+    fn caption_shared_companion_cases() {
+        let helper =
+            PathBuf::from(std::env::var_os("CTS_CAPTION_TEST_HELPER").expect("shared helper path"));
+        let state = temp();
+        let raw = "Example";
+        let invalid = r#"[{"enabled":true,"mode":"regex","pattern":"(","replacement":""}]"#;
+        let long_rule = |n: usize| {
+            format!(
+                r#"[{{"enabled":true,"mode":"literal","pattern":"Example","replacement":"{}"}}]"#,
+                "a".repeat(n)
+            )
+        };
+        let cases = vec![
+            (
+                b"{\"schema_version\":1,\"enabled\":true,\"revision\":\"11111111-1111-4111-8111-111111111111\",\"rules\":[]}"
+                    .to_vec(),
+                format!("{}{}", raw, CAPTION_SUFFIX),
+                false,
+            ),
+            (config(false, true, "[]"), raw.into(), false),
+            (config(false, false, "[]"), raw.into(), false),
+            (config(false, true, invalid), raw.into(), true),
+            (
+                config(true, true, invalid),
+                format!("{}{}", raw, CAPTION_SUFFIX),
+                true,
+            ),
+            (b"{".to_vec(), format!("{}{}", raw, CAPTION_SUFFIX), true),
+            (config(false, true, &long_rule(512)), "a".repeat(512), false),
+            (
+                config(true, true, &long_rule(512)),
+                format!("{}{}", "a".repeat(512), CAPTION_SUFFIX),
+                false,
+            ),
+            (config(false,true,&format!(r#"[{{"enabled":true,"mode":"literal","pattern":"E","replacement":"{}"}}]"#,"a".repeat(507))), raw.into(), true),
+        ];
+        for (i, (rules, want, fallback)) in cases.iter().enumerate() {
+            let got = format_caption_worker(
+                &AtomicBool::new(false),
+                &state,
+                Some(&helper),
+                rules,
+                false,
+                raw,
+            );
+            assert_eq!(&got.value, want, "case {} status {}", i, got.status);
+            assert_eq!(got.status.starts_with("fallback:"), *fallback, "case {}", i);
+        }
     }
 }

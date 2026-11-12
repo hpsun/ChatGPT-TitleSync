@@ -9,8 +9,10 @@
 <p>用当前对话名标识原生 ChatGPT 窗口。英文项目名为 <strong>ChatGPT-TitleSync</strong>，当前为首次公开预览 <strong>v0.1.0</strong>。缺省前台来源每 <strong>2 秒</strong>读取、后台原生标题每 <strong>1 秒</strong>维护、后台来源每窗口 <strong>5 秒</strong>刷新。</p>
 <p>用户已于<strong>2026-11-11明确批准公开发布</strong>。已确认仓库：<a href="https://github.com/hpsun/ChatGPT-TitleSync">ChatGPT-TitleSync</a>。缺省启用当前用户登录自启动，见<a href="docs/startup.zh-CN.md">启动说明</a>；不同实现的验证范围仍分别说明。</p>
 <h2 id="_1">可配置名称替换——功能分支</h2>
-<p>在托盘菜单或设置中选择<strong>名称替换…</strong>，支持普通文字与正则表达式。规则默认空白；可从已观测到的对话名选择示例、预览结果或请求本地生成的建议，明确保存后才生效。不附带或自动导入个人规则与前缀。</p>
-<p>详见<a href="docs/name-replacement.zh-CN.md">中文帮助</a>或<a href="docs/name-replacement.md">English guide</a>。Windows各语言实现共用Unicode处理组件，macOS使用Foundation组件；Mac真实AX与编辑器运行继续标为Experimental。本功能仍在分支验证中，不表示已建立新Release或决定改名。</p>
+<p>有序普通文字/正则规则缺省为空，不导入私人预设；当前名称复用私有已核实快照，预览和通用建议须明确<strong>使用规则→保存</strong>。</p>
+<p>共享编辑器的 <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> 复选框缺省勾选，按<strong>保存</strong>生效，与 <strong>Enable name replacement</strong> 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 <code>append_chatgpt_suffix</code> 缺项按 <code>true</code>，不属于扫描、图标或启动项偏好。</p>
+<p>原始名/原标题恢复数据、手工标题保护与来源节拍不改。<code>--format</code>保留主体，附加<code>--caption</code>返回完整标题，见<a href="docs/name-replacement.zh-CN.md#chatgpt-suffix">后缀、来源边界与协议</a>。Python与三AHK产品当前<code>--once</code>忽略这些已保存显示设置，须与常驻模式及旧API范围区分。</p>
+<p>开发树版本仍为 <strong>0.1.0</strong>，下一目标为 <strong>0.2.0</strong>；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。</p>
 <h2 id="_2">获取文件</h2>
 <p>本次按语言目录逐文件推送源码、必要配套文件、文档与共享资源，采用正常仓库结构。<strong>不上传或提供项目自制ZIP下载。</strong> 可用Git获取目录树，再按<a href="docs/guides-index.zh-CN.md">实现指南</a>运行：</p>
 <pre><code class="language-sh">git clone https://github.com/hpsun/ChatGPT-TitleSync.git
@@ -145,10 +147,10 @@ powershell.exe -NoProfile -File .\Build.ps1
 <p>正常退出只还原身份相同、且当前标题等于本次最后写入值的窗口，外部修改不覆盖。各语言分别实现监听；PowerShell 的内存 Add-Type 桥是标准互操作，不依赖外部 C# EXE。</p>
 <h2 id="validation">验证状态</h2>
 
-<p><strong>当前功能状态：</strong> <a href="https://github.com/hpsun/ChatGPT-TitleSync/releases/tag/v0.1.0">v0.1.0预览版</a>已经公开；名称替换仍在功能分支，未建立新Release。当前Windows Unicode配套程序的<strong>31／31项共享格式CLI用例</strong>全部通过，只计一套，不按前端重复累计。八种独立Windows前端实现的新一轮完整桌面复测仍待开展；下方九运行时记录属于旧源码，不能替代本功能验收。</p>
+<p><strong>当前功能状态：</strong>Windows通过 <strong>46／46项共同CLI</strong>（31 body＋15 caption）；另有helper专项 <strong>37项</strong>（22保留body＋15 caption），两套有重叠，不能相加为83。C#显示10项、始终隐藏编辑器13项通过；均为受控组件结果，不是正常桌面验收。负载下1.5秒WorkerTimeout可使已保存false仍显示缺省尾巴，失败缓存须由规则/helper身份、原名变化或重启刷新。两host低载单项成功不能称无条件通过，见<a href="KNOWN_ISSUES.zh-CN.md#format-worker-deadline-under-load">确切负载边界</a>。</p>
 <p><a href="support-matrix.zh-CN.md">支持矩阵</a> 区分当前受控夹具、历史只读与未验证目标。当前 C# 组件检查含 <strong>41项策略/计时、13项watch/工作进程生命周期、8项来源间隔协议及12项设置检查</strong>。公开策略夹具复现同一组41项，不另重复累计。</p>
 <p>fake／自有窗口证据不等于完整的独立托盘、安装、长期驻留或任务栏视觉验收。真实窗口验收及发布门槛另见<a href="docs/release-readiness.zh-CN.md#local-validation">本地验证摘要</a>。</p>
-<p>在<a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">CI检查点<code>19cec808</code></a>及<a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444">检查点<code>97858710</code></a>，Foundation helper及新增Swift／Objective-C客户端集成已实际编译，同一套<strong>30项共同格式CLI用例</strong>通过。Go／Rust当时仍为旧baseline适配。最新AppleScript的<code>launch</code>修复、helper输入／I/O边界、客户端恢复及新Go／Rust适配集成仍等待下一完整CI。所有Mac路线继续标<strong>Experimental</strong>：真实AX／窗口标题、菜单、编辑器及登录行为未验收；共享模型或编译不代表原生运行实测。</p>
+<p>在 <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229">Mac CI 检查点 <code>1b7c33b</code></a>，<strong>四种原生语言构建</strong>（Swift、Objective-C、Go、Rust）、<strong>31项共同格式化</strong>、<strong>5项文件I/O</strong>及<strong>3项客户端恢复</strong>均通过；共享 AppleScript 编译仍在报告位置 <code>:64</code> 的 <code>application</code> 变量附近报 <strong>-10003</strong>，最小修正待验证。更新后缀修订的 <strong>46项共同用例及7项客户端</strong>仍须另一轮原生整合CI，<strong>不在此检查点覆盖范围内</strong>。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。</p>
 <p>私有缓存、诊断和工作快照可能含对话名及进程身份，应留在本地。生成的二进制、SDK／运行时下载、日志和验证证据不进入源码包。见<a href="docs/guides-index.zh-CN.md">指南索引</a>。</p>
 <p>C# 独立版真实窗口专项也已通过：前台标题切换、后台回改修复、可设后台调度及正常退出／helper 回收。单次观测为来源时间戳至首个原生标题样本约 0.516 秒、后台修复约 0.937 秒；这不等于长期、安装、完整托盘或任务栏视觉验收。</p>
 <h2 id="icon">已选图标</h2>

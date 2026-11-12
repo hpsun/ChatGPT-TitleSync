@@ -56,10 +56,11 @@ namespace ChatGptTitle
         string Resolve(string raw);
         void PublishSources(IDictionary<string,string> sources);
     }
+    internal interface IChatGptCaptionRules : IChatGptNameRules {}
     internal sealed class ChatGptWindowTitleMonitor : IDisposable
     {
         internal IChatGptNameRules NameRules { get; set; }
-        string DisplayName(string raw){return NameRules==null?raw:NameRules.Resolve(raw);}
+        string DisplayName(string raw){string display=NameRules==null?raw:NameRules.Resolve(raw);return NameRules is IChatGptCaptionRules?display:display+" — ChatGPT";}
         void RefreshOwnedDisplay(IList<ChatGptTitleWindow> candidates,int expected)
         {
             if(NameRules==null)return;
@@ -69,7 +70,7 @@ namespace ChatGptTitle
                 if(!tracked.TryGetValue(window.Key,out state)||!verified.TryGetValue(window.Key,out source)||state.LastWritten==null||state.ManualCaption!=null)continue;
                 string current=windows.GetCaption(window);
                 if(current!=state.LastWritten||!windows.IsSame(window))continue;
-                string desired=DisplayName(source.Title)+" — ChatGPT";
+                string desired=DisplayName(source.Title);
                 if(current!=desired)WriteCaption(state,current,desired,expected,windows.ForegroundHwnd==window.Hwnd,"DisplayRulesChanged");
             }
             NameRules.PublishSources(candidates.Where(window=>verified.ContainsKey(window.Key)).ToDictionary(window=>window.Key,window=>verified[window.Key].Title));
@@ -211,7 +212,7 @@ namespace ChatGptTitle
                 Verified cache;
                 if(state.ManualCaption!=null||!verified.TryGetValue(window.Key,out cache))return;
                 if(!GenericCaption(current)&&(state.LastWritten==null||current!=state.LastWritten))return;
-                string desired=DisplayName(cache.Title)+" — ChatGPT";
+                string desired=DisplayName(cache.Title);
                 if(current!=desired)WriteCaption(state,current,desired,expected,false,"CacheReapplied");
             }
             catch{Log("Skipped",window,"NativeBackgroundFailed",true);}
@@ -247,7 +248,7 @@ namespace ChatGptTitle
                 if(!ValidTitle(title)){Log("Skipped",window,"HeaderInvalid",true);return;}
                 RememberVerified(window,title,observed);
                 if(state.ManualCaption!=null)return;
-                WriteCaption(state,current,DisplayName(title)+" — ChatGPT",expected,true,"Changed");
+                WriteCaption(state,current,DisplayName(title),expected,true,"Changed");
             }
             catch{foregroundReadyKey=null;CancelBackground();Log("Skipped",window,"ReaderException",true);}
         }

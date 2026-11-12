@@ -19,8 +19,8 @@ NSString *CTSRulesCompanionPath(NSString *monitor) {
 NSString *CTSRulesHelpPath(NSString *monitor) {
     return FindPackaged(monitor,@[@"docs/name-replacement.html",@"../docs/name-replacement.html",@"../../docs/name-replacement.html"],NO);
 }
-static BOOL RulesOutputValid(NSString *text) {
-    return text && text.length<=512 && [text stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].length &&
+static BOOL RulesOutputValid(NSString *text,BOOL captionMode) {
+    return text && text.length<=(captionMode?522:512) && [text stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet].length &&
         [text rangeOfCharacterFromSet:NSCharacterSet.controlCharacterSet].location==NSNotFound &&
         [text caseInsensitiveCompare:@"ChatGPT"]!=NSOrderedSame;
 }
@@ -34,20 +34,26 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
     NSMutableDictionary<NSString *,NSString *> *_display;
     NSMutableSet<NSString *> *_pending;
     NSMutableDictionary<NSString *,NSTask *> *_children;
-    BOOL _initialized,_hasRules,_closed;
+    BOOL _initialized,_hasRules,_closed,_captionMode;
     uint64_t _displayRevision,_rulesGeneration;
 }
 @property(nonatomic, readwrite, copy) NSString *sourcePath;
 @end
 @implementation CTSRulesClient
 - (instancetype)initWithExecutablePath:(NSString *)executable rulesPath:(NSString *)rules stateDirectory:(NSString *)state {
+    return [self initWithExecutablePath:executable rulesPath:rules stateDirectory:state captionMode:NO];
+}
+- (instancetype)initWithExecutablePath:(NSString *)executable rulesPath:(NSString *)rules stateDirectory:(NSString *)state captionMode:(BOOL)captionMode {
     if((self=[super init])) {
+        _captionMode=captionMode;
         _executable=executable.copy;_rulesPath=rules.copy;_stateDirectory=state.copy;
         _sourcePath=[state stringByAppendingPathComponent:@"title-rule-sources.bin"];
         _lock=[NSLock new];_display=[NSMutableDictionary dictionary];_pending=[NSMutableSet set];_children=[NSMutableDictionary dictionary];
     }
     return self;
 }
+- (BOOL)captionMode{return _captionMode;}
+- (NSString *)rawFallback:(NSString *)raw{return _captionMode&&RulesOutputValid(raw,NO)?[raw stringByAppendingString:@" — ChatGPT"]:raw;}
 - (uint64_t)displayRevision {[_lock lock];uint64_t value=_displayRevision;[_lock unlock];return value;}
 - (void)poll {
     // A monitor can resolve many windows per heartbeat. Read the independent
@@ -78,7 +84,7 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
     // fallback even when the user has not changed the rule file or source name.
     _initialized=YES;_signature=data.copy;_helperSignature=helperStamp.copy;_rulesGeneration++;_displayRevision++;[_display removeAllObjects];
     _hasRules=data!=nil;
-    if(data) {
+    if(data&&!_captionMode) {
         id object=[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
         if([object isKindOfClass:NSDictionary.class]&&[object[@"schema_version"] isKindOfClass:NSNumber.class]&&[object[@"schema_version"] integerValue]==1&&
            [object[@"enabled"] isKindOfClass:NSNumber.class]&&[object[@"rules"] isKindOfClass:NSArray.class]) {
@@ -90,7 +96,7 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
 - (nullable NSString *)resolve:(NSString *)raw {
     [self poll];
     [_lock lock];
-    if(_closed||!_hasRules){[_lock unlock];return raw;}
+    if(_closed||!_hasRules){[_lock unlock];return [self rawFallback:raw];}
     NSString *saved=_display[raw];if(saved){[_lock unlock];return saved;}
     uint64_t generation=_rulesGeneration;
     NSString *token=[NSString stringWithFormat:@"%llu:%@",(unsigned long long)generation,raw];
@@ -104,7 +110,7 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
                 // A result is keyed by its exact raw input and rule generation;
                 // it cannot overwrite a later conversation or edited rule set.
                 if(self->_display.count>=256)[self->_display removeAllObjects];
-                self->_display[raw]=result?:raw;self->_displayRevision++;
+                self->_display[raw]=result?:[self rawFallback:raw];self->_displayRevision++;
             }
             [self->_lock unlock];
         }
@@ -114,22 +120,22 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
 - (NSString *)format:(NSString *)raw rules:(NSData *)rules token:(NSString *)token generation:(uint64_t)generation {
     NSString *directory=[_stateDirectory stringByAppendingPathComponent:[@".rules-" stringByAppendingString:NSUUID.UUID.UUIDString]];
     NSFileManager *manager=NSFileManager.defaultManager;NSError *error=nil;
-    NSString *result=raw,*reason=@"worker_io";
+    NSString *result=[self rawFallback:raw],*reason=@"worker_io";
     NSTask *task=[NSTask new];BOOL timedOut=NO;
     @try {
-        if(![manager isExecutableFileAtPath:_executable]){reason=@"helper_missing";return raw;}
-        if(![manager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:&error])return raw;
+        if(![manager isExecutableFileAtPath:_executable]){reason=@"helper_missing";return [self rawFallback:raw];}
+        if(![manager createDirectoryAtPath:directory withIntermediateDirectories:YES attributes:@{NSFilePosixPermissions:@0700} error:&error])return [self rawFallback:raw];
         NSString *input=[directory stringByAppendingPathComponent:@"input.utf16"],*output=[directory stringByAppendingPathComponent:@"output.utf16"];
         NSString *snapshot=[directory stringByAppendingPathComponent:@"rules.json"],*status=[directory stringByAppendingPathComponent:@"status.txt"];
         NSData *bytes=[raw dataUsingEncoding:NSUTF16LittleEndianStringEncoding allowLossyConversion:NO];
-        if(!bytes||![bytes writeToFile:input options:NSDataWritingAtomic error:&error]||![rules writeToFile:snapshot options:NSDataWritingAtomic error:&error])return raw;
-        task.executableURL=[NSURL fileURLWithPath:_executable];task.arguments=@[@"--format",@"--rules",snapshot,@"--input",input,@"--output",output,@"--status",status];
+        if(!bytes||![bytes writeToFile:input options:NSDataWritingAtomic error:&error]||![rules writeToFile:snapshot options:NSDataWritingAtomic error:&error])return [self rawFallback:raw];
+        task.executableURL=[NSURL fileURLWithPath:_executable];task.arguments=_captionMode?@[@"--format",@"--caption",@"--rules",snapshot,@"--input",input,@"--output",output,@"--status",status]:@[@"--format",@"--rules",snapshot,@"--input",input,@"--output",output,@"--status",status];
         task.standardOutput=NSFileHandle.fileHandleWithNullDevice;task.standardError=NSFileHandle.fileHandleWithNullDevice;
         [_lock lock];
-        if(_closed||_rulesGeneration!=generation){[_lock unlock];reason=@"stale";return raw;}
+        if(_closed||_rulesGeneration!=generation){[_lock unlock];reason=@"stale";return [self rawFallback:raw];}
         _children[token]=task;
         BOOL launched=[task launchAndReturnError:&error];[_lock unlock];
-        if(!launched){reason=@"worker_start";return raw;}
+        if(!launched){reason=@"worker_start";return [self rawFallback:raw];}
         NSTimeInterval deadline=NSProcessInfo.processInfo.systemUptime+1.5;
         while(task.running&&NSProcessInfo.processInfo.systemUptime<deadline) {
             [_lock lock];BOOL cancelled=_closed||_rulesGeneration!=generation;[_lock unlock];
@@ -143,17 +149,17 @@ static void AppendU32(NSMutableData *data,uint32_t value) {uint32_t little=CFSwa
             // This PID belongs only to the exact NSTask launched above. Never
             // signal the monitor, a source reader, ChatGPT, or another app.
             if(task.running)kill(task.processIdentifier,SIGKILL);
-            reason=[reason isEqualToString:@"stale"]?reason:@"timeout";return raw;
+            reason=[reason isEqualToString:@"stale"]?reason:@"timeout";return [self rawFallback:raw];
         }
-        if(task.terminationStatus!=0&&task.terminationStatus!=2){reason=@"worker_exit";return raw;}
+        if(task.terminationStatus!=0&&task.terminationStatus!=2){reason=@"worker_exit";return [self rawFallback:raw];}
         NSDictionary *outInfo=[manager attributesOfItemAtPath:output error:nil],*statusInfo=[manager attributesOfItemAtPath:status error:nil];
-        if(!outInfo||[outInfo[NSFileSize] unsignedLongLongValue]>4096||!statusInfo||[statusInfo[NSFileSize] unsignedLongLongValue]>256)return raw;
+        if(!outInfo||[outInfo[NSFileSize] unsignedLongLongValue]>4096||!statusInfo||[statusInfo[NSFileSize] unsignedLongLongValue]>256)return [self rawFallback:raw];
         NSData *outData=[NSData dataWithContentsOfFile:output];
         NSString *text=[[NSString alloc] initWithData:outData encoding:NSUTF16LittleEndianStringEncoding];
         NSString *state=[NSString stringWithContentsOfFile:status encoding:NSASCIIStringEncoding error:nil];
         state=[state stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
-        if(task.terminationStatus==0&&[state isEqualToString:@"ok"]&&RulesOutputValid(text)){result=text;reason=nil;}
-        else if(task.terminationStatus==2&&[state hasPrefix:@"fallback:"]&&[text isEqualToString:raw])reason=@"invalid_or_timeout";
+        if(task.terminationStatus==0&&[state isEqualToString:@"ok"]&&RulesOutputValid(text,_captionMode)){result=text;reason=nil;}
+        else if(task.terminationStatus==2&&[state hasPrefix:@"fallback:"]&&([text isEqualToString:raw]||(_captionMode&&[text isEqualToString:[raw stringByAppendingString:@" — ChatGPT"]]))){result=text;reason=@"invalid_or_timeout";}
         else reason=@"worker_protocol";
     } @catch(NSException *exception) {reason=@"worker_exception";}
     @finally {

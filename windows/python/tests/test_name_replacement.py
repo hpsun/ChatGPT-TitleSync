@@ -21,12 +21,16 @@ FIXTURE = r'''
 import json,sys,time
 from pathlib import Path
 assert sys.argv[1] == "--format"
-args=dict(zip(sys.argv[2::2],sys.argv[3::2]))
+values=sys.argv[2:]
+caption_mode="--caption" in values
+if caption_mode: values.remove("--caption")
+args=dict(zip(values[0::2],values[1::2]))
 cfg=json.loads(Path(args["--rules"]).read_text())
 raw=Path(args["--input"]).read_bytes().decode("utf-16-le")
 if cfg.get("hang"): time.sleep(30)
 value=cfg.get("value",raw)
 if cfg.get("raw"): value=raw
+if caption_mode and cfg.get("append_chatgpt_suffix",True): value+=" — ChatGPT"
 Path(args["--output"]).write_bytes(b"x" if cfg.get("odd") else value.encode("utf-16-le"))
 Path(args["--status"]).write_text(cfg.get("status","ok"),encoding="ascii")
 raise SystemExit(cfg.get("exit",0))
@@ -140,6 +144,63 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(self.finish(c,"Raw"),"Fresh")
         self.assertEqual(len(self.children),2)
 
+    def test_caption_absent_config_adds_default_suffix_without_worker(self):
+        c=self.controller(caption_mode=True)
+        self.assertEqual(c.display("示例😀"),"示例😀 — ChatGPT")
+        self.assertFalse(self.config.exists());self.assertFalse(self.commands)
+    def test_caption_worker_returns_complete_title_without_double_suffix(self):
+        self.save(value="Display")
+        c=self.controller(caption_mode=True)
+        self.assertEqual(self.finish(c,"Raw"),"Display — ChatGPT")
+        self.assertIn("--caption",self.commands[0])
+        self.assertNotIn("Raw",self.commands[0])
+    def test_caption_empty_disabled_rules_can_disable_suffix(self):
+        self.save(enabled=False,rules=[],append_chatgpt_suffix=False)
+        c=self.controller(caption_mode=True)
+        self.assertEqual(self.finish(c,"原始😀"),"原始😀")
+        self.assertEqual(len(self.commands),1)
+    def test_caption_suffix_toggle_invalidates_display_only(self):
+        self.save(value="Display",append_chatgpt_suffix=False)
+        c=self.controller(caption_mode=True)
+        self.assertEqual(self.finish(c,"Raw"),"Display")
+        generation=c.generation
+        self.save(value="Display",append_chatgpt_suffix=True);c.refresh_signature()
+        self.assertGreater(c.generation,generation)
+        self.assertEqual(self.finish(c,"Raw"),"Display — ChatGPT")
+    def test_caption_handled_fallback_accepts_only_complete_raw_forms(self):
+        for append in (False,True):
+            self.save(raw=True,status="fallback:invalid_rule",exit=2,append_chatgpt_suffix=append)
+            c=self.controller(caption_mode=True)
+            self.assertEqual(self.finish(c,"Original"),"Original"+(" — ChatGPT" if append else ""))
+        self.save(value="Partial",status="fallback:invalid_rule",exit=2,append_chatgpt_suffix=False)
+        c=self.controller(caption_mode=True)
+        self.assertEqual(self.finish(c,"Original"),"Original — ChatGPT")
+        self.assertEqual(c.cache["Original"]["code"],"worker_io")
+    def test_caption_full_output_limit_is_522_utf16_units(self):
+        self.save(value="x"*512)
+        c=self.controller(caption_mode=True)
+        self.assertEqual(self.finish(c,"Raw"),"x"*512+" — ChatGPT")
+        self.save(value="x"*513);c.refresh_signature()
+        self.assertEqual(self.finish(c,"Raw"),"Raw — ChatGPT")
+        self.assertEqual(c.cache["Raw"]["code"],"worker_io")
+    def test_caption_missing_helper_default_suffix_then_same_raw_recovery(self):
+        self.helper.unlink();self.save(append_chatgpt_suffix=False)
+        clock=[0.0];c=self.controller(caption_mode=True,clock=lambda:clock[0])
+        self.assertEqual(c.display("Raw"),"Raw — ChatGPT")
+        original=self.config.read_bytes()
+        self.helper.write_bytes(b"restored caption fixture");clock[0]=1.01;c.pump()
+        self.assertEqual(self.finish(c,"Raw"),"Raw")
+        self.assertEqual(self.config.read_bytes(),original)
+    def test_caption_timeout_retains_default_suffix_and_cached_fallback(self):
+        self.save(hang=True,append_chatgpt_suffix=False);clock=[0.0]
+        c=self.controller(caption_mode=True,clock=lambda:clock[0])
+        c.display("Raw");c.pump();clock[0]=1.51;c.pump()
+        self.assertEqual(c.display("Raw"),"Raw — ChatGPT")
+        self.assertEqual(c.cache["Raw"]["code"],"worker_timeout")
+        self.children[-1].wait(timeout=3);c.pump();c.display("Raw");c.pump()
+        self.assertEqual(len(self.commands),1)
+
+
 
 class OwnershipTests(unittest.TestCase):
     def namespace(self):
@@ -155,8 +216,15 @@ class OwnershipTests(unittest.TestCase):
         ns,info,captions,writes=self.namespace();ident=(7,1)
         record={"Identity":info,"Original":"Native original","Last":captions[7]}
         known={ident:{"Identity":info,"Title":"Raw"}}
-        ns["refresh_owned_displays"](known,{ident:record},lambda *a,**k:None,types.SimpleNamespace(display=lambda raw:"Display"))
+        ns["refresh_owned_displays"](known,{ident:record},lambda *a,**k:None,types.SimpleNamespace(display=lambda raw:"Display — ChatGPT"))
         self.assertEqual(writes,["Display — ChatGPT"]);self.assertEqual(record["Original"],"Native original")
+        self.assertEqual(known[ident]["Title"],"Raw")
+    def test_full_caption_refresh_can_omit_suffix_and_preserves_raw_lease(self):
+        ns,info,captions,writes=self.namespace();ident=(7,1)
+        record={"Identity":info,"Original":"Native original","Last":captions[7]}
+        known={ident:{"Identity":info,"Title":"Raw"}}
+        ns["refresh_owned_displays"](known,{ident:record},lambda *a,**k:None,types.SimpleNamespace(display=lambda raw:"Display"))
+        self.assertEqual(writes,["Display"]);self.assertEqual(record["Original"],"Native original")
         self.assertEqual(known[ident]["Title"],"Raw")
     def test_display_refresh_never_claims_manual_or_generic_caption(self):
         for current in ("User manual title","ChatGPT"):

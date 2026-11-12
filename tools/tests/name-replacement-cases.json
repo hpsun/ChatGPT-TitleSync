@@ -581,6 +581,258 @@
       },
       "expected": "😀",
       "exit_code": 2
+    },
+    {
+      "id": "caption-default",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": []
+      }
+    },
+    {
+      "id": "caption-missing-file",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 0,
+      "missing_rules_file": true
+    },
+    {
+      "id": "caption-false-empty",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-true-empty",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-false-replacement",
+      "caption": true,
+      "raw": "Work / Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-disabled-false",
+      "caption": true,
+      "raw": "Work / Example chat A",
+      "expected": "Work / Example chat A",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": false,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-disabled-true",
+      "caption": true,
+      "raw": "Work / Example chat A",
+      "expected": "Work / Example chat A — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": false,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-invalid-flag",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": "false"
+      }
+    },
+    {
+      "id": "caption-bad-regex-false",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "(",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-bad-regex-true",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "(",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-empty-result-false",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Example chat A",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-maximum-false",
+      "caption": true,
+      "raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-maximum-true",
+      "caption": true,
+      "raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-invalid-source",
+      "caption": true,
+      "raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-unicode-false",
+      "caption": true,
+      "raw": "Work / 示例 😀",
+      "expected": "示例 😀",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
     }
   ]
 }

@@ -55,7 +55,28 @@ int main(int argc,const char *argv[]) {
             uint32_t count=0;memcpy(&count,(const uint8_t *)packet.bytes+4,4);
             Require(CFSwapInt32LittleToHost(count)==2,@"source snapshot keeps two fictional raw names");
             [client dispose];
-            printf("{\"passed\":true,\"checks\":3,\"scope\":\"private_files_owned_worker_no_UI_no_AX\"}\n");
+            NSString *captionRules=[root stringByAppendingPathComponent:@"caption-rules.json"];
+            CTSRulesClient *captions=[[CTSRulesClient alloc] initWithExecutablePath:worker rulesPath:captionRules stateDirectory:[root stringByAppendingPathComponent:@"caption-state"] captionMode:YES];
+            Require([[captions resolve:raw] isEqualToString:[raw stringByAppendingString:@" — ChatGPT"]],@"missing preference keeps default suffix");
+            Require(![manager fileExistsAtPath:captionRules],@"caption identity read must not create a preference");
+            NSMutableDictionary *captionSettings=[@{@"schema_version":@1,@"enabled":@NO,@"append_chatgpt_suffix":@NO,@"revision":NSUUID.UUID.UUIDString,@"rules":@[]} mutableCopy];
+            Require([[NSJSONSerialization dataWithJSONObject:captionSettings options:0 error:&error] writeToFile:captionRules options:NSDataWritingAtomic error:&error],@"write suffix-off configuration");
+            [NSThread sleepForTimeInterval:1.0];
+            Require([Await(captions,raw,4) isEqualToString:raw],@"empty disabled rules still honor suffix off");
+            uint64_t captionRevision=captions.displayRevision;
+            captionSettings[@"append_chatgpt_suffix"]=@YES;captionSettings[@"revision"]=NSUUID.UUID.UUIDString;
+            Require([[NSJSONSerialization dataWithJSONObject:captionSettings options:0 error:&error] writeToFile:captionRules options:NSDataWritingAtomic error:&error],@"write suffix-on configuration");
+            [NSThread sleepForTimeInterval:1.0];
+            Require([Await(captions,raw,4) isEqualToString:[raw stringByAppendingString:@" — ChatGPT"]],@"same source hot-updates only display");
+            Require(captions.displayRevision>captionRevision,@"caption preference changes display revision");
+            captionSettings[@"append_chatgpt_suffix"]=@NO;captionSettings[@"enabled"]=@YES;
+            captionSettings[@"rules"]=@[@{@"enabled":@YES,@"mode":@"regex",@"pattern":@"(",@"replacement":@""}];
+            captionSettings[@"revision"]=NSUUID.UUID.UUIDString;
+            Require([[NSJSONSerialization dataWithJSONObject:captionSettings options:0 error:&error] writeToFile:captionRules options:NSDataWritingAtomic error:&error],@"write owned invalid-regex configuration");
+            [NSThread sleepForTimeInterval:1.0];
+            Require([Await(captions,raw,4) isEqualToString:raw],@"regex failure preserves raw and valid suffix-off setting");
+            [captions dispose];
+            printf("{\"passed\":true,\"checks\":7,\"scope\":\"private_files_owned_worker_no_UI_no_AX\"}\n");
         } @finally {
             // root is generated above, never supplied by an argument or prefs.
             [manager removeItemAtPath:root error:nil];

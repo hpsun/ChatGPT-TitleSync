@@ -304,7 +304,9 @@ impl<B: Backend> Cache<B> {
             None => return,
         };
         let previous = e.last.clone();
-        let desired = if value.ends_with(" — ChatGPT") {
+        let desired = if self.rules.as_ref().map(|r| r.caption_mode).unwrap_or(false)
+            || value.ends_with(" — ChatGPT")
+        {
             value
         } else {
             format!("{} — ChatGPT", value)
@@ -967,5 +969,84 @@ mod tests {
         assert_eq!(e.next_bg, deadline);
         assert_eq!(e.raw, "Example");
         assert_eq!(e.original, "ChatGPT");
+    }
+    #[test]
+    fn caption_toggle_keeps_raw_source_and_restore_lease() {
+        use crate::name_rules::{Client, Memo};
+        let d = std::env::temp_dir().join(format!(
+            "cts-caption-cache-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&d).unwrap();
+        let rules = d.join("rules.json");
+        std::fs::write(&rules, b"true").unwrap();
+        let mut client = Client::at(
+            d.clone(),
+            rules.clone(),
+            None,
+            Arc::new(|_, _, _, b, _, raw| Memo {
+                value: if b == b"false" {
+                    raw.into()
+                } else {
+                    format!("{} — ChatGPT", raw)
+                },
+                status: "ok".into(),
+            }),
+        );
+        client.caption_mode = true;
+        let mut c = fixture();
+        c.rules = Some(client);
+        let w = c.b.ws[0].clone();
+        observe(&mut c, w.clone(), true, "Example", Instant::now());
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Example — ChatGPT" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let e = &c.entries[&w];
+        let (deadline, version, epoch) = (e.next_bg, e.version, c.epoch);
+        std::fs::write(&rules, b"false").unwrap();
+        c.rules.as_mut().unwrap().refresh_now();
+        let until = Instant::now() + Duration::from_secs(2);
+        while c.b.caps[&11] != "Example" {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let e = &c.entries[&w];
+        assert_eq!(e.raw, "Example");
+        assert_eq!(e.original, "ChatGPT");
+        assert_eq!(e.next_bg, deadline);
+        assert_eq!(e.version, version);
+        assert_eq!(c.epoch, epoch);
+        c.restore();
+        assert_eq!(c.b.caps[&11], "ChatGPT");
+        observe(&mut c, w.clone(), true, "Example", Instant::now());
+        let until = Instant::now() + Duration::from_secs(2);
+        while !c.entries[&w].own {
+            c.poll_name_rules(true);
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        c.b.caps.insert(11, "Manual caption".into());
+        std::fs::write(&rules, b"true").unwrap();
+        c.rules.as_mut().unwrap().refresh_now();
+        let until = Instant::now() + Duration::from_secs(2);
+        loop {
+            c.poll_name_rules(true);
+            if c.entries[&w].rule_epoch == c.rules.as_ref().unwrap().epoch {
+                break;
+            }
+            assert!(Instant::now() < until);
+            thread::sleep(Duration::from_millis(5));
+        }
+        assert_eq!(c.b.caps[&11], "Manual caption");
+        c.restore();
+        assert_eq!(c.b.caps[&11], "Manual caption");
     }
 }

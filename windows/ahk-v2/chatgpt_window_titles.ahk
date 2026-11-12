@@ -103,7 +103,7 @@ try {
     G.SettingsFile:=EnvGet("LOCALAPPDATA") "\ChatGPT-title\ahk-v2\settings.ini", G.SettingsRevision:=0 ; Keep legacy settings so existing user preferences continue to load.
     LoadIntervalSettings()
     if !HasArg("--once") {
-        RulesInit()
+        RulesInit("","","",true)
         SetTimer(RulesTick,50)
     }
     G.AutoStartAllowed:=!G.ReadOnly && !HasArg("--once")
@@ -321,7 +321,7 @@ Poll() {
             }
             if !Active(id)
                 continue
-            title := RegExReplace(result["Title"], "[\x00-\x1F\x7F]"), desired := RulesDisplay(title) " — ChatGPT"
+            title := RegExReplace(result["Title"], "[\x00-\x1F\x7F]"), desired := RulesCaption(title)
             output.Push(Map("Hwnd", id["Hwnd"], "Success", 1, "Title", title))
             state.VerifiedTitle := title, state.NextBackground := Tick()+G.BackgroundMs
             if G.ReadOnly || (state.HasOwnProp("ProtectedCustom") && state.ProtectedCustom)
@@ -389,7 +389,7 @@ NativeMaintenance() {
             }
             if Active(id) || !Same(id) || Caption(id["Hwnd"]) != current
                 continue
-            desired := RulesDisplay(title) " — ChatGPT"
+            desired := RulesCaption(title)
             if WriteCaption(id,desired) {
                 state.Original := current, state.Last := desired, state.Owned := true, state.ProtectedCustom := false
                 LogEvent("BackgroundCacheRestored",id,"NativeGenericReset")
@@ -435,7 +435,7 @@ BackgroundPoll() {
                 state.Owned := false, state.Original := "", state.Last := "", state.ProtectedCustom := true
                 break
             }
-            desired := RulesDisplay(title) " — ChatGPT"
+            desired := RulesCaption(title)
             if current = desired
                 break
             original := state.Owned && current = state.Last ? state.Original : current

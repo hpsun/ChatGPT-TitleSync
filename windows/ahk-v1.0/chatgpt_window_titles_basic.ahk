@@ -184,7 +184,7 @@ if (AutoAllowed) {
         BasicThemeFinish(oldIcon,iconChanged)
 }
 if (!Once) {
-    BasicRulesInit()
+    BasicRulesInit("","","",1)
     SetTimer, BasicRulesTimer, 50
 }
 Log("started readonly=" . ReadOnly . " interval=" . Interval)
@@ -593,8 +593,7 @@ SetCaptionChecked(hwnd, ByRef text, bytes) {
     return ok && result && ReadCaption(hwnd,back,blen) && BinaryEqual(text,bytes,back,blen)
 }
 BuildWanted(ByRef title, bytes, ByRef wanted, ByRef wb) {
-    BasicRulesDisplay(title,bytes,display,displayBytes)
-    BuildRawWanted(display,displayBytes,wanted,wb)
+    BasicRulesCaption(title,bytes,wanted,wb)
 }
 BuildRawWanted(ByRef title, bytes, ByRef wanted, ByRef wb) {
     VarSetCapacity(wanted,bytes+22,0)

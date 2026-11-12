@@ -2,7 +2,9 @@
 
 [English](README.md) · [项目主页](../README.zh-CN.md)
 
-**运行时仍为 Experimental；原生编译和 CLI 检查分开记录。** 在[已核实的 SDK 检查点](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990)（功能提交 `19cec8080908a15f0d0a8ccefa66209cb207bf71`）中，新增客户端依赖后的 Swift、Objective-C 程序均已编译，共享 Unicode 规则格式化程序通过 **30/30** 项 CLI；同一 Swift job 后续独立的 AppleScript 编译仍失败。这不证明编辑器/菜单 GUI、ChatGPT AX、像素、自启动或时序已经验收；最新源码变更仍须核对后续实际 CI。
+在 [Mac CI 检查点 `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229)，**四种原生语言构建**（Swift、Objective-C、Go、Rust）、**31项共同格式化**、**5项文件I/O**及**3项客户端恢复**均通过；共享 AppleScript 编译仍在报告位置 `:64` 的 `application` 变量附近报 **-10003**，最小修正待验证。更新后缀修订的 **46项共同用例及7项客户端**仍须另一轮原生整合CI，**不在此检查点覆盖范围内**。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。
+
+开发树版本仍为 **0.1.0**，下一目标为 **0.2.0**；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。
 
 ## 环境与构建
 需要Mac、Xcode命令行工具及macOS SDK。预期目标bundle标识为com.openai.chat，须在目标Mac核对，也可用--bundle-id覆盖。
@@ -39,6 +41,16 @@
 移动原生程序后，须在旁边保留可执行的 `chatgpt-titlesync-rules`；仓库布局也可使用已知的 `../shared/macos` 或 `../../shared/macos`。两份帮助 HTML 放在同级 `docs`，或保留仓库 `../docs`。不从 PATH 或偏好里的命令寻找辅助程序。
 
 严格引用、完整原名回退、限制及 Foundation 与 Windows .NET 正则差异，见[中文帮助](../docs/name-replacement.zh-CN.md)与 [English help](../docs/name-replacement.md)。SDK/CLI 证据不代表真实用户 Mac 的编辑器、菜单或 ChatGPT AX 标题写入已可用。
+
+### 可选完整标题后缀
+
+共享编辑器的 **Append — ChatGPT / 标题末尾显示ChatGPT** 复选框缺省勾选，按**保存**生效，与 **Enable name replacement** 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 `append_chatgpt_suffix` 缺项按 `true`，不属于扫描、图标或启动项偏好。
+
+源码客户端请求`--format --caption`并直接采用完整标题，旧`--format`仍只返回主体。合法原名/主体限512个UTF-16码元，正常标题最多522；可解码非法原名完整返回且不装饰，绝不截断。原名缓存、恢复凭据、手工标题守卫和来源计划不改。最新后缀原生CI待验证，见[完整后缀契约](../docs/name-replacement.zh-CN.md#chatgpt-suffix)。
+
+### Windows证据不代表Mac运行时行为
+
+**Windows 负载边界：**自有格式化 worker 的截止仍为 **1.5 秒**。负载竞争或启动缓慢可导致超时，回退为完整原名加**缺省后缀**，因此保存的 `false` 可能尚未生效。失败按原名及规则/辅助程序身份缓存，条件不变的轮询不会重试；重新保存规则、替换/改变辅助程序身份、重启监听，或观测到不同原名，才会刷新该缓存。降低负载后，两种 PowerShell host（5.1、7）分别单独复测同项成功，之前 WorkerTimeout 现场仍保留；不能据此宣称无条件通过，也不承诺完整界面响应必在1.5秒内完成。
 
 ## 三层维护
 窗口元数据维护每1秒调度。--interval控制前台来源读取，默认2秒，范围1..3600秒。--background-interval控制各后台窗口来源刷新，默认5秒，范围5..3600秒；设为15即15秒。
@@ -139,7 +151,7 @@ Go／Rust伴随程序保持**原11参数接口**，从第8项基础PNG路径的�
 
 ## 验证边界
 
-当前原生编译、30 项 CLI 通过及独立 AppleScript 失败见本页开头；下面模型/静态记录保留为**历史主题修订证据**，不作为当前编译状态。
+当前四构建／31项CLI、5项I/O、3项恢复及独立AS失败见本页开头，更新的后缀46／client7整合仍待原生CI；下面模型/静态记录保留为**历史主题修订证据**，不作为当前编译状态。
 
 见[发布验证说明](../docs/release-readiness.zh-CN.md#local-validation)。历史**13项标题行为模型**早于三层实现，仅保留为模型证据。新增[23项图标契约模型](test_icon_policy.py)使用假偏好／资源、注入时间／随机选择，覆盖同slot重启、时段边界、无连重、保存／取消及自启动／间隔／主题回滚，全部通过。原13项标题模型也再次通过，执行时未在源码树产生新回执。
 
