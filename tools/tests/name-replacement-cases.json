@@ -1,0 +1,838 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "missing-file-identity",
+      "raw": "Example chat A",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": []
+      },
+      "expected": "Example chat A",
+      "exit_code": 0,
+      "missing_rules_file": true
+    },
+    {
+      "id": "empty-list-identity",
+      "raw": "示例对话 😀",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": []
+      },
+      "expected": "示例对话 😀",
+      "exit_code": 0
+    },
+    {
+      "id": "master-disabled",
+      "raw": "Work / Example",
+      "config": {
+        "schema_version": 1,
+        "enabled": false,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ]
+      },
+      "expected": "Work / Example",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-prefix",
+      "raw": "Work / Example chat A",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ]
+      },
+      "expected": "Example chat A",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-global",
+      "raw": "draft plan — draft notes",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "draft",
+            "replacement": "final"
+          }
+        ]
+      },
+      "expected": "final plan — final notes",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-ordinal-case",
+      "raw": "Draft draft",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "draft",
+            "replacement": "final"
+          }
+        ]
+      },
+      "expected": "Draft final",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-metacharacters",
+      "raw": "Price $1.00",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "$1",
+            "replacement": "$2"
+          }
+        ]
+      },
+      "expected": "Price $2.00",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-unicode",
+      "raw": "示例 😀 示例",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "示例",
+            "replacement": "Example"
+          }
+        ]
+      },
+      "expected": "Example 😀 Example",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-nonoverlap",
+      "raw": "aaaaa",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "aa",
+            "replacement": "b"
+          }
+        ]
+      },
+      "expected": "bba",
+      "exit_code": 0
+    },
+    {
+      "id": "ordered-chain",
+      "raw": "Work / draft plan",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          },
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "draft",
+            "replacement": "final"
+          }
+        ]
+      },
+      "expected": "final plan",
+      "exit_code": 0
+    },
+    {
+      "id": "disabled-row",
+      "raw": "draft plan",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": false,
+            "mode": "literal",
+            "pattern": "draft",
+            "replacement": "final"
+          }
+        ]
+      },
+      "expected": "draft plan",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-prefix",
+      "raw": "Work / Example chat A",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^Work / ",
+            "replacement": ""
+          }
+        ]
+      },
+      "expected": "Example chat A",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-after-separator",
+      "raw": "Team / Example chat B",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^[^/]+/\\s*(.+)$",
+            "replacement": "${1}"
+          }
+        ]
+      },
+      "expected": "Example chat B",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-paired-delimiter",
+      "raw": "[Example chat C]",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^\\[([^\\]]+)\\]$",
+            "replacement": "${1}"
+          }
+        ]
+      },
+      "expected": "Example chat C",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-swap",
+      "raw": "North / South",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^(.+) / (.+)$",
+            "replacement": "$2 — $1"
+          }
+        ]
+      },
+      "expected": "South — North",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-literal-dot",
+      "raw": "Example.v2",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "\\.",
+            "replacement": "-"
+          }
+        ]
+      },
+      "expected": "Example-v2",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-group-zero",
+      "raw": "Sample",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^(Sample)$",
+            "replacement": "${0} / $1"
+          }
+        ]
+      },
+      "expected": "Sample / Sample",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-optional-group",
+      "raw": "B",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^(A)?B$",
+            "replacement": "x${1}"
+          }
+        ]
+      },
+      "expected": "x",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-dollar-literal",
+      "raw": "Sample",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^Sample$",
+            "replacement": "$$1"
+          }
+        ]
+      },
+      "expected": "$1",
+      "exit_code": 0
+    },
+    {
+      "id": "regex-unicode",
+      "raw": "主题 😀",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^(.+)$",
+            "replacement": "[${1}]"
+          }
+        ]
+      },
+      "expected": "[主题 😀]",
+      "exit_code": 0
+    },
+    {
+      "id": "literal-reference-is-text",
+      "raw": "one",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "one",
+            "replacement": "${1}"
+          }
+        ]
+      },
+      "expected": "${1}",
+      "exit_code": 0
+    },
+    {
+      "id": "invalid-regex",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "(",
+            "replacement": "new"
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "invalid-capture",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^(.*)$",
+            "replacement": "$2"
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "empty-enabled-find",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "",
+            "replacement": "new"
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "full-chain-fallback",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Original",
+            "replacement": "Changed"
+          },
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "(",
+            "replacement": "x"
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "blank-result",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^.+$",
+            "replacement": ""
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "generic-result",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^.+$",
+            "replacement": "ChatGPT"
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "control-result",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^.+$",
+            "replacement": "line\nbreak"
+          }
+        ]
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "oversized-result",
+      "raw": "Sample",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Sample",
+            "replacement": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        ]
+      },
+      "expected": "Sample",
+      "exit_code": 2
+    },
+    {
+      "id": "schema-rejected",
+      "raw": "Original name",
+      "config": {
+        "schema_version": 99,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": []
+      },
+      "expected": "Original name",
+      "exit_code": 2
+    },
+    {
+      "id": "split-surrogate-fallback",
+      "raw": "😀",
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "00000000-0000-0000-0000-000000000001",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "^.",
+            "replacement": ""
+          }
+        ]
+      },
+      "expected": "😀",
+      "exit_code": 2
+    },
+    {
+      "id": "caption-default",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": []
+      }
+    },
+    {
+      "id": "caption-missing-file",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 0,
+      "missing_rules_file": true
+    },
+    {
+      "id": "caption-false-empty",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-true-empty",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-false-replacement",
+      "caption": true,
+      "raw": "Work / Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-disabled-false",
+      "caption": true,
+      "raw": "Work / Example chat A",
+      "expected": "Work / Example chat A",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": false,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-disabled-true",
+      "caption": true,
+      "raw": "Work / Example chat A",
+      "expected": "Work / Example chat A — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": false,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-invalid-flag",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": "false"
+      }
+    },
+    {
+      "id": "caption-bad-regex-false",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "(",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-bad-regex-true",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A — ChatGPT",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "regex",
+            "pattern": "(",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-empty-result-false",
+      "caption": true,
+      "raw": "Example chat A",
+      "expected": "Example chat A",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Example chat A",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-maximum-false",
+      "caption": true,
+      "raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-maximum-true",
+      "caption": true,
+      "raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa — ChatGPT",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": true
+      }
+    },
+    {
+      "id": "caption-invalid-source",
+      "caption": true,
+      "raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "exit_code": 2,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [],
+        "append_chatgpt_suffix": false
+      }
+    },
+    {
+      "id": "caption-unicode-false",
+      "caption": true,
+      "raw": "Work / 示例 😀",
+      "expected": "示例 😀",
+      "exit_code": 0,
+      "config": {
+        "schema_version": 1,
+        "enabled": true,
+        "revision": "22222222-2222-4222-8222-222222222222",
+        "rules": [
+          {
+            "enabled": true,
+            "mode": "literal",
+            "pattern": "Work / ",
+            "replacement": ""
+          }
+        ],
+        "append_chatgpt_suffix": false
+      }
+    }
+  ]
+}

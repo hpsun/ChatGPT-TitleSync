@@ -1,0 +1,191 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync — Name replacement</title><style>body{font:16px/1.65 system-ui,Segoe UI,sans-serif;color:#172033;background:#fff;max-width:1120px;margin:32px auto;padding:0 24px 64px}h1,h2,h3{line-height:1.35}h1{color:#4338ca}h2{margin-top:2em;border-bottom:1px solid #ddd;padding-bottom:.3em}a{color:#4338ca}pre{padding:16px;background:#f3f4f8;overflow:auto}code{font-size:.94em;background:#f3f4f8;padding:2px 4px;border-radius:4px}table{border-collapse:collapse;width:100%;display:block;overflow:auto}th,td{padding:10px 12px;border:1px solid #d6d8e0;text-align:left;vertical-align:top;line-height:1.6}th{background:#f0ecff;white-space:nowrap}blockquote{border-left:4px solid #a78bfa;padding-left:16px;color:#475569}</style></head><body><h1 id="_1">名称替换</h1>
+<p><a href="name-replacement.md">English</a> · <a href="name-replacement.zh-CN.md">简体中文</a> · <a href="name-replacement.zh-CN.html">HTML</a> · <a href="../README.zh-CN.md">项目主页</a></p>
+<p>修改对话名在本机ChatGPT窗口标题中的显示形式。ChatGPT中保存的原对话名保持原样。规则默认空白，不导入其它程序的规则，也不附带个人前缀。</p>
+<h2 id="_2">打开规则编辑器</h2>
+<p>在托盘菜单选择<strong>名称替换… / Name replacement…</strong>，或点击设置中的对应按钮。规则编辑器由随所选语言实现提供的共用组件打开；分发已编译程序时，请保留配套组件。</p>
+<ol>
+<li>从<strong>当前对话</strong>中选择已观测到的名称，或手工输入示例。</li>
+<li>添加规则，选择<strong>普通文字</strong>或<strong>正则表达式</strong>。</li>
+<li>填写<strong>查找</strong>和<strong>替换</strong>；替换留空表示删除匹配文字。</li>
+<li>检查预览，通过<strong>上移／下移</strong>调整执行顺序。</li>
+<li>点击<strong>保存</strong>后生效；<strong>取消</strong>丢弃草稿。</li>
+</ol>
+<p>打开编辑器、选择示例、预览或请求建议均不保存规则，也不改变窗口。保存后的规则先处理对话名，再附加原有的<code>— ChatGPT</code>后缀。</p>
+<h2 id="_3">从当前对话名选择示例</h2>
+<p>下拉列表使用正在运行的监听程序已经核实的原始名称，并显示快照时间，便于识别旧资料。它不会扫描聊天历史或把内容发送到服务器。</p>
+<p>列表为空时，可以激活相关ChatGPT窗口，等待正常监听取得名称，也可以直接手工输入。尚未观测过的后台窗口可能不在列表里。选择名称只会填入示例框，不会修改对话名称。</p>
+<p>原始名称与替换后的显示结果分别保存。修改规则不会增加ChatGPT来源读取，也不会重置前台、后台扫描间隔。</p>
+<h2 id="_4">普通文字替换</h2>
+<p>需要精确替换一段文字时使用。匹配区分大小写，替换全部互不重叠的出现位置。标点、美元符号和反斜杠均按普通字符处理。</p>
+<table>
+<thead>
+<tr>
+<th>示例名称</th>
+<th>查找</th>
+<th>替换</th>
+<th>预览</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Work / Example chat A</code></td>
+<td><code>Work /</code></td>
+<td>留空</td>
+<td><code>Example chat A</code></td>
+</tr>
+<tr>
+<td><code>draft plan — draft notes</code></td>
+<td><code>draft</code></td>
+<td><code>final</code></td>
+<td><code>final plan — final notes</code></td>
+</tr>
+<tr>
+<td><code>Price $1</code></td>
+<td><code>$1</code></td>
+<td><code>$2</code></td>
+<td><code>Price $2</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>Work</code>与<code>work</code>不同；此模式中的句点只匹配实际的句点。</p>
+<h2 id="_5">正则表达式替换</h2>
+<p>需要按结构匹配时使用。下表均为教学示例，不会作为默认规则安装。</p>
+<table>
+<thead>
+<tr>
+<th>用途</th>
+<th>示例</th>
+<th>查找</th>
+<th>替换</th>
+<th>预览</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>删除固定前缀</td>
+<td><code>Work / Example chat A</code></td>
+<td><code>^Work /</code></td>
+<td>留空</td>
+<td><code>Example chat A</code></td>
+</tr>
+<tr>
+<td>保留斜杠后的部分</td>
+<td><code>Team / Example chat B</code></td>
+<td><code>^[^/]+/\s*(.+)$</code></td>
+<td><code>${1}</code></td>
+<td><code>Example chat B</code></td>
+</tr>
+<tr>
+<td>提取完整方括号内名称</td>
+<td><code>[Example chat C]</code></td>
+<td><code>^\[([^\]]+)\]$</code></td>
+<td><code>${1}</code></td>
+<td><code>Example chat C</code></td>
+</tr>
+<tr>
+<td>交换两段内容</td>
+<td><code>North / South</code></td>
+<td><code>^(.+) / (.+)$</code></td>
+<td><code>$2 — $1</code></td>
+<td><code>South — North</code></td>
+</tr>
+<tr>
+<td>匹配实际句点</td>
+<td><code>Example.v2</code></td>
+<td><code>\.</code></td>
+<td><code>-</code></td>
+<td><code>Example-v2</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_6">常见符号</h3>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>^</code>和<code>$</code></td>
+<td>名称的开头与结尾</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td>一个字符；用<code>\.</code>匹配实际句点</td>
+</tr>
+<tr>
+<td><code>(...)</code></td>
+<td>捕获一部分，供替换内容引用</td>
+</tr>
+<tr>
+<td><code>+</code>、<code>*</code>、<code>?</code></td>
+<td>一次以上、任意次数、可有可无</td>
+</tr>
+<tr>
+<td><code>[abc]</code>、<code>[^/]</code></td>
+<td>集合内字符，或斜杠以外的字符</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td>空白字符</td>
+</tr>
+<tr>
+<td><code>\</code></td>
+<td>转义符，例如<code>\[</code>、<code>\(</code>、<code>\.</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">在替换内容中引用捕获组</h3>
+<p><code>$1</code>或<code>${1}</code>表示第一个捕获组，依次支持到<code>$99</code>／<code>${99}</code>。<code>$0</code>或<code>${0}</code>表示完整匹配，<code>$$</code>表示实际的美元符号。合法但本次没有匹配到的可选组展开为空；引用不存在的捕获组会被拒绝。</p>
+<p>这些引用只在正则模式下有意义；普通文字模式中的<code>${1}</code>就是普通文字。替换框不会把<code>\1</code>当作捕获组引用。</p>
+<p>Windows使用.NET正则，macOS使用Foundation的<code>NSRegularExpression</code>。上面的常见示例面向两者编写，但高级语法及Unicode匹配可能不同，须在目标平台预览；配置文件能够读取，不代表其中的高级表达式可以直接跨平台使用。</p>
+<h2 id="_8">生成建议方案</h2>
+<p>选择示例名称后点击<strong>建议 / Suggest</strong>。程序根据该示例的结构或所选文字，在本地生成候选，例如删除前缀、保留分隔符之后的部分、提取成对括号中的内容。</p>
+<p>每个候选都会显示用途、表达式、替换内容和结果。检查后选择<strong>使用规则 / Use rule</strong>，它才会加入草稿；点击<strong>保存</strong>才正式生效。用于其它名称时可能得到不同结果，条件允许时应至少预览两个有代表性的示例。</p>
+<p>建议不会批量改写所有聊天、修改云端对话名或安装本机专用默认规则。没有适合的结构时，可以自行填写普通文字规则或表达式。</p>
+<h2 id="_9">顺序和开关</h2>
+<p>总开关可绕过整张规则表，并保留已配置内容；每行也能单独启用。已启用规则从上到下依次执行，上一行的输出是下一行的输入。</p>
+<p>例如对<code>Work / draft plan</code>，先删除<code>Work /</code>，再将<code>draft</code>替换成<code>final</code>。调整顺序可能改变结果。未启用的行仍可保留，便于以后修改。</p>
+<p><a id="chatgpt-suffix"></a></p>
+<h2 id="chatgpt">ChatGPT 后缀与完整标题</h2>
+<p>共享编辑器的 <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> 复选框缺省勾选，按<strong>保存</strong>生效，与 <strong>Enable name replacement</strong> 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 <code>append_chatgpt_suffix</code> 缺项按 <code>true</code>，不属于扫描、图标或启动项偏好。</p>
+<p>取消勾选只停止本程序追加尾巴，不会删除原对话名本身已有的同样文字。选择样例、生成建议、预览或取消均不提交此项；核实原名、来源节拍、原标题恢复及手工改名保护保持不变。</p>
+<p>下例是虚构配置，分别关闭替换和追加后缀：</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: 1,
+  &quot;enabled&quot;: false,
+  &quot;append_chatgpt_suffix&quot;: false,
+  &quot;revision&quot;: &quot;00000000-0000-4000-8000-000000000001&quot;,
+  &quot;rules&quot;: []
+}
+</code></pre>
+<p><a id="caption-protocol"></a></p>
+<h3 id="_10">格式化协议与边界</h3>
+<p><code>--format</code> 保持仅返回名称主体；附加 <code>--caption</code> 返回完整标题，caption模式前端直接采用，不再重复拼尾巴。合法来源原名及格式化主体最多 <strong>512个UTF-16码元</strong>，正常完整标题含可选10码元 <code>— ChatGPT</code> 后缀时最多 <strong>522个</strong>。配置存在时，即使替换为空或停用，也须经过caption formatter才能应用后缀选择。</p>
+<p>可解码但非法的来源（超过512码元或含控制字符）返回<strong>完整原始输入且不加后缀</strong>，绝不截断；因此诊断回退可超过正常合法标题上限。损坏UTF-16仍为协议/I/O错误。正常来源读取器在显示处理前另行执行自身边界检查。</p>
+<p><strong>Windows 负载边界：</strong>自有格式化 worker 的截止仍为 <strong>1.5 秒</strong>。负载竞争或启动缓慢可导致超时，回退为完整原名加<strong>缺省后缀</strong>，因此保存的 <code>false</code> 可能尚未生效。失败按原名及规则/辅助程序身份缓存，条件不变的轮询不会重试；重新保存规则、替换/改变辅助程序身份、重启监听，或观测到不同原名，才会刷新该缓存。降低负载后，两种 PowerShell host（5.1、7）分别单独复测同项成功，之前 WorkerTimeout 现场仍保留；不能据此宣称无条件通过，也不承诺完整界面响应必在1.5秒内完成。</p>
+<h3 id="windows">四种Windows前端的一次检查模式限制</h3>
+<p>当前Python、AHK Basic1.0、AHK1.1和AHK2产品的 <code>--once</code> 跳过整个规则客户端，因此忽略已保存替换规则，<strong>也忽略</strong> <code>append_chatgpt_suffix=false</code>，使用原名加缺省尾巴。这是当前产品限制，与旧主体formatter API的兼容性不同；不能把常驻模式的行为当作一次检查已遵守用户设置。</p>
+<h2 id="_11">错误及回退</h2>
+<p>已启用规则的查找内容不能为空；表达式或捕获组引用无效时不能保存。替换内容可以留空。</p>
+<p>执行失败、超时，或最终结果为空白、含控制字符、过长、只剩<code>ChatGPT</code>时，整条处理链都会回退为完整原始对话名，不使用只改了一半的结果。</p>
+<p>最多32行；查找和替换各最多512个UTF-16代码单元，结果同样最多512个。常见字符通常占一个，emoji通常占两个。超过限制会报错，不会悄悄截断。</p>
+<p>Windows单个正则匹配超时为100毫秒，整条处理链预算500毫秒；独立格式处理进程还有1.5秒的父进程期限。macOS以可独立结束的处理进程提供硬期限。预览与监听均不在界面线程执行无界正则。</p>
+<p>新结果尚在计算时，原有受控标题可能暂时保留至下一次显示更新。其它程序手工修改过的标题继续遵守现有保护；正常退出时仍按原逻辑尝试恢复原生窗口标题。</p>
+<h2 id="_12">本地文件与隐私</h2>
+<p>同一操作系统下，各语言实现共用规则：</p>
+<ul>
+<li>Windows：<code>%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json</code>。</li>
+<li>macOS：<code>~/Library/Application Support/ChatGPT-TitleSync/title-rules.json</code>。</li>
+</ul>
+<p>文件不存在表示规则为空。只有明确成功保存才创建或修改偏好文件；保存前校验并原子替换。修改间隔、图标或开机启动不会覆盖替换规则。</p>
+<p>已观测名称保存在单独的本地运行快照中，除非用户主动把某段文字写入规则，否则不会复制到规则文件。请勿公开自己的规则文件、运行快照或含真实对话名的截图。随程序提供的示例均为虚构名称。</p>
+<h2 id="_13">构建与验证范围</h2>
+<p>Windows各实现均使用配套的Unicode组件，包含早期ANSI版本AHK Basic，以获得一致的规则处理；Mac各实现使用Foundation组件。各语言的构建和运行说明见<a href="guides-index.zh-CN.md">指引目录</a>。</p>
+<p>编译、受控格式处理、来源读取及真实桌面验收是不同检查。以<a href="../support-matrix.zh-CN.md">支持矩阵</a>所列的实际范围为准；Mac原生运行尚未完成验收时，继续保留Experimental标记。</p>
+<h2 id="_14">开发与验证状态</h2>
+<p>开发树版本仍为 <strong>0.1.0</strong>，下一目标为 <strong>0.2.0</strong>；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。</p>
+<p>Windows通过 <strong>46／46项共同CLI</strong>（31 body＋15 caption）；另有helper专项 <strong>37项</strong>（22保留body＋15 caption），两套有重叠，不能相加为83。C#显示10项、始终隐藏编辑器13项通过；均为受控组件结果，不是正常桌面验收。</p>
+<p>在 <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229">Mac CI 检查点 <code>1b7c33b</code></a>，<strong>四种原生语言构建</strong>（Swift、Objective-C、Go、Rust）、<strong>31项共同格式化</strong>、<strong>5项文件I/O</strong>及<strong>3项客户端恢复</strong>均通过；共享 AppleScript 编译仍在报告位置 <code>:64</code> 的 <code>application</code> 变量附近报 <strong>-10003</strong>，最小修正待验证。更新后缀修订的 <strong>46项共同用例及7项客户端</strong>仍须另一轮原生整合CI，<strong>不在此检查点覆盖范围内</strong>。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。</p></body></html>

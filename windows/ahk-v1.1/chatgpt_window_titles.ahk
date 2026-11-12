@@ -9,8 +9,9 @@ SetBatchLines, -1
 ; --check: no target access. --self-test: own hidden GUI only.
 ; --read-only --once --output report.json: explicit single read, no caption writes.
 ; UIA only reads raw DIRECT renderer children Document[RootWebArea].Name.
-; COM indices: Microsoft's UIAutomationClient.h. No C# helper dependency.
+; The native UIA reader is independent; optional name rules use the shared Unicode companion.
 
+global NR := 0
 global G := {States:{}, Busy:false, Closing:false, Child:0, Mutex:0, StopEvent:0
     , ReadOnly:HasArg("--read-only"), Rotation:0, Recent:{}}
 G.AutoStartAllowed:=false,G.AutoStartEnabled:=false,G.AutoStartUnknown:=false,G.AutoStartMenuReady:=false,G.AutoStartTesting:=false
@@ -86,6 +87,7 @@ try {
     }
     Menu, Tray, NoStandard
     Menu, Tray, Add, 扫描间隔设置…, TraySettings
+    Menu, Tray, Add, 名称替换…, TrayNameReplacement
     Menu, Tray, Add, 开机自启动, TrayAutoStart
     Menu, Tray, Disable, 开机自启动
     G.AutoStartMenuReady:=true
@@ -102,6 +104,10 @@ try {
     G.BackgroundMs:=Round(backgroundInterval*1000), G.BgBusy:=false, G.NativeBusy:=false, G.NextNative:=0, G.BgChild:=0
     G.SettingsFile:=localData "\ChatGPT-title\ahk-v11\settings.ini", G.SettingsRevision:=0 ; Keep legacy settings so existing user preferences continue to load.
     LoadIntervalSettings()
+    if !HasArg("--once") {
+        RulesInit("","","",true)
+        SetTimer, NameRulesTimer, 50
+    }
     G.AutoStartAllowed:=!G.ReadOnly && !HasArg("--once")
     if G.AutoStartAllowed {
         try AutoStartInitialize()
@@ -164,6 +170,12 @@ CxtSettingsClose:
 CxtSettingsEscape:
 Gui, Settings:Destroy
 G.SettingsHwnd:=0
+return
+TrayNameReplacement:
+RulesEditor()
+return
+NameRulesTimer:
+RulesTick()
 return
 TrayExit:
 ExitApp
@@ -383,7 +395,7 @@ Poll() {
             }
             if !Active(id)
                 continue
-            title:=RegExReplace(result.Title,"[\x00-\x1F\x7F]"), desired:=title " — ChatGPT"
+            title:=RegExReplace(result.Title,"[\x00-\x1F\x7F]"), desired:=RulesCaption(title)
             output.Push({Hwnd:id.Hwnd,Success:1,Title:title})
             state.VerifiedTitle:=title, state.NextBackground:=Tick()+G.BackgroundMs
             if (G.ReadOnly || (state.HasKey("ProtectedCustom") && state.ProtectedCustom))
@@ -452,7 +464,7 @@ NativeMaintenance() {
             }
             if (Active(id) || !Same(id) || Caption(id.Hwnd)!=current)
                 continue
-            desired:=title " — ChatGPT"
+            desired:=RulesCaption(title)
             if WriteCaption(id,desired) {
                 state.Original:=current, state.Last:=desired, state.Owned:=true, state.ProtectedCustom:=false
                 LogEvent("BackgroundCacheRestored",id,"NativeGenericReset")
@@ -501,7 +513,7 @@ BackgroundPoll() {
                 state.Owned:=false, state.Original:="", state.Last:="", state.ProtectedCustom:=true
                 break
             }
-            desired:=title " — ChatGPT"
+            desired:=RulesCaption(title)
             if (current=desired)
                 break
             original:=state.Owned && current=state.Last ? state.Original : current
@@ -596,6 +608,8 @@ RestoreOne(state) {
 }
 ExitRestore(reason:="",code:=0) {
     global G
+    SetTimer, NameRulesTimer, Off
+    RulesClose()
     ThemeDispose()
     G.Closing:=true
     SetTimer, PollTimer, Off
@@ -920,6 +934,7 @@ ShowIntervalSettings(show:=true) {
     Gui, Settings:Add, Button, gCxtSettingsSave Default w90, Save
     Gui, Settings:Add, Button, gCxtSettingsClose x+10 w90, Cancel
     ThemeAddControls()
+    Gui, Settings:Add, Button, gTrayNameReplacement x20 y335 w280, Name replacement...
     if show
         Gui, Settings:Show, AutoSize
 }
@@ -1243,3 +1258,5 @@ AutoStartSelfTest() {
 }
 
 #Include %A_ScriptDir%\IconTheme.ahk
+
+#Include %A_ScriptDir%\NameReplacement.ahk

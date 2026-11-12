@@ -2,23 +2,55 @@
 
 [简体中文](README.zh-CN.md) · [Project home](../README.md)
 
-**Experimental: Swift, Objective-C and the AppleScript companion have not been natively compiled or run on a Mac.** Source review and Windows-side models do not establish native Mac compatibility, AX behavior, pixel appearance or timing.
+At [Mac CI checkpoint `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229), all **four native language builds** (Swift, Objective-C, Go and Rust), the **31 common formatter cases**, **five file-I/O cases** and **three client-recovery cases** passed. Shared AppleScript compilation still failed at reported location `:64` around variable `application` with error **-10003**; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's **46 common cases and seven client cases** require another native integration CI run and are **not covered by this checkpoint**. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.
+
+The development tree remains **0.1.0**, with **0.2.0** as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes.
 
 ## Requirements and build
 A Mac with Xcode Command Line Tools and the macOS SDK is required. The expected target bundle identifier is com.openai.chat; verify it on the target Mac or override --bundle-id.
 
-### Swift
-```sh
-swiftc ChatGPTWindowTitles.swift -framework AppKit -framework ApplicationServices -o chatgpt-titlesync-swift
-./chatgpt-titlesync-swift --interval 2 --background-interval 5 --bundle-id com.openai.chat
-```
+### Build both native programs and their companion
 
-### Objective-C
-```sh
-clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices ChatGPTWindowTitles.m -o chatgpt-titlesync-objc
-./chatgpt-titlesync-objc --interval 2 --background-interval 5 --bundle-id com.openai.chat
-```
-These are build instructions, not successful native-build results.
+Run from this directory on the target Mac:
+
+    bash build.sh
+
+[build.sh](build.sh) first calls [shared/macos/build.sh](../shared/macos/build.sh), compiles the Foundation-only [RulesClient.m](../shared/macos/RulesClient.m), imports [RulesClient.h](../shared/macos/RulesClient.h) for Swift, and links the shared client into both native programs. It produces these three executables together, without launching them:
+
+    chatgpt-titlesync-swift
+    chatgpt-titlesync-objc
+    chatgpt-titlesync-rules
+
+A custom output directory is supported: `bash build.sh /absolute/output-directory`. Keep all three outputs and the resources/help layout described below. The earlier one-source `swiftc`/`clang` recipes omit the new client dependency and are no longer a complete build command. These scripts do not create signed `.app` bundles.
+
+Only when intentionally starting the selected frontend:
+
+    ./chatgpt-titlesync-swift --interval 2 --background-interval 5 --bundle-id com.openai.chat
+    ./chatgpt-titlesync-objc --interval 2 --background-interval 5 --bundle-id com.openai.chat
+
+### Name replacement
+
+The menu-bar **Name replacement… / 名称替换…** item and the settings button open the same shared editor. Ordered plain-text/regex rules, manual preview, current-name selection, generic suggestions and help are supported by [TitleRules.m](../shared/macos/TitleRules.m). A suggestion requires explicit **Use rule** and Save. Rules start empty; there are no personal or machine-specific presets, including no imported rules from other software.
+
+Rules are stored at `~/Library/Application Support/ChatGPT-TitleSync/title-rules.json`. Reading/opening/previewing does not create the configuration; only a successful editor Save writes it. Missing rules mean identity. Existing rules with an unavailable companion produce whole-raw fallback and a diagnostic.
+
+The monitor retains the verified raw name and original native-title lease separately. Formatting is applied before the standard ` — ChatGPT` suffix through an asynchronous owned companion, with a 1500 ms caller deadline. Signature/revision caching prevents repeated format launches for unchanged success or fallback. Rule changes refresh only captions still owned and matching the last write, without extra AX source reads or source-timer resets.
+
+`title-rule-sources.bin` is a private CTS1 raw-name snapshot in the implementation's runtime/state directory. Native Swift/Objective-C use subdirectories of `~/Library/Application Support/ChatGPT-TitleSync/runtime`; the Go/Rust settings bridge uses the interval/config directory. Never commit or publish real snapshots. They supply current-name choices from names already read by the normal monitor, without traversing chat history.
+
+Keep executable `chatgpt-titlesync-rules` beside a relocated native program. Repository-native layout may also find it in the known `../shared/macos` or `../../shared/macos` directories. Keep both local help HTML files in a sibling `docs` directory, or retain the repository `../docs` layout. Companion discovery never uses PATH or a command stored in preferences.
+
+See [English rule help](../docs/name-replacement.md) and [中文帮助](../docs/name-replacement.zh-CN.md) for strict capture references, complete-raw fallback, limits and the difference between Foundation and Windows .NET regex behavior. Native SDK/CLI evidence does not establish that the editor, menu or actual ChatGPT AX title writes work on a user Mac.
+
+### Optional complete-caption suffix
+
+The shared editor's **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox is checked by default and applies on **Save**. It is independent of **Enable name replacement** and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean `append_chatgpt_suffix` defaults to `true` when absent; it is not part of scan, icon or startup preferences.
+
+The source client requests `--format --caption` and directly consumes the full caption; legacy `--format` stays body-only. Legal raw/body input is 512 UTF-16 units, normal caption output at most 522. A decodable invalid raw source is returned whole without decoration, never truncated. Raw caches, original leases, manual-title guards and source schedules are unchanged. The latest suffix-native CI is pending; see [the full suffix contract](../docs/name-replacement.md#chatgpt-suffix).
+
+### Windows evidence does not establish Mac runtime behavior
+
+**Windows load boundary:** the owned formatting worker keeps its **1.5-second** deadline. Under load or slow startup it can time out and return the entire raw name plus the **default suffix**, so a saved `false` may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.
 
 ## Three-layer maintenance
 The metadata maintenance timer runs once per second. --interval controls foreground source reads (default 2, range 1..3600 seconds). --background-interval controls each inactive window's source refresh (default 5, range 5..3600 seconds); use 15 for a 15-second refresh.
@@ -50,7 +82,7 @@ Each implementation stores `ScanIntervals` in its own `UserDefaults` suite:
 
 Only these source-read interval values remain separate from each other and the Go/Rust AppleScript settings bridge; icon/startup preferences use the shared suite described below. At startup, valid explicit `--interval` / `--background-interval` values override saved values for that launch; an omitted parameter uses its valid saved value or the default. A later menu Save applies and persists the newly entered pair. The startup checkbox and icon controls are committed with Save as described below. Interval settings do not persist conversation-title caches or change Accessibility permissions.
 
-The new panel, input handling, preferences, locking and generation checks received static source review only. The Swift `application.run()` and Objective-C `main` / `[application run]` entry points remain present. These observations are not native compilation, GUI appearance, preferences-runtime or AX timing acceptance; those checks still require a real Mac.
+**Historical theme-revision boundary:** the initial panel, input handling, preferences, locking and generation checks received static source review only. The Swift `application.run()` and Objective-C `main` / `[application run]` entry points remain present. These observations are not native compilation, GUI appearance, preferences-runtime or AX timing acceptance; those checks still require a real Mac.
 
 ## Experimental sign-in startup — default on
 
@@ -58,7 +90,7 @@ The source now includes a direct **开机自启动 / Start at sign-in** menu che
 
 All four Mac implementations share `NSUserDefaults` suite `io.github.hpsun.ChatGPTTitleSync`, key `AutoStartEnabled` (missing defaults on), and `~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist`. The draft uses an absolute executable argument, `RunAtLoad=true`, `KeepAlive=false`; it prepares the next login rather than bootstrapping a second resident immediately. Swift/Objective-C retain their separate `ScanIntervals` suites above. The Go/Rust menu companion also persists `autostart_enabled`; its internal launch contract now has **11 arguments**, adding the autostart boolean and executable path. Use the current branch launcher, not an older nine-argument companion invocation.
 
-This addition is **source-only Experimental**. It has not been compiled or run on a Mac, and does not establish login, permission or AX acceptance. See the [startup guide](../docs/startup.md).
+**Historical theme-revision boundary:** this addition was then source-only Experimental and had not been compiled or run on a Mac. The later native compilation checkpoint above does not establish login, preferences-runtime, permission or AX acceptance. See the [startup guide](../docs/startup.md).
 
 ## Pause, quit and permissions
 Use the menu-bar Pause and restore, Resume, Quit and restore, and Check/request Accessibility permission controls. The drafts do not implement a --stop CLI flag. Normal exit restores only still-matching titles owned by that instance. Forced termination can prevent restoration. Accessibility permission is decided by the user; no privacy setting is changed automatically.
@@ -105,6 +137,9 @@ ChatGPT-TitleSync/
     ChatGPTWindowTitles.swift
     ChatGPTWindowTitles.m
     TraySettings.applescript
+    build.sh
+    chatgpt-titlesync-rules   # shared runtime companion
+    chatgpt-titlesync-objc
     chatgpt-titlesync-swift   # locally compiled example
 ```
 
@@ -116,6 +151,8 @@ The build commands above produce executables, not signed `.app` bundles, and do 
 
 ## Validation
 
+The current four-build/31-case, five-I/O and three-recovery checkpoint and its separate AppleScript failure are recorded above; the newer suffix 46/client 7 integration still awaits native CI. The following model/static records are **historical theme-revision evidence**, not the current compilation status.
+
 See the [release validation summary](../docs/release-readiness.md#local-validation). The historical **13-case title behavior model** predates the three-layer implementation and remains model evidence only. The new [23-case icon contract model](test_icon_policy.py) passed with fake preferences/assets, injected time/random selection, same-slot restart, period boundaries, no repeats, Save/Cancel and startup/interval/theme rollback. The retained 13-case title model also passed when imported without generating source-tree receipts.
 
 ```sh
@@ -125,6 +162,6 @@ python3 -B -m unittest discover -s . -p test_macos_behavior.py
 
 Static comparison found the existing AX/title algorithm bodies unchanged. The Swift `application.run()` and Objective-C `main` / `[application run]` entry points remain present, and the AppleScript 11-argument boundary remains intact. Lexical delimiter/handler checks and the state models are **not native compiler or runtime tests**.
 
-In this round, native Swift/Objective-C compilation, `osacompile`, the AppleScriptObjC bridge, AppKit controls/images and ARC/lifetime behavior, real `UserDefaults` persistence and rollback, LaunchAgent/login behavior, Accessibility permission, the actual ChatGPT AX hierarchy/writable title, pixels, focus/pause timing and packaging were not verified on a Mac. Product version remains **0.1.0**, with these Mac frontends marked **Experimental**. A Mac SDK build and controlled native acceptance are still required before claiming support.
+At that historical theme-revision freeze, native Swift/Objective-C compilation, `osacompile`, the AppleScriptObjC bridge, AppKit controls/images and ARC/lifetime behavior, real `UserDefaults` persistence and rollback, LaunchAgent/login behavior, Accessibility permission, the actual ChatGPT AX hierarchy/writable title, pixels, focus/pause timing and packaging were not verified on a Mac. Product version remains **0.1.0**, with these Mac frontends marked **Experimental**. Subsequent changed-source SDK builds and controlled native AX/GUI acceptance remain required before claiming runtime support.
 
 Static review also retains each window's state-queue-only source revision, advanced for new reads and observed foreground/background transitions. A completion must match that revision and the pause/exit generation. External caption changes release the old write lease while retaining the verified title cache. A closed window is retired only after a successful, uncapped AXWindows snapshot for the same PID and launch identity; failed/capped enumeration preserves prior records conservatively. The shared state queue may delay commits during metadata AX calls; separate source queues do not provide a hard timing guarantee.

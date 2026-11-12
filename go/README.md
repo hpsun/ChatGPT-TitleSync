@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) · [Project home](../README.md)
 
-Windows x64 build and isolated fixtures are validated. The macOS backend is **Experimental: source only, not compiled or tested on a Mac**. This is independent Go/native code; it never calls a C# monitor.
+Windows x64 build and isolated fixtures are validated. The macOS backend is **Experimental: CI compilation does not establish native runtime/menu validation**. This is independent Go/native code; it never calls a C# monitor.
 
 ## Requirements and build
 Windows: Go 1.22 or newer, Windows x64. Native Win32/COM bindings use the standard library; cgo and MSVC are not required. The local verification used a portable official Go SDK with a matched SHA256, not a system installation.
@@ -113,3 +113,41 @@ The private settings file mirrors `autostart_enabled` (old files missing it defa
 On experimental macOS, the public companion receives `autostart_enabled` as argument 10 and the current absolute EXE path as argument 11. It owns the user LaunchAgent `~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist`; Go/Rust only send committed values and observe settings changes. --no-tray skips that optional frontend and its startup management. No Mac LaunchAgent, native compilation or real Mac run was performed on this Windows host.
 
 On Windows the full quoted Run command is limited to 260 UTF-16 characters. Enabling a longer command reports an error before changing Run/preferences; disabling remains available regardless of path length. An already identical command/preference is not rewritten. See [Microsoft Run/RunOnce documentation](https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys).
+
+## Name replacement and the shared OS companion
+
+Name replacement starts with an **empty rule list**. No personal prefixes, local rules or migration from another application are bundled. Each language monitor calls the same audited OS companion: Windows uses `ChatGPT-TitleSync.Rules.exe` (.NET Framework Unicode/Regex), and macOS uses `chatgpt-titlesync-rules` (Foundation/AppKit). This feature therefore includes that packaged companion; Rust still adds no crates and Go still adds no external Go module.
+
+Build the companion before using the feature:
+
+```powershell
+# From this language directory on Windows:
+powershell -NoProfile -File ..\shared\windows\Build.ps1
+```
+
+```sh
+# From this language directory on macOS:
+sh ../shared/macos/build.sh
+# An optional output directory is supported:
+sh ../shared/macos/build.sh /tmp/titlesync-rules-build
+```
+
+When using a separate output directory, package the resulting companion beside the monitor executable. Repository layouts also locate it in the known `shared/windows` or `shared/macos` directory. No executable or shell command is loaded from rule preferences or searched on PATH. Packaged local help must accompany the executable/repository layout.
+
+Open **Name replacement…** from the tray menu or the settings button. Rules run in order and can be enabled, removed or reordered. `literal` performs ordinal, case-sensitive, non-overlapping global replacement; `regex` uses the OS engine. Numeric replacement captures support `$0`–`$99`, `${0}`–`${99}` and `$$`; advanced regex features differ between Windows and macOS. An empty replacement is permitted. A failed/invalid/blank/control/overlong result falls back to the complete verified original name.
+
+The editor offers verified current names from a private `title-rule-sources.bin` CTS1 snapshot in this monitor's runtime/settings directory. It does not query ChatGPT again. The timestamp and manual sample remain available if the snapshot is absent or invalid. **Suggest regex** derives escaped candidates from the chosen example/selection, displays the explanation, pattern, replacement and result, and requires **Use rule** followed by **Save**. Opening, previewing or cancelling never creates the persistent rules file. See [name-replacement help](../docs/name-replacement.html).
+
+The shared rules file is `%LOCALAPPDATA%/ChatGPT-TitleSync/title-rules.json` on Windows or `~/Library/Application Support/ChatGPT-TitleSync/title-rules.json` on macOS. Timing/startup/icon settings stay separate and cannot erase rules. Do not publish actual rules, source snapshots, worker packets or runtime logs.
+
+The monitor retains unmodified verified raw names separately from display titles and original-title restore leases. Rule changes advance a display-only generation, discard stale asynchronous results and reformat only still-owned captions that match the last write. Source deadlines and cancellation are unchanged: the existing foreground/background defaults remain 2/5 seconds and native background repair stays on its existing 1-second schedule. Formatting uses an owned disposable worker with a 1500 ms deadline and memoizes success/fallback by raw name, rule bytes and companion existence/mtime/size; a missing companion installed later is retried through a display-only generation change; unchanged repair does not respawn a formatter. Manual titles, window creation identity and exit restoration keep their existing guards.
+
+For rules-only verification, use the new rule and three-layer fake-backend tests. Those tests use private files/in-memory native state; the optional owned-worker fixture launches and terminates only its own no-UI process. The pre-existing unfiltered Windows test suite additionally exercises GUID-scoped temporary registry keys and owned native controls, so an unfiltered `go test`/`cargo test` result is not described as a private-file-only test. Native macOS GUI/runtime behavior still needs actual Mac validation even when CI compilation and pure formatting cases pass.
+
+## Optional ChatGPT suffix
+
+The shared **Name replacement** editor also controls whether to append the fixed ` — ChatGPT` suffix. It defaults on; the optional boolean `append_chatgpt_suffix` in the shared rules JSON defaults to `true` when absent. Turning it off uses the formatted body alone. This preference is separate from this implementation's foreground/background, startup and icon settings.
+
+The product client requests a complete caption with `--format --caption`; its parent cache does not append again. The original `--format` API and body-only fixtures remain unchanged. With no rules file, the verified raw name plus the default suffix is immediately available without creating a rules file or launching a formatter. An existing empty or disabled rule set still goes through the companion so an explicit `false` works. A rule error with a valid false preference retains the complete original body without a suffix; unreadable rules, a missing companion or an invalid worker response use the local default caption. A handled fallback packet is accepted only when it is exactly the original body or that body plus the fixed suffix.
+
+The rule body remains limited to 512 UTF-16 code units; a complete caption is limited to 522. Saving a suffix change refreshes only still-owned display captions through the display generation. Verified raw names, source intervals, source cancellation, manual-caption protection and original-title restoration remain unchanged. Current suffix checks use private files, in-memory native state and format-only companion processes; they do not establish real desktop or Mac GUI acceptance.

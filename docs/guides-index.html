@@ -51,7 +51,7 @@
 <td>Swift / Objective-C</td>
 <td><a href="../macos/README.md">MD</a> · <a href="../macos/README.html">HTML</a></td>
 <td><a href="../macos/README.zh-CN.md">MD</a> · <a href="../macos/README.zh-CN.html">HTML</a></td>
-<td>Experimental; native Mac build/AX testing pending</td>
+<td>Experimental; native-client CI compilation recorded; real AX/GUI testing pending</td>
 </tr>
 <tr>
 <td>Go</td>
@@ -67,7 +67,10 @@
 </tr>
 </tbody>
 </table>
+<h2 id="name-replacement-help">Name replacement help</h2>
+<p><a href="name-replacement.md">English guide</a> · <a href="name-replacement.html">English HTML</a> · <a href="name-replacement.zh-CN.md">中文帮助</a> · <a href="name-replacement.zh-CN.html">中文HTML</a></p>
+<p>The guide covers plain-text and regex modes, numeric captures, example selection, suggestions, ordering, preview, Save/Cancel, limits and complete-original fallback. Both modes default to an empty list; language-specific companion build/packaging instructions are in each implementation guide.</p>
 <h2 id="coverage-and-remaining-acceptance">Coverage and remaining acceptance</h2>
 <p>Guides cover requirements, build or interpreter invocation, run/stop/restore, 45 icon use and the current three-layer policy. Per-branch timer/worker limitations are stated in its guide. Foreground default: 2 seconds fresh source; native background repair: 1 second; background source default: 5 seconds per window. A one-second schedule is not a one-second cold UIA deadline.</p>
-<p>The <a href="../support-matrix.md">support matrix</a> records actual verification scope. See <a href="release-readiness.md#local-validation">local validation and remaining release work</a>. Current source tests and packaged smoke checks are distinct. Swift/Objective-C/Go/Rust macOS code remains Experimental until target-SDK build and real AX testing succeed. Local results do not assert remote CI or release completion; check the confirmed repository for actual records.</p>
+<p>The <a href="../support-matrix.md">support matrix</a> records actual verification scope. See <a href="release-readiness.md#local-validation">local validation and remaining release work</a>. Current source tests and packaged smoke checks are distinct. The v0.1.0 preview is already public, while name replacement remains a feature branch without a new Release. The current Windows shared Unicode companion passed 31/31 format-CLI cases; full new desktop retesting of the eight independent Windows frontend implementations is pending. At <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">CI <code>19cec808</code></a> and <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444">CI <code>97858710</code></a>, the Foundation helper and new Swift/Objective-C clients compiled and the same 30 shared CLI cases passed; Go/Rust were still older baseline adapters. Latest AppleScript/helper boundaries, client recovery and new Go/Rust integration await the next complete CI. All Mac routes remain Experimental for real AX, menu, editor and login acceptance. Earlier static-only freezes and real-window samples are historical, not current acceptance.</p>
 <p>Normal restoration protects external custom captions. Windows caption labels do not change taskbar application grouping; macOS titles do not rename the Dock application. Private evidence and source-title caches stay outside the source package.</p></body></html>

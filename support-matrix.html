@@ -1,15 +1,76 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="support-and-verification-matrix">Support and verification matrix</h1>
 <p><a href="support-matrix.zh-CN.md">简体中文</a> · <a href="support-matrix.json">Machine-readable status</a> · <a href="README.md">Project home</a></p>
-<p>Snapshot: 2026-11-11, Beijing time. User explicitly approved publication on 2026-11-11; normal repository-file publication is in progress. Earlier unpublished/approval-pending snapshots are historical. No project ZIP is uploaded and startup defaults on at current-user sign-in. Selected icon: 45. Eight languages, with three AHK runtimes listed separately.</p>
-<p>Current default-on startup sources are under fresh real Windows retesting; do not treat earlier nine-runtime timing/settings results as acceptance of this new revision. See the <a href="docs/startup.md">startup contract</a>. Mac startup is source-only Experimental.</p>
+<p>Snapshot:2026-11-12, Beijing time. The development tree remains <strong>0.1.0</strong>, with <strong>0.2.0</strong> as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes. Sign-in startup defaults on; icon baseline remains45; no project ZIP is uploaded.</p>
 <h2 id="current-source-status">Current source status</h2>
+<p>The shared editor's <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> checkbox is checked by default and applies on <strong>Save</strong>. It is independent of <strong>Enable name replacement</strong> and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean <code>append_chatgpt_suffix</code> defaults to <code>true</code> when absent; it is not part of scan, icon or startup preferences.</p>
+<p>Empty-by-default plain/regex replacement uses the shared OS companion. Raw/original leases, manual-title guards and2/1/5-second source/native/background defaults remain separate. See <a href="docs/name-replacement.md#caption-protocol">caption protocol and bounds</a>.</p>
 <h2 id="current-candidate-verification">Current candidate verification</h2>
-<p>The current branding, startup and eight-theme sources passed the controlled checks below. Final targeted real-window retesting across nine Windows runtime cases remains in progress. C# named all three existing windows, but one independent four-second cold probe timed out; that strict case is not counted as passed. The candidate exited normally and original state was restored. Earlier live results do not substitute for this run.</p>
+<p>The table covers controlled feature checks, not current normal-resident/ChatGPT desktop acceptance. Counts from overlapping sets and subcases are not summed.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Current evidence</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows common CLI</td>
+<td>46/46:31 body + 15 caption</td>
+<td>One shared suite, not multiplied by language.</td>
+</tr>
+<tr>
+<td>Windows helper-specific suite</td>
+<td>37 cases:22 retained body + 15 caption</td>
+<td>Overlaps the common46; never add both totals.</td>
+</tr>
+<tr>
+<td>C# / shared editor</td>
+<td>10 display checks;13 never-shown editor checks</td>
+<td>Owned fictional state/controls, no normal ChatGPT GUI.</td>
+</tr>
+<tr>
+<td>PowerShell5.1 /7</td>
+<td>Same suffix-off case succeeded individually under lower load</td>
+<td>Earlier WorkerTimeout/default-suffix-cache attempts remain; no unconditional pass.</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>23 unit tests +14 private actual-helper checks</td>
+<td>Owned files/processes and simulated ownership.</td>
+</tr>
+<tr>
+<td>AHK Basic /1.1 /2</td>
+<td>17 caption checks per branch; old body fixtures23/19/19</td>
+<td>Basic remains source-only; fake native state, no normal desktop.</td>
+</tr>
+<tr>
+<td>Go / Rust</td>
+<td>20 top-level /21 test functions; a nine-case CLI matrix is inside one test</td>
+<td>Windows controlled tests/builds; new suffix-native Mac CI pending.</td>
+</tr>
+<tr>
+<td>Mac pre-suffix checkpoint1b7c33b</td>
+<td>Four native builds;31 common CLI,5 I/O,3 recovery</td>
+<td>No AX/GUI/login acceptance; newer suffix 46/client 7 needs its own CI.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Windows load boundary:</strong> the owned formatting worker keeps its <strong>1.5-second</strong> deadline. Under load or slow startup it can time out and return the entire raw name plus the <strong>default suffix</strong>, so a saved <code>false</code> may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.</p>
+<h3 id="verified-remote-checkpoint-1b7c33b">Verified remote checkpoint —1b7c33b</h3>
+<p>At <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229">Mac CI checkpoint <code>1b7c33b</code></a>, all <strong>four native language builds</strong> (Swift, Objective-C, Go and Rust), the <strong>31 common formatter cases</strong>, <strong>five file-I/O cases</strong> and <strong>three client-recovery cases</strong> passed. Shared AppleScript compilation still failed at reported location <code>:64</code> around variable <code>application</code> with error <strong>-10003</strong>; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's <strong>46 common cases and seven client cases</strong> require another native integration CI run and are <strong>not covered by this checkpoint</strong>. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.</p>
+<h3 id="historical-earlier-remote-checkpoint">Historical earlier remote checkpoint</h3>
+<p>The following retained paragraphs describe the earlier checkpoint's then-current/pending state; current evidence is above.</p>
+<p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">CI run 43124672990</a>, commit <code>19cec8080908a15f0d0a8ccefa66209cb207bf71</code>, actually compiled the shared Foundation helper and the new Swift/Objective-C RulesClient integrations, and passed the <strong>same 30 shared format-CLI cases</strong>. Those 30 are one shared suite, not 30 additional tests per language. AppleScript compilation failed in that run. Go/Rust still used their older baseline adapters there, so that CI result does not validate their new name-replacement adapters.</p>
+<p>The current helper adds paired-surrogate output validation and bounded I/O error classification; the current AppleScript fixes the subsequently reported <code>launch</code> selector token. Those revisions, the 31st common case and the updated client recovery logic need fresh CI evidence. Native Mac AX reads, menu interactions, the AppKit editor, login startup, long-running behavior and real title restoration remain unaccepted. All Mac routes remain <strong>Experimental</strong>, even where compilation and CLI tests have passed.</p>
+<h2 id="historical-themestartup-candidate-checks">Historical theme/startup candidate checks</h2>
+<p>These counts describe the earlier branding/startup/eight-theme candidate, not the current name-replacement feature. At an earlier retest checkpoint C# named all three existing windows, while one independent four-second cold probe timed out; that strict case was not counted as passed, and the candidate exited normally with state restored. That observation is preserved as historical evidence rather than a current status claim.</p>
 <table>
 <thead>
 <tr>
 <th>Implementation</th>
-<th>Current controlled evidence</th>
+<th>Earlier controlled evidence</th>
 </tr>
 </thead>
 <tbody>
@@ -38,8 +99,8 @@
 <td>51 / 43 controlled checks; owned binary self-tests; seven embedded frames</td>
 </tr>
 <tr>
-<td>Swift / Objective-C / Go macOS / Rust macOS</td>
-<td>Experimental source; no native Mac build or runtime result</td>
+<td>Mac implementations at that source freeze</td>
+<td>Static/source review only; later actual compilation evidence is the separate checkpoint above</td>
 </tr>
 </tbody>
 </table>
@@ -50,7 +111,7 @@
 <tr>
 <th>Implementation</th>
 <th>Target</th>
-<th>Current evidence and limits</th>
+<th>Earlier evidence and limits</th>
 </tr>
 </thead>
 <tbody>
@@ -67,12 +128,12 @@
 <tr>
 <td><a href="windows/ahk-v1.1/README.md">AutoHotkey v1.1</a></td>
 <td>Windows</td>
-<td>Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 2247ms, BG 667ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+<td>The x64 package at that revision; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 2247ms, BG 667ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
 </tr>
 <tr>
 <td><a href="windows/ahk-v2/README.md">AutoHotkey v2</a></td>
 <td>Windows</td>
-<td>Current x64 package; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1056ms, BG 409ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+<td>The x64 package at that revision; Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1056ms, BG 409ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
 </tr>
 <tr>
 <td><a href="windows/powershell/README.md">PowerShell</a></td>
@@ -87,29 +148,29 @@
 <tr>
 <td><a href="macos/README.md">Swift</a></td>
 <td>macOS</td>
-<td>Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. Static review only; no Mac SDK build, preferences-runtime, real AX or GUI acceptance.</td>
+<td>Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. At that earlier freeze: static review only, without Mac SDK build, preferences-runtime, real AX or GUI acceptance. Later CI compilation is recorded separately above.</td>
 </tr>
 <tr>
 <td><a href="macos/README.md">Objective-C</a></td>
 <td>macOS</td>
-<td>Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. Static review only; no Mac SDK build, preferences-runtime, real AX or GUI acceptance.</td>
+<td>Native three-layer/menu-settings source draft with independent UserDefaults suite and live generation reset. At that earlier freeze: static review only, without Mac SDK build, preferences-runtime, real AX or GUI acceptance. Later CI compilation is recorded separately above.</td>
 </tr>
 <tr>
 <td><a href="rust/README.md">Rust</a></td>
 <td>Windows / macOS</td>
-<td>30 controlled checks; Windows x64 native tray. Mac companion Experimental/uncompiled. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1018ms, BG 624ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+<td>30 controlled checks; Windows x64 native tray. Mac companion was Experimental/uncompiled at that earlier freeze; later CI scope is recorded above. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1018ms, BG 624ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
 </tr>
 <tr>
 <td><a href="go/README.md">Go</a></td>
 <td>Windows / macOS</td>
-<td>38 controlled checks; Windows x64 native tray. Mac companion Experimental/uncompiled. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1784ms, BG 448ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
+<td>38 controlled checks; Windows x64 native tray. Mac companion was Experimental/uncompiled at that earlier freeze; later CI scope is recorded above. Targeted real 2/5 settings/save/reopen/restore and source agreement passed; FG reset 1784ms, BG 448ms; three original generic captions after normal exit. Single observations, not a benchmark.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="protocol-and-interpretation">Protocol and interpretation</h2>
 <p>Native identity/caption checks: every second. Foreground fresh source default: 2 seconds. Background source default: 5 seconds per window, one serial worker. The foreground never substitutes cached source; a background generic reset can use a same-identity verified cache immediately. Protect non-generic external captions. Scheduling is not a cold-reader completion guarantee.</p>
-<p>Historical checks are retained separately in JSON with their revision scope. They do not prove the current source's real window-switch, long-running, installation or taskbar effects. Shared Mac models are not counted as native tests or multiplied per language. Every Mac backend remains Experimental: no Mac compilation/AX acceptance. Remote CI has not run.</p>
-<p>C#, AHK, PowerShell, Python, Go and Rust now have Windows tray/settings source. Actual menu acceptance is recorded separately per branch. Go/Rust retain an optional CLI and use the public osascript companion for their Experimental Mac menu. Swift/Objective-C native menus and all Mac backends remain uncompiled/AX-unverified. Basic retains ASCII launch/runtime/IPC and ANSI-x86 restrictions despite binary UTF-16 title handling.</p>
-<p>See <a href="docs/guides-index.md">guide requirements</a> and <a href="docs/release-readiness.md#local-validation">local validation</a>. Raw reports, caches, actual titles and identities are private and excluded from source delivery. <a href="source-sha256.txt">source-sha256.txt</a> records the final frozen source/build/workflow/test hashes. Caption labels do not alter Windows app grouping or the macOS Dock application name.</p>
+<p>Historical checks are retained separately in JSON with their revision scope. They do not prove the current source's real window-switch, long-running, installation or taskbar effects. Shared Mac models are not counted as native tests or multiplied per language. Every Mac backend remains Experimental. Remote CI has run, with the exact compilation/CLI checkpoint and remaining runtime gaps recorded above; compilation is not AX or GUI acceptance.</p>
+<p>C#, AHK, PowerShell, Python, Go and Rust now have Windows tray/settings source. Actual menu acceptance is recorded separately per branch. Go/Rust retain an optional CLI and use the public osascript companion for their Experimental Mac menu. Swift/Objective-C native clients have the recorded CI compilation evidence, while native menus and all Mac AX/runtime paths remain unverified. Basic retains ASCII launch/runtime/IPC and ANSI-x86 restrictions despite binary UTF-16 title handling.</p>
+<p>See <a href="docs/guides-index.md">guide requirements</a> and <a href="docs/release-readiness.md#local-validation">local validation</a>. Raw reports, caches, actual titles and identities are private and excluded from source delivery. <a href="source-sha256.txt">source-sha256.txt</a> records the reviewed source/build/workflow/test snapshot hashes; the feature candidate needs a refreshed frozen index before merge. Caption labels do not alter Windows app grouping or the macOS Dock application name.</p>
 <p>A separate controlled case fixed restoration after a window becomes hidden. The integrated timings above preceded that guard; foreground and native-caption maintenance paths were unchanged.</p>
 <p>With a 15-second background setting, worker-attempt gaps across three windows were about 15.16s, 15.17s and 22.20s. Serial reading and foreground priority can delay attempts; strict per-window completion every 15 seconds is not promised. Normal --stop left no standalone process or owned foreground/background helper; original configuration bytes and conversation were restored. Timing samples preceded the hidden-lease guard; their timing paths were unchanged, and the final EXE includes that controlled fix. These are limited observations, not latency guarantees.</p></body></html>

@@ -1,10 +1,10 @@
 {
   "schema_version": 3,
-  "snapshot_date_beijing": "2026-11-11",
+  "snapshot_date_beijing": "2026-11-12",
   "project": "ChatGPT-TitleSync",
-  "project_state": "public_repository_file_publication_in_progress_user_approved_2026_11_11",
+  "project_state": "public_v0_1_0_preview_with_name_replacement_feature_branch_in_validation",
   "remote_repository_created": true,
-  "published": false,
+  "published": true,
   "autostart_configured": null,
   "icon_state": "baseline_45_with_eight_runtime_palettes",
   "language_count": 8,
@@ -1280,5 +1280,57 @@
     "explicit_zero_retained": true,
     "windows_max_command_characters": 260,
     "macos": "Experimental source; NSUserDefaults io.github.hpsun.ChatGPTTitleSync/AutoStartEnabled and same-label per-user LaunchAgent; not native-verified"
+  },
+  "publication_scope": "Existing v0.1.0 preview is public. Name-replacement branch is not a new Release; product name and version remain unchanged.",
+  "name_replacement": {
+    "state": "controlled_verification_in_progress",
+    "defaults": {
+      "rules": [],
+      "personal_presets": false,
+      "automatic_migration": false
+    },
+    "modes": [
+      "literal",
+      "regex"
+    ],
+    "source_examples": "already_verified_names_private_CTS1_snapshot",
+    "suggestions": "example_derived_user_selects_Use_rule_then_Save",
+    "companions": {
+      "windows": ".NET Framework Unicode worker/editor",
+      "macos": "Foundation worker/AppKit editor"
+    },
+    "verification": {
+      "shared_windows_cases": 46,
+      "shared_macos_cases": 46,
+      "macos_source_commit": "5cc5d8ff3b9b0cb06eb3d2f06e51f182fc9825f4",
+      "macos_run": 43149268283,
+      "macos_ax_runtime": false,
+      "real_desktop_acceptance": false,
+      "macos_file_io_cases": 5,
+      "macos_client_recovery_categories": 7,
+      "macos_four_native_compiles": true,
+      "latest_suffix_macos_46_and_client_7": "passed native CI; no AX/UI/login runtime acceptance",
+      "windows_source_workflow": {
+        "run": 43141369269,
+        "commit": "1b7c33b670502f31fa1a01ea1fd0dc89586b2803",
+        "conclusion": "success"
+      },
+      "applescript_checkpoint": "Native osacompile passed in run 43149268283 after appInstance binding correction.",
+      "worker_timeout_limit": "1.5 seconds; transient transport failures are memoized until raw/rule/helper change or restart. A saved false suffix may not be honored by local default fallback; low-load retest passed.",
+      "latest_windows_workflow": {
+        "run": 43149266869,
+        "commit": "5cc5d8ff3b9b0cb06eb3d2f06e51f182fc9825f4",
+        "conclusion": "workflow_validation_failure_before_jobs",
+        "correction": "Use RUNNER_TEMP at step execution and export the shared companion through GITHUB_ENV; runner context is unavailable in jobs.env.",
+        "reference": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability",
+        "rerun": "pending corrected commit"
+      }
+    },
+    "release": "not_created_for_this_feature",
+    "append_chatgpt_suffix": {
+      "default": true,
+      "optional_json_field": "append_chatgpt_suffix",
+      "modes": "--format retains body; --format --caption renders full title"
+    }
   }
 }

@@ -195,6 +195,7 @@ final class WindowRecord {
     var lastWritten: String?
     var retry = Date.distantPast
     var cachedTitle: String?
+    var rawSourceName: String? // Verified source, never a formatted display value.
     var nextForegroundRead = Date.distantPast
     var nextBackgroundRead = Date.distantPast
     var manualOverride = false
@@ -266,6 +267,13 @@ final class Monitor: NSObject, NSApplicationDelegate {
         if let i = args.firstIndex(of: "--bundle-id"), i + 1 < args.count { return args[i + 1] }
         return "com.openai.chat" // expected identifier; verify on target Mac or use --bundle-id
     }()
+    // Rules have a separate presentation generation and never reset source deadlines.
+    lazy var nameRules: CTSRulesClient = {
+        let executable = CommandLine.arguments[0]
+        let state = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/ChatGPT-TitleSync/runtime/swift").path
+        return CTSRulesClient(executablePath: CTSRulesCompanionPath(executable), rulesPath: CTSRulesDefaultPath(), stateDirectory: state, captionMode: true)
+    }()
+    var lastRulesDisplayRevision: UInt64 = 0
     let timingLock = NSLock()
     var settingsPanel: NSPanel?
     var foregroundInput: NSTextField?
@@ -337,6 +345,8 @@ final class Monitor: NSObject, NSApplicationDelegate {
         startup.target = self; startup.state = autoStartEnabled ? .on : .off; menu.addItem(startup)
         let timing = NSMenuItem(title: "扫描间隔设置…", action: #selector(showScanSettings), keyEquivalent: "")
         timing.target = self; menu.addItem(timing)
+        let replacements = NSMenuItem(title: "Name replacement… / 名称替换…", action: #selector(showNameReplacement), keyEquivalent: "")
+        replacements.target = self; menu.addItem(replacements)
         let pause = NSMenuItem(title: paused ? "恢复监听" : "暂停并还原", action: #selector(togglePause), keyEquivalent: "")
         pause.target = self; menu.addItem(pause)
         let permission = NSMenuItem(title: "检查／请求辅助功能权限", action: #selector(requestPermission), keyEquivalent: "")
@@ -344,6 +354,18 @@ final class Monitor: NSObject, NSApplicationDelegate {
         let quit = NSMenuItem(title: "退出并还原", action: #selector(quit), keyEquivalent: "q")
         quit.target = self; menu.addItem(quit)
         status.menu = menu
+    }
+    @objc func showNameReplacement() {
+        // Snapshot only already-observed names on their owning queue. The editor
+        // has no AX reader and cannot modify a conversation or source cadence.
+        queue.async {
+            self.nameRules.publishSources(self.records.compactMap { $0.rawSourceName })
+            DispatchQueue.main.async {
+                if let error = CTSRulesOpenEditor(self.nameRules, CTSRulesHelpPath(CommandLine.arguments[0])) {
+                    let alert = NSAlert(); alert.messageText = "Name replacement"; alert.informativeText = error; alert.runModal()
+                }
+            }
+        }
     }
     @objc func toggleAutoStart() {
         let wanted = !autoStartEnabled
@@ -393,6 +415,8 @@ final class Monitor: NSObject, NSApplicationDelegate {
                 let popup = NSPopUpButton(frame: NSRect(x: 222, y: y, width: 190, height: 26), pullsDown: false)
                 popup.addItems(withTitles: values); view.addSubview(popup); choices.append(popup)
             }
+            let replacements = NSButton(title: "Name replacement… / 名称替换…", target: self, action: #selector(showNameReplacement))
+            replacements.frame = NSRect(x: 14, y: 73, width: 398, height: 28); view.addSubview(replacements)
             iconModeInput = choices[0]; fixedIconInput = choices[1]; iconPeriodInput = choices[2]
             iconModeInput?.target = self; iconModeInput?.action = #selector(iconModeChanged)
             settingsPanel = panel
@@ -500,6 +524,7 @@ final class Monitor: NSObject, NSApplicationDelegate {
         generation += 1; quitting = true; timer?.invalidate()
         queue.async {
             self.restoreAll()
+            self.nameRules.publishSources([]); self.nameRules.dispose()
             DispatchQueue.main.async { NSApp.terminate(nil) }
         }
     }
@@ -595,13 +620,17 @@ final class Monitor: NSObject, NSApplicationDelegate {
               let current = axString(record.window, kAXTitleAttribute as CFString) else { return }
         releaseChangedLease(record, current: current)
         if generic(name) {
-            record.cachedTitle = nil
+            record.cachedTitle = nil; record.rawSourceName = nil
+            nameRules.publishSources(records.compactMap { $0.rawSourceName })
             if current == record.lastWritten, let original = record.original {
                 if write(record, wanted: original, expected: current, foreground: foreground) { record.lastWritten = nil; record.original = nil }
             }
             return
         }
-        let wanted = name + " — ChatGPT"
+        record.rawSourceName = name
+        nameRules.publishSources(records.compactMap { $0.rawSourceName })
+        guard let display = nameRules.resolve(name) else { record.cachedTitle = nil; return }
+        let wanted = display
         record.cachedTitle = wanted
         if generic(current) { record.manualOverride = false }
         if current == wanted { return }
@@ -633,10 +662,29 @@ final class Monitor: NSObject, NSApplicationDelegate {
             }
         }
     }
+    // A display-only completion can repaint an owned caption without taking a
+    // fresh AX source sample, invalidating a source request, or changing timing.
+    func refreshRuleDisplays() {
+        nameRules.poll()
+        let revision = nameRules.displayRevision
+        guard revision != lastRulesDisplayRevision else { return }
+        lastRulesDisplayRevision = revision
+        for record in records {
+            guard let raw = record.rawSourceName, let display = nameRules.resolve(raw) else { continue }
+            let wanted = display
+            let previous = record.cachedTitle; record.cachedTitle = wanted
+            guard previous != wanted, !record.manualOverride,
+                  let current = axString(record.window, kAXTitleAttribute as CFString),
+                  let last = record.lastWritten, current == last else { continue }
+            _ = write(record, wanted: wanted, expected: current, foreground: active(record))
+        }
+    }
     func scan() -> [String] {
         guard allowed(), AXIsProcessTrusted() else { return ["Accessibility permission required"] }
         let timing = timingSnapshot()
         let candidates = discover()
+        nameRules.publishSources(records.compactMap { $0.rawSourceName })
+        refreshRuleDisplays()
         var foreground: WindowRecord?
         let now = Date()
         for record in candidates {

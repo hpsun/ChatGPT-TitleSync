@@ -319,6 +319,9 @@ func run() int {
 	}
 	settings := &liveSettings{value: initial, path: settingsPath, startup: startup}
 	cache := newTitleCache(nativeBackend{}, *readonly, time.Duration(initial.BackgroundSeconds)*time.Second)
+	if !*readonly {
+		cache.Rules = newNameRuleClient(ctx, filepath.Dir(settingsPath))
+	}
 	work := func() {
 		runThreeLayer(ctx, cache, time.Duration(initial.ForegroundSeconds)*time.Second, sourceFunctions{
 			Read: func(readCtx context.Context, w Window, foreground bool) (string, error) {

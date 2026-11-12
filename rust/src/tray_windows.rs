@@ -179,6 +179,15 @@ unsafe extern "system" fn proc(h: isize, m: u32, w: usize, l: isize) -> isize {
                     return 0;
                 }
                 match w & 0xffff {
+                    401 => {
+                        if !t.test {
+                            if let Err(e) =
+                                crate::name_rules::open_editor(t.s.path.parent().unwrap())
+                            {
+                                t.error(&e)
+                            }
+                        }
+                    }
                     101 => t.commit(),
                     102 => {
                         panel_visibility(h, false);
@@ -187,7 +196,7 @@ unsafe extern "system" fn proc(h: isize, m: u32, w: usize, l: isize) -> isize {
                 }
                 return 0;
             }
-            0x111 if h == t.hwnd && (1..=4).contains(&(w & 0xffff)) => {
+            0x111 if h == t.hwnd && (1..=5).contains(&(w & 0xffff)) => {
                 t.command((w & 0xffff) as u32);
                 return 0;
             }
@@ -381,7 +390,7 @@ impl Tray {
                 i32::MIN,
                 i32::MIN,
                 450,
-                410,
+                450,
                 0,
                 0,
                 0,
@@ -443,8 +452,18 @@ impl Tray {
                 25,
                 0,
             );
-            self.child("BUTTON", "保存", 0x00010001, 220, 317, 85, 30, 101);
-            self.child("BUTTON", "取消", 0x00010000, 315, 317, 85, 30, 102);
+            self.child(
+                "BUTTON",
+                "Name replacement… / 名称替换…",
+                0x00010000,
+                18,
+                307,
+                300,
+                30,
+                401,
+            );
+            self.child("BUTTON", "保存", 0x00010001, 220, 357, 85, 30, 101);
+            self.child("BUTTON", "取消", 0x00010000, 315, 357, 85, 30, 102);
         }
         let v = self.s.get();
         SetWindowTextW(self.fg, wide(&v.foreground.to_string()).as_ptr());
@@ -617,6 +636,13 @@ impl Tray {
     }
     unsafe fn command(&mut self, c: u32) {
         match c {
+            5 => {
+                if !self.test {
+                    if let Err(e) = crate::name_rules::open_editor(self.s.path.parent().unwrap()) {
+                        self.error(&e)
+                    }
+                }
+            }
             1 => {
                 let mut v = self.s.get();
                 v.enabled = !v.enabled;
@@ -663,6 +689,7 @@ impl Tray {
             wide("开机自启动").as_ptr(),
         );
         AppendMenuW(menu, 0, 2, wide("扫描间隔设置…").as_ptr());
+        AppendMenuW(menu, 0, 5, wide("Name replacement… / 名称替换…").as_ptr());
         AppendMenuW(menu, 0x800, 0, ptr::null());
         AppendMenuW(menu, 0, 3, wide("退出并还原标题").as_ptr());
         let mut p = Point::default();

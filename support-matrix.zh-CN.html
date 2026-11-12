@@ -1,15 +1,76 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync validation</title><style>body{font:16px/1.6 system-ui,sans-serif;max-width:1100px;margin:36px auto;padding:0 24px;color:#162331}pre{background:#f1f5f9;padding:16px;overflow:auto}table{border-collapse:collapse}th,td{border:1px solid #ccd5df;padding:8px}a{color:#0766c5}img{max-width:100%;height:auto}</style><body><h1 id="_1">支持与验证矩阵</h1>
 <p><a href="support-matrix.md">English</a> · <a href="support-matrix.json">机器可读状态</a> · <a href="README.zh-CN.md">项目说明</a></p>
-<p>快照：2026-11-11，北京时间。用户已于2026-11-11明确批准，正常仓库文件公开发布进行中；此前未发布/待批准状态为历史快照。本次不上传项目ZIP，缺省启用当前用户登录自启动；图标仍为当前已选资源。八种语言，AHK 三个运行时分别列出。</p>
-<p>当前默认开启自启动源码正在开展新一轮Windows真实复测；此前九路线时延／设置结果不能替代本轮新版验收。见<a href="docs/startup.zh-CN.md">启动契约</a>。Mac自启动仅有Experimental源码。</p>
+<p>快照：2026-11-12，北京时间。开发树版本仍为 <strong>0.1.0</strong>，下一目标为 <strong>0.2.0</strong>；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。登录自启缺省已开、图标基准仍45，不上传项目ZIP。</p>
 <h2 id="_2">当前源码状态</h2>
+<p>共享编辑器的 <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> 复选框缺省勾选，按<strong>保存</strong>生效，与 <strong>Enable name replacement</strong> 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 <code>append_chatgpt_suffix</code> 缺项按 <code>true</code>，不属于扫描、图标或启动项偏好。</p>
+<p>缺省空的普通文字/正则使用共享OS辅助程序；原名/恢复凭据、手工标题守卫及2／1／5秒来源/原生/后台缺省保持独立，见<a href="docs/name-replacement.zh-CN.md#caption-protocol">完整标题协议及边界</a>。</p>
 <h2 id="_3">当前候选的验证</h2>
-<p>当前品牌、自启动及八色主题源码已完成下表受控检查；九种Windows运行方式的最终真实窗口复测仍在进行。C#已给三个现存窗口改名，但独立4秒冷探针有一窗超时，因此该案例尚未全部通过；程序已正常退出并恢复原状态。旧实测不替代本次验收。</p>
+<p>下表是受控功能检查，不是当前正常驻留/ChatGPT桌面验收；重叠测试及子例不相加。</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>当前证据</th>
+<th>范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows共同CLI</td>
+<td>46／46：31 body＋15 caption</td>
+<td>一套共同测试，不按语言重复累计。</td>
+</tr>
+<tr>
+<td>Windows helper专项</td>
+<td>37项：22保留body＋15 caption</td>
+<td>与共同46有重叠，不得把两总数相加。</td>
+</tr>
+<tr>
+<td>C#／共享编辑器</td>
+<td>显示10项；始终隐藏编辑器13项</td>
+<td>自有虚构状态/控件，无正常ChatGPT GUI。</td>
+</tr>
+<tr>
+<td>PowerShell5.1／7</td>
+<td>低载下分别单独复测同项关闭尾巴成功</td>
+<td>保留此前WorkerTimeout／缺省尾巴缓存，不称无条件通过。</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>23项单元＋14项真实helper私有检查</td>
+<td>自有文件/进程与模拟所有权。</td>
+</tr>
+<tr>
+<td>AHK Basic／1.1／2</td>
+<td>每分支17项caption；旧body分别23／19／19</td>
+<td>Basic仍仅源码，虚构原生状态，无正常桌面。</td>
+</tr>
+<tr>
+<td>Go／Rust</td>
+<td>20顶层／21测试函数，单函数包含9项CLI矩阵</td>
+<td>Windows受控测试/构建，新suffix Mac原生CI待验。</td>
+</tr>
+<tr>
+<td>Mac pre-suffix检查点1b7c33b</td>
+<td>四原生构建、31共同CLI、5 I/O、3恢复</td>
+<td>未AX／GUI／登录验收，更新的suffix46／client7须独立CI。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Windows 负载边界：</strong>自有格式化 worker 的截止仍为 <strong>1.5 秒</strong>。负载竞争或启动缓慢可导致超时，回退为完整原名加<strong>缺省后缀</strong>，因此保存的 <code>false</code> 可能尚未生效。失败按原名及规则/辅助程序身份缓存，条件不变的轮询不会重试；重新保存规则、替换/改变辅助程序身份、重启监听，或观测到不同原名，才会刷新该缓存。降低负载后，两种 PowerShell host（5.1、7）分别单独复测同项成功，之前 WorkerTimeout 现场仍保留；不能据此宣称无条件通过，也不承诺完整界面响应必在1.5秒内完成。</p>
+<h3 id="1b7c33b">已核实远程检查点——1b7c33b</h3>
+<p>在 <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229">Mac CI 检查点 <code>1b7c33b</code></a>，<strong>四种原生语言构建</strong>（Swift、Objective-C、Go、Rust）、<strong>31项共同格式化</strong>、<strong>5项文件I/O</strong>及<strong>3项客户端恢复</strong>均通过；共享 AppleScript 编译仍在报告位置 <code>:64</code> 的 <code>application</code> 变量附近报 <strong>-10003</strong>，最小修正待验证。更新后缀修订的 <strong>46项共同用例及7项客户端</strong>仍须另一轮原生整合CI，<strong>不在此检查点覆盖范围内</strong>。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。</p>
+<h3 id="_4">较早远程检查点的历史说明</h3>
+<p>以下保留此前检查点当时“当前/待验证”范围，当前证据以上方为准。</p>
+<p><a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">CI run43124672990</a>，提交<code>19cec8080908a15f0d0a8ccefa66209cb207bf71</code>，实际编译了共享Foundation helper及新增Swift／Objective-C RulesClient集成，并通过<strong>同一套30项共享格式CLI用例</strong>。这30项只是一套共享测试，不按语言重复累计。该次AppleScript编译失败；Go／Rust当时仍为旧baseline适配，不能借该CI证明新名称替换适配通过。</p>
+<p>当前helper增加UTF-16代理项成对验证和有界I/O错误分类；当前AppleScript修复了随后报告的<code>launch</code>选择器词法错误。这些新修订、第31个共同用例及客户端恢复逻辑仍需新CI证据。真实Mac AX读取、菜单交互、AppKit编辑器、登录自启动、长期驻留及真实标题还原均未验收。全部Mac路线保持<strong>Experimental</strong>，编译或CLI通过不代表界面／运行通过。</p>
+<h2 id="_5">历史主题／自启动候选检查</h2>
+<p>以下计数属于此前品牌／自启／八色主题候选，不属于当前名称替换功能。在此前一个复测检查点，C#已给三个现存窗口改名，但独立4秒冷探针有一窗超时，因此严格案例未记全部通过；候选随后正常退出并恢复状态。该现场保留为历史证据，不写成当前状态。</p>
 <table>
 <thead>
 <tr>
 <th>实现</th>
-<th>当前受控证据</th>
+<th>此前受控证据</th>
 </tr>
 </thead>
 <tbody>
@@ -38,19 +99,19 @@
 <td>51／43项受控检查；自有程序自测；七帧内嵌</td>
 </tr>
 <tr>
-<td>Swift / Objective-C / Go macOS / Rust macOS</td>
-<td>实验源码；无Mac原生构建或运行结果</td>
+<td>当时源码冻结的Mac实现</td>
+<td>仅静态／源码复核；后续真实编译证据单列于上方检查点</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_4">旧修订的验证记录</h2>
+<h2 id="_6">旧修订的验证记录</h2>
 <p>以下保留此前测量，其源码哈希及旧检查另列于JSON的previous_revision；不作为当前候选已完成全部实测的证据。</p>
 <table>
 <thead>
 <tr>
 <th>实现</th>
 <th>目标</th>
-<th>当前证据与边界</th>
+<th>此前证据与边界</th>
 </tr>
 </thead>
 <tbody>
@@ -67,12 +128,12 @@
 <tr>
 <td><a href="windows/ahk-v1.1/README.zh-CN.md">AutoHotkey v1.1</a></td>
 <td>Windows</td>
-<td>当前x64包；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原2247毫秒、BG667毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
+<td>当时x64包；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原2247毫秒、BG667毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
 </tr>
 <tr>
 <td><a href="windows/ahk-v2/README.zh-CN.md">AutoHotkey v2</a></td>
 <td>Windows</td>
-<td>当前x64包；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1056毫秒、BG409毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
+<td>当时x64包；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1056毫秒、BG409毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
 </tr>
 <tr>
 <td><a href="windows/powershell/README.zh-CN.md">PowerShell</a></td>
@@ -87,29 +148,29 @@
 <tr>
 <td><a href="macos/README.zh-CN.md">Swift</a></td>
 <td>macOS</td>
-<td>原生三层/菜单设置源码草稿，使用独立UserDefaults域及热更新代次重置；仅静态复核，未Mac SDK编译、偏好运行、真实AX或界面验收。</td>
+<td>原生三层/菜单设置源码草稿，使用独立UserDefaults域及热更新代次重置；在当时冻结点仅静态复核，未Mac SDK编译、偏好运行、真实AX或界面验收；后续CI编译单列于上方。</td>
 </tr>
 <tr>
 <td><a href="macos/README.zh-CN.md">Objective-C</a></td>
 <td>macOS</td>
-<td>原生三层/菜单设置源码草稿，使用独立UserDefaults域及热更新代次重置；仅静态复核，未Mac SDK编译、偏好运行、真实AX或界面验收。</td>
+<td>原生三层/菜单设置源码草稿，使用独立UserDefaults域及热更新代次重置；在当时冻结点仅静态复核，未Mac SDK编译、偏好运行、真实AX或界面验收；后续CI编译单列于上方。</td>
 </tr>
 <tr>
 <td><a href="rust/README.zh-CN.md">Rust</a></td>
 <td>Windows／macOS</td>
-<td>30项受控通过，Windows x64原生托盘；Mac伴随源码仍Experimental/未编译；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1018毫秒、BG624毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
+<td>30项受控通过，Windows x64原生托盘；当时Mac伴随源码为Experimental／未编译，后续CI范围见上方；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1018毫秒、BG624毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
 </tr>
 <tr>
 <td><a href="go/README.zh-CN.md">Go</a></td>
 <td>Windows／macOS</td>
-<td>38项受控通过，Windows x64原生托盘；Mac伴随源码仍Experimental/未编译；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1784毫秒、BG448毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
+<td>38项受控通过，Windows x64原生托盘；当时Mac伴随源码为Experimental／未编译，后续CI范围见上方；真实2/5设置/保存/重开/还原与来源一致性专项通过；FG复原1784毫秒、BG448毫秒，正常退出后3窗为原通用标题。单次观测，不是基准。</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_5">协议与判读</h2>
+<h2 id="_7">协议与判读</h2>
 <p>原生身份／标题每秒核对，前台新鲜来源缺省每2秒，后台来源缺省每窗口 5 秒且单串行角色。前台不用缓存代替新来源；后台通用标题回改可立即用同身份可信缓存修复。非通用外部标题保留。调度间隔不等于冷读取完成期限。</p>
-<p>JSON 单列历史检查及所属版本；它们不证明当前源码的真实切换、长期驻留、安装或任务栏效果。Mac 共享模型不算原生验证，也不按语言重复累计。所有 Mac 后端均为 Experimental：未 Mac 编译／AX 验收。远程 CI 尚未运行。</p>
-<p>C#、AHK、PowerShell、Python、Go、Rust均已有Windows托盘设置源码；各分支的真实菜单验收状态另列。Go/Rust仍可选择CLI；其Mac菜单由公开osascript伴随源码实现。Swift/Objective-C原生菜单与全部Mac后端保持实验性，未原生编译或AX验收。Basic 即使二进制保留 UTF-16 标题，仍要求 ASCII 启动／运行时／IPC 路径及 ANSI x86。</p>
-<p>见<a href="docs/guides-index.zh-CN.md">指南环境要求</a>及<a href="docs/release-readiness.zh-CN.md#local-validation">本地验证摘要</a>。原报告、缓存、真实标题和身份均私有留存，不进入源码交付；<a href="source-sha256.txt">source-sha256.txt</a> 记录最终冻结的源码／构建／工作流／测试校验值。窗口标签不改变 Windows 应用分组或 macOS Dock 应用名称。</p>
+<p>JSON 单列历史检查及所属版本；它们不证明当前源码的真实切换、长期驻留、安装或任务栏效果。Mac 共享模型不算原生验证，也不按语言重复累计。所有Mac后端均为Experimental。远程CI已经运行；编译／CLI的精确检查点和仍缺失的运行证据见上方，编译不等于AX或GUI验收。</p>
+<p>C#、AHK、PowerShell、Python、Go、Rust均已有Windows托盘设置源码；各分支的真实菜单验收状态另列。Go/Rust仍可选择CLI；其Mac菜单由公开osascript伴随源码实现。Swift／Objective-C原生客户端已有上列CI编译证据；原生菜单及全部Mac的AX／运行路径仍未验收。Basic 即使二进制保留 UTF-16 标题，仍要求 ASCII 启动／运行时／IPC 路径及 ANSI x86。</p>
+<p>见<a href="docs/guides-index.zh-CN.md">指南环境要求</a>及<a href="docs/release-readiness.zh-CN.md#local-validation">本地验证摘要</a>。原报告、缓存、真实标题和身份均私有留存，不进入源码交付；<a href="source-sha256.txt">source-sha256.txt</a> 记录已审核源码／构建／工作流／测试快照校验值；本功能候选合并前仍需更新冻结索引。窗口标签不改变 Windows 应用分组或 macOS Dock 应用名称。</p>
 <p>隐藏后退出还原缺陷已由独立受控案例修复；以上集成计时采于该保护修复前，相关前台／原生标题维护路径未改变。</p>
 <p>独立版真实专项中，设置后台 15 秒后，三个窗口工作进程尝试间隔分别观测约 15.16、15.17 和 22.20 秒。串行读取和前台优先可造成延后，不能承诺每窗口严格每 15 秒读完。正常 --stop 后独立程序及其前后台 helper 均无残留，配置原字节和原对话已恢复。计时样本采于隐藏 lease 保护修复前，相关计时路径未变；最终 EXE 包含该受控修复。以上为有限样本，不是延迟保证。</p></body></html>

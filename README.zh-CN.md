@@ -6,11 +6,23 @@
 
 ![Windows任务栏改名前后效果示意，使用虚构的示例对话A、B、C](assets/feature-before-after.zh-CN.png)
 
+此图为效果示意：程序只改变纯文本窗口标题，按钮宽度、字体、合并方式、主题及截断方式由 Windows 决定。
+
 [English](README.md) · [HTML](README.zh-CN.html) · [支持矩阵](support-matrix.zh-CN.md) · [指南索引](docs/guides-index.zh-CN.md) · [v0.1.0发布说明](docs/release-notes-v0.1.0.zh-CN.md) · [路线图](docs/roadmap.zh-CN.md)
 
 用当前对话名标识原生 ChatGPT 窗口。英文项目名为 **ChatGPT-TitleSync**，当前为首次公开预览 **v0.1.0**。缺省前台来源每 **2 秒**读取、后台原生标题每 **1 秒**维护、后台来源每窗口 **5 秒**刷新。
 
 用户已于**2026-11-11明确批准公开发布**。已确认仓库：[ChatGPT-TitleSync](https://github.com/hpsun/ChatGPT-TitleSync)。缺省启用当前用户登录自启动，见[启动说明](docs/startup.zh-CN.md)；不同实现的验证范围仍分别说明。
+
+## 可配置名称替换——功能分支
+
+有序普通文字/正则规则缺省为空，不导入私人预设；当前名称复用私有已核实快照，预览和通用建议须明确**使用规则→保存**。
+
+共享编辑器的 **Append — ChatGPT / 标题末尾显示ChatGPT** 复选框缺省勾选，按**保存**生效，与 **Enable name replacement** 及逐行开关独立：替换规则为空或停用时仍可关闭程序追加的后缀。共享 JSON 可选布尔项 `append_chatgpt_suffix` 缺项按 `true`，不属于扫描、图标或启动项偏好。
+
+原始名/原标题恢复数据、手工标题保护与来源节拍不改。`--format`保留主体，附加`--caption`返回完整标题，见[后缀、来源边界与协议](docs/name-replacement.zh-CN.md#chatgpt-suffix)。Python与三AHK产品当前`--once`忽略这些已保存显示设置，须与常驻模式及旧API范围区分。
+
+开发树版本仍为 **0.1.0**，下一目标为 **0.2.0**；本次未建立发布候选（RC）或新 Release，已有公开 v0.1.0 预览不代表这些尚未发布的改动已经交付。
 
 ## 获取文件
 
@@ -59,7 +71,7 @@ active 指 Windows 原生前台窗口。元数据检查仅核对 ChatGPT 身份�
 | Rust | Windows；macOS AX 后端为实验源码 | [Rust](rust/README.zh-CN.md) |
 | Go | Windows；macOS cgo／AX 后端为实验源码 | [Go](go/README.zh-CN.md) |
 
-Windows分支均提供托盘扫描设置源码，Go/Rust与Python也可选择CLI。Swift/Objective-C原生菜单及Go/Rust公开osascript伴随菜单仍为Experimental，未在Mac编译或运行。
+Windows分支均提供托盘扫描设置，Go／Rust与Python也可选择CLI。Swift／Objective-C客户端已有下列CI编译证据；原生菜单与Go／Rust公开osascript伴随菜单继续标Experimental，真实Mac菜单／编辑器／AX／登录行为未验收。
 
 <h2 id="quick-start">Windows C# 快速开始</h2>
 
@@ -102,14 +114,14 @@ C# 前台保持分别发布心跳`Seq`/`HeartbeatUtc`和来源`SourceSeq`/`Obser
 
 <h2 id="validation">验证状态</h2>
 
-**本轮状态：** 默认开启自启动的当前Windows修订正在重新实测。下方九路线记录属于此前源码，不代表本轮已经全部完成；Mac自启动与原生运行仍未验证。
+**当前功能状态：**Windows通过 **46／46项共同CLI**（31 body＋15 caption）；另有helper专项 **37项**（22保留body＋15 caption），两套有重叠，不能相加为83。C#显示10项、始终隐藏编辑器13项通过；均为受控组件结果，不是正常桌面验收。负载下1.5秒WorkerTimeout可使已保存false仍显示缺省尾巴，失败缓存须由规则/helper身份、原名变化或重启刷新。两host低载单项成功不能称无条件通过，见[确切负载边界](KNOWN_ISSUES.zh-CN.md#format-worker-deadline-under-load)。
 
 
 [支持矩阵](support-matrix.zh-CN.md) 区分当前受控夹具、历史只读与未验证目标。当前 C# 组件检查含 **41项策略/计时、13项watch/工作进程生命周期、8项来源间隔协议及12项设置检查**。公开策略夹具复现同一组41项，不另重复累计。
 
 fake／自有窗口证据不等于完整的独立托盘、安装、长期驻留或任务栏视觉验收。真实窗口验收及发布门槛另见[本地验证摘要](docs/release-readiness.zh-CN.md#local-validation)。
 
-Swift、Objective-C 和 Go／Rust macOS 后端仍为 **Experimental：未 Mac 编译，未真实 AX／窗口标题验收**。共享模型不是原生 Mac 实测，远程 CI 定义不表示 CI 已运行。
+在 [Mac CI 检查点 `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229)，**四种原生语言构建**（Swift、Objective-C、Go、Rust）、**31项共同格式化**、**5项文件I/O**及**3项客户端恢复**均通过；共享 AppleScript 编译仍在报告位置 `:64` 的 `application` 变量附近报 **-10003**，最小修正待验证。更新后缀修订的 **46项共同用例及7项客户端**仍须另一轮原生整合CI，**不在此检查点覆盖范围内**。真实ChatGPT AX/标题写入、编辑器/菜单GUI和登录行为未验证，Mac路线继续为Experimental。
 
 私有缓存、诊断和工作快照可能含对话名及进程身份，应留在本地。生成的二进制、SDK／运行时下载、日志和验证证据不进入源码包。见[指南索引](docs/guides-index.zh-CN.md)。
 
@@ -144,7 +156,7 @@ source-sha256.txt        相对路径源码／构建文件哈希
 <!-- BEGIN TARGETED_WINDOWS_REAL -->
 ## Windows真实窗口专项验收 — 旧修订，2026-11-11
 
-9个Windows运行时案例复用同3个现存ChatGPT窗口，各案例比对1个来源/页头目标、有效注入1次前台通用标题重置及1次后台重置，并检查正常退出后3窗为原通用标题。设置经绑定原生指令/同一菜单处理器调用，不冒称系统托盘物理右键已实测。下列为单次重置到首次匹配观测，不是基准、冷读取时限或长期/安装/任务栏保证；没有Mac原生编译或运行。
+9个Windows运行时案例复用同3个现存ChatGPT窗口，各案例比对1个来源/页头目标、有效注入1次前台通用标题重置及1次后台重置，并检查正常退出后3窗为原通用标题。设置经绑定原生指令/同一菜单处理器调用，不冒称系统托盘物理右键已实测。下列为单次重置到首次匹配观测，不是基准、冷读取时限或长期/安装/任务栏保证；这组历史Windows案例本身没有Mac原生编译或运行；后续CI检查点见上方。
 
 | 运行时 | 设置 | 前台复原 | 后台复原 | 退出 |
 | --- | --- | ---: | ---: | --- |

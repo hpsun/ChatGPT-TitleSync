@@ -1,0 +1,191 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatGPT-TitleSync — Name replacement</title><style>body{font:16px/1.65 system-ui,Segoe UI,sans-serif;color:#172033;background:#fff;max-width:1120px;margin:32px auto;padding:0 24px 64px}h1,h2,h3{line-height:1.35}h1{color:#4338ca}h2{margin-top:2em;border-bottom:1px solid #ddd;padding-bottom:.3em}a{color:#4338ca}pre{padding:16px;background:#f3f4f8;overflow:auto}code{font-size:.94em;background:#f3f4f8;padding:2px 4px;border-radius:4px}table{border-collapse:collapse;width:100%;display:block;overflow:auto}th,td{padding:10px 12px;border:1px solid #d6d8e0;text-align:left;vertical-align:top;line-height:1.6}th{background:#f0ecff;white-space:nowrap}blockquote{border-left:4px solid #a78bfa;padding-left:16px;color:#475569}</style></head><body><h1 id="name-replacement">Name replacement</h1>
+<p><a href="name-replacement.md">English</a> · <a href="name-replacement.zh-CN.md">简体中文</a> · <a href="name-replacement.html">HTML</a> · <a href="../README.md">Project home</a></p>
+<p>Change how a conversation name appears in the local ChatGPT window title. The conversation stored in ChatGPT keeps its original name. Rules start empty: the program does not import another program's rules or include personal prefixes.</p>
+<h2 id="open-the-editor">Open the editor</h2>
+<p>Choose <strong>Name replacement…</strong> from the tray menu, or use the button in Settings. The rule editor is a separate companion packaged with the selected implementation. Keep the companion beside the program when distributing a compiled build.</p>
+<ol>
+<li>Select an observed conversation name from <strong>Current conversations</strong>, or enter a fictional/manual sample.</li>
+<li>Add a rule and choose <strong>Plain text</strong> or <strong>Regular expression</strong>.</li>
+<li>Enter <strong>Find</strong> and <strong>Replace</strong>. A blank replacement removes the matched text.</li>
+<li>Inspect the preview. Use <strong>Move up</strong> and <strong>Move down</strong> to set execution order.</li>
+<li>Select <strong>Save</strong> to apply. <strong>Cancel</strong> discards the draft.</li>
+</ol>
+<p>Opening the editor, choosing an example, previewing, or requesting suggestions does not save rules or change a window. Saved rules apply to the displayed conversation-name body; the independent suffix checkbox decides whether the usual <code>— ChatGPT</code> is appended.</p>
+<h2 id="pick-a-current-conversation-name">Pick a current conversation name</h2>
+<p>The dropdown uses raw names already verified by the running monitor. Its timestamp helps identify an older snapshot. It does not scan the chat history or send content to a server.</p>
+<p>If no names are available, activate the relevant ChatGPT windows and let the normal monitor observe them, or use a manual example. A background window that has not yet been observed may be absent. Selecting a name copies it into the sample field; it does not rename the chat.</p>
+<p>The monitor keeps the original name separately from the display result. Rule changes do not trigger extra ChatGPT source reads or reset the foreground/background scan intervals.</p>
+<h2 id="plain-text-replacement">Plain-text replacement</h2>
+<p>Choose this mode for exact text. Matching is case-sensitive and replaces every non-overlapping occurrence. Punctuation, dollar signs, and backslashes are ordinary characters.</p>
+<table>
+<thead>
+<tr>
+<th>Sample name</th>
+<th>Find</th>
+<th>Replace</th>
+<th>Preview</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Work / Example chat A</code></td>
+<td><code>Work /</code></td>
+<td>empty</td>
+<td><code>Example chat A</code></td>
+</tr>
+<tr>
+<td><code>draft plan — draft notes</code></td>
+<td><code>draft</code></td>
+<td><code>final</code></td>
+<td><code>final plan — final notes</code></td>
+</tr>
+<tr>
+<td><code>Price $1</code></td>
+<td><code>$1</code></td>
+<td><code>$2</code></td>
+<td><code>Price $2</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>Work</code> and <code>work</code> are different. A dot finds an actual dot in this mode.</p>
+<h2 id="regular-expression-replacement">Regular-expression replacement</h2>
+<p>Choose this mode to match a structure. The following examples are illustrative; none is installed as a default rule.</p>
+<table>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>Sample</th>
+<th>Find</th>
+<th>Replace</th>
+<th>Preview</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Remove an exact prefix</td>
+<td><code>Work / Example chat A</code></td>
+<td><code>^Work /</code></td>
+<td>empty</td>
+<td><code>Example chat A</code></td>
+</tr>
+<tr>
+<td>Keep the part after a slash</td>
+<td><code>Team / Example chat B</code></td>
+<td><code>^[^/]+/\s*(.+)$</code></td>
+<td><code>${1}</code></td>
+<td><code>Example chat B</code></td>
+</tr>
+<tr>
+<td>Extract a whole bracketed name</td>
+<td><code>[Example chat C]</code></td>
+<td><code>^\[([^\]]+)\]$</code></td>
+<td><code>${1}</code></td>
+<td><code>Example chat C</code></td>
+</tr>
+<tr>
+<td>Exchange two parts</td>
+<td><code>North / South</code></td>
+<td><code>^(.+) / (.+)$</code></td>
+<td><code>$2 — $1</code></td>
+<td><code>South — North</code></td>
+</tr>
+<tr>
+<td>Match a literal dot</td>
+<td><code>Example.v2</code></td>
+<td><code>\.</code></td>
+<td><code>-</code></td>
+<td><code>Example-v2</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="common-pattern-symbols">Common pattern symbols</h3>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>^</code> and <code>$</code></td>
+<td>Start and end of the name</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td>A character; escape it as <code>\.</code> to find a dot</td>
+</tr>
+<tr>
+<td><code>(...)</code></td>
+<td>Capture a part for use in the replacement</td>
+</tr>
+<tr>
+<td><code>+</code>, <code>*</code>, <code>?</code></td>
+<td>Repeat one or more, zero or more, or make optional</td>
+</tr>
+<tr>
+<td><code>[abc]</code>, <code>[^/]</code></td>
+<td>A character from a set, or a character except slash</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td>Whitespace</td>
+</tr>
+<tr>
+<td><code>\</code></td>
+<td>Escape a pattern character such as <code>\[</code>, <code>\(</code>, or <code>\.</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="capture-references-in-replace">Capture references in Replace</h3>
+<p>Use <code>$1</code> or <code>${1}</code> for the first capture, through <code>$99</code>/<code>${99}</code>. <code>$0</code> or <code>${0}</code> inserts the whole match. <code>$$</code> inserts a literal dollar sign. A valid optional capture that did not match inserts an empty string. A reference to a group that does not exist is rejected.</p>
+<p>These references apply only in regular-expression mode. For example, <code>${1}</code> is literal text in plain-text mode. The replacement field does not interpret <code>\1</code> as a capture reference.</p>
+<p>Windows uses .NET regular expressions; macOS uses Foundation <code>NSRegularExpression</code>. Common patterns above are intended for both. Advanced syntax and Unicode matching can differ between these engines; test on the target platform. A rule containing an engine-specific feature is not guaranteed portable merely because the JSON file can be read.</p>
+<h2 id="suggested-rules">Suggested rules</h2>
+<p>Select a sample name, then choose <strong>Suggest</strong>. Available suggestions are derived locally from the sample's structure or selected text, such as removing a prefix, keeping text after a separator, or extracting a paired-delimiter segment.</p>
+<p>Each candidate shows its purpose, pattern, replacement, and result. Inspect them and choose <strong>Use rule</strong> to add one to the draft; only <strong>Save</strong> commits it. Suggestions can change meaning when used with another name, so preview at least two representative examples when practical.</p>
+<p>Suggestions do not rewrite all chats, edit their stored names, or install machine-specific defaults. If the sample has no suitable structure, write a plain-text rule or enter a pattern yourself.</p>
+<h2 id="rule-order-and-switches">Rule order and switches</h2>
+<p>The overall <strong>Enable name replacement</strong> switch bypasses only the replacement list while preserving it; it does not change the suffix preference. Each row also has an enable switch. Enabled rules run from top to bottom, with each result becoming the next rule's input.</p>
+<p>For example, first remove <code>Work /</code> from <code>Work / draft plan</code>, then change <code>draft</code> to <code>final</code>. Reversing rules can produce a different result. Disabled rows remain available for later editing.</p>
+<p><a id="chatgpt-suffix"></a></p>
+<h2 id="chatgpt-suffix-and-complete-captions">ChatGPT suffix and complete captions</h2>
+<p>The shared editor's <strong>Append — ChatGPT / 标题末尾显示ChatGPT</strong> checkbox is checked by default and applies on <strong>Save</strong>. It is independent of <strong>Enable name replacement</strong> and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean <code>append_chatgpt_suffix</code> defaults to <code>true</code> when absent; it is not part of scan, icon or startup preferences.</p>
+<p>Turning this checkbox off removes only the suffix added by this program, not matching text already contained in the original chat name. Choosing examples, requesting suggestions, previewing or cancelling does not commit this choice. Raw source names, source cadence, original-caption restoration and manually changed caption protection remain unchanged.</p>
+<p>For example, this fictional configuration disables replacement and the added suffix independently:</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: 1,
+  &quot;enabled&quot;: false,
+  &quot;append_chatgpt_suffix&quot;: false,
+  &quot;revision&quot;: &quot;00000000-0000-4000-8000-000000000001&quot;,
+  &quot;rules&quot;: []
+}
+</code></pre>
+<p><a id="caption-protocol"></a></p>
+<h3 id="formatter-protocol-and-bounds">Formatter protocol and bounds</h3>
+<p><code>--format</code> retains its body-only behavior. Adding <code>--caption</code> returns the complete caption, which a caption-mode frontend uses directly instead of adding another suffix. A legal raw source and formatted body are limited to <strong>512 UTF-16 units</strong>; a normal full caption is at most <strong>522 units</strong>, including the optional ten-unit <code>— ChatGPT</code> suffix. An existing configuration reaches the caption formatter even when replacement rules are empty or disabled.</p>
+<p>A decodable invalid source (over512 units or containing control characters) is returned as the <strong>entire original raw input without an added suffix</strong>, never truncated. This diagnostic fallback can exceed the normal valid-caption limit. Malformed UTF-16 remains a protocol/I/O failure. Normal source readers enforce their own bounds before display processing.</p>
+<p><strong>Windows load boundary:</strong> the owned formatting worker keeps its <strong>1.5-second</strong> deadline. Under load or slow startup it can time out and return the entire raw name plus the <strong>default suffix</strong>, so a saved <code>false</code> may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.</p>
+<h3 id="one-shot-mode-limitation-in-four-windows-frontends">One-shot mode limitation in four Windows frontends</h3>
+<p>In the current Python, AHK Basic1.0, AHK1.1 and AHK2 products, <code>--once</code> skips the rules client entirely. It therefore ignores saved replacement rules <strong>and</strong> <code>append_chatgpt_suffix=false</code> and uses the raw name plus the default suffix. This is a current product limitation, separate from compatibility of the legacy body-only formatter API. Resident-mode behavior does not establish that one-shot mode honors the setting.</p>
+<h2 id="errors-and-safe-fallback">Errors and safe fallback</h2>
+<p>An enabled rule needs a nonempty Find field. Invalid patterns or capture references prevent saving. A blank Replace field is allowed.</p>
+<p>A handled rule failure uses the whole raw name rather than a partial transformation and respects the saved suffix choice when the companion completes successfully. If the worker cannot run or reaches the caller deadline, the local safe-default/cached-failure limitation above applies.</p>
+<p>Rules are limited to 32 rows; Find and Replace each allow 512 UTF-16 code units, and the resulting name body may not exceed 512 units. Most common characters use one unit; an emoji often uses two. The editor reports invalid limits rather than silently truncating.</p>
+<p>Windows matches have a 100 ms per-expression timeout and a 500 ms aggregate budget. A separate formatting process also has a 1.5-second caller deadline. macOS relies on the disposable process deadline for a hard boundary. Preview and monitor formatting do not run unbounded expressions on the UI thread.</p>
+<p>While a new result is pending, the last owned caption may remain until the next display update. A title manually changed by another application remains protected by the monitor's existing ownership checks. Normal exit still attempts to restore the original native caption.</p>
+<h2 id="local-files-and-privacy">Local files and privacy</h2>
+<p>Rules are shared by the language implementations on the same operating system:</p>
+<ul>
+<li>Windows: <code>%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json</code>.</li>
+<li>macOS: <code>~/Library/Application Support/ChatGPT-TitleSync/title-rules.json</code>.</li>
+</ul>
+<p>An absent file means an empty rule list. Only an explicit successful Save creates or changes this preference. The editor validates and saves atomically; changing intervals, icons, or startup does not overwrite the rules.</p>
+<p>Observed names use a separate private runtime snapshot. They are not copied into the rule file unless you deliberately include text in a rule. Do not publish your own rule files, runtime snapshots, or screenshots containing real conversation names. The distributed examples use fictional names.</p>
+<h2 id="build-and-verification">Build and verification</h2>
+<p>All Windows implementations use the packaged Unicode companion for the same rule semantics, including the ANSI-era AHK Basic implementation. macOS implementations use the Foundation companion. See the <a href="guides-index.md">guide index</a> for language-specific build/run instructions.</p>
+<p>Compilation, controlled format tests, source acquisition, and real desktop acceptance are separate checks. Consult the <a href="../support-matrix.md">support matrix</a> for the current verified scope; an Experimental Mac label remains in effect until native runtime behavior is verified.</p>
+<h2 id="development-and-verification-status">Development and verification status</h2>
+<p>The development tree remains <strong>0.1.0</strong>, with <strong>0.2.0</strong> as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes.</p>
+<p>Windows passed <strong>46/46 common CLI cases</strong> (31 body + 15 caption). The separate helper-specific <strong>37-case</strong> suite (22 retained body + 15 caption) overlaps those cases and is not added to46. C# display checks 10 and never-shown editor checks 13 passed; these are controlled component results, not normal-desktop acceptance.</p>
+<p>At <a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229">Mac CI checkpoint <code>1b7c33b</code></a>, all <strong>four native language builds</strong> (Swift, Objective-C, Go and Rust), the <strong>31 common formatter cases</strong>, <strong>five file-I/O cases</strong> and <strong>three client-recovery cases</strong> passed. Shared AppleScript compilation still failed at reported location <code>:64</code> around variable <code>application</code> with error <strong>-10003</strong>; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's <strong>46 common cases and seven client cases</strong> require another native integration CI run and are <strong>not covered by this checkpoint</strong>. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.</p></body></html>

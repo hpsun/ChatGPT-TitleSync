@@ -2,7 +2,39 @@
 
 [简体中文](CHANGELOG.zh-CN.md) · [HTML](CHANGELOG.html) · [Known issues](KNOWN_ISSUES.md) · [Project home](README.md)
 
-These entries record local development and verification dates in **Beijing time** before the first public source publication. They are not historical Git commit dates, version tags, or invented GitHub issue numbers. Future published fixes should link the real issue, commit or release after it exists.
+Entries use actual development and verification dates in **Beijing time**; these are not invented Git commit dates, version tags or issue numbers. Historical **candidate**, **pending** and **source-only** statements below describe their dated checkpoints. The **Unreleased** entry at the top records the current scope and verified CI evidence; earlier statements do not mean that all Mac sources remain uncompiled.
+
+## Unreleased — 2026-11-12
+
+### Name replacement
+
+- Add ordered **plain-text and regular-expression** rules for the displayed conversation name, before the usual ` — ChatGPT` suffix. Rules start empty; no private/machine-specific rules are bundled, imported or migrated. Missing configuration means identity.
+- Select an already-observed current name from the private CTS1 snapshot, or enter a manual sample. Preview and generic suggestions do not save or apply rules: explicitly choose **Use rule**, then **Save**. Cancel leaves saved rules unchanged; reading/opening/previewing does not create configuration. The selector performs no extra ChatGPT source read.
+- Frontends share one audited Unicode companion per OS: Windows .NET and macOS Foundation. Keep the required companion and local help with the selected frontend. Asynchronous formatting has a caller-owned **1500 ms** deadline; failures return the **entire original raw name**, never a partial result. Raw-source caches, original-caption restoration and manual-caption guards remain separate from display revisions. Rule changes do not reset source schedules. See [name replacement help](docs/name-replacement.md).
+
+### Optional program-added suffix
+
+The shared editor's **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox is checked by default and applies on **Save**. It is independent of **Enable name replacement** and row switches: empty or disabled replacement rules can still omit the program-added suffix. The optional shared JSON boolean `append_chatgpt_suffix` defaults to `true` when absent; it is not part of scan, icon or startup preferences.
+
+`--format` remains body-only; `--format --caption` returns the complete caption. Legal source/body length is 512 UTF-16 units and normal full-caption length 522. A decodable invalid source is returned whole without a suffix, never truncated. Raw-source state, original restoration, manual-title protection and source intervals are unchanged.
+
+**Windows load boundary:** the owned formatting worker keeps its **1.5-second** deadline. Under load or slow startup it can time out and return the entire raw name plus the **default suffix**, so a saved `false` may not yet take effect. This failure is cached by raw name plus rules/helper identity; unchanged ticks do not retry it. Save the rules again, replace/change the helper identity, restart the monitor, or observe a different raw name to refresh that cache. The same isolated case succeeded in both PowerShell 5.1 and 7 when retested individually under lower load; earlier WorkerTimeout attempts remain evidence. This is not an unconditional pass or a promise of complete UI response within 1.5 seconds.
+
+Python/three AHK `--once` currently skip saved replacements and suffix-off; that product limitation is stated separately from body-API compatibility.
+
+### Verification status
+
+Windows passed **46/46 common CLI cases** (31 body + 15 caption). The separate helper-specific **37-case** suite (22 retained body + 15 caption) overlaps those cases and is not added to46. C# display checks 10 and never-shown editor checks 13 passed; these are controlled component results, not normal-desktop acceptance.
+
+Go passed 20 top-level tests and Rust 21 functions, including a nine-case CLI matrix inside one test rather than nine additional top-level tests. Python passed 23 unit tests plus 14 private actual-helper checks; each AHK branch passed17 caption checks. These are controlled scopes, not normal desktop acceptance.
+
+At [Mac CI checkpoint `1b7c33b`](https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43141369229), all **four native language builds** (Swift, Objective-C, Go and Rust), the **31 common formatter cases**, **five file-I/O cases** and **three client-recovery cases** passed. Shared AppleScript compilation still failed at reported location `:64` around variable `application` with error **-10003**; a minimal variable correction is prepared and awaits actual CI verification. The newer suffix revision's **46 common cases and seven client cases** require another native integration CI run and are **not covered by this checkpoint**. Real ChatGPT AX/title writes, editor/menu GUI and login behavior remain unverified; all Mac routes remain Experimental.
+
+### README illustration and version
+
+Replace the rounded-card taskbar illustration with matching flat gray **Windows 10-style** taskbars before and after. Captions use one uniform normal-weight font/style; long text is ellipsized in narrow buttons. Each system accent line is **228/234 px = 97.4%** of its button width, with identical color and geometry before/after. The real ChatGPT application icon is retained; all conversation names are fictional **Example chat A/B/C**. The image is clearly an illustration, and Windows controls button width, font, grouping and theme.
+
+The development tree remains **0.1.0**, with **0.2.0** as the next target. This work has no release candidate or new Release; the existing public v0.1.0 preview does not deliver these unreleased changes.
 
 ## 2026-11-11 — AppleScript reserved-selector candidate
 

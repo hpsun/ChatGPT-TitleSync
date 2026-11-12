@@ -1,6 +1,7 @@
 // macOS draft — NOT compiled or tested on a Mac.
 // clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices ChatGPTWindowTitles.m -o chatgpt-titlesync-objc
 #import <Cocoa/Cocoa.h>
+#import "../shared/macos/RulesClient.h"
 #import <ApplicationServices/ApplicationServices.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,6 +201,7 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
 @property(nonatomic, copy) NSString *lastWritten;
 @property(nonatomic, strong) NSDate *retry;
 @property(nonatomic, copy) NSString *cachedTitle;
+@property(nonatomic, copy) NSString *rawSourceName; // Untouched verified source.
 @property(nonatomic, strong) NSDate *nextForegroundRead;
 @property(nonatomic, strong) NSDate *nextBackgroundRead;
 @property(nonatomic) BOOL manualOverride;
@@ -241,6 +243,8 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
 @property(nonatomic) BOOL queued;
 @property(nonatomic) BOOL quitting;
 @property(nonatomic) NSUInteger generation;
+@property(nonatomic,strong) CTSRulesClient *nameRules;
+@property(nonatomic) uint64_t lastRulesDisplayRevision;
 - (void)applyIcon:(NSImage *)image;
 - (void)metadataTick;
 - (void)iconModeChanged:(id)sender;
@@ -252,6 +256,9 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
         _foregroundQueue = dispatch_queue_create("ChatGPTTitleDraft.ObjC.Foreground", DISPATCH_QUEUE_SERIAL);
         _backgroundQueue = dispatch_queue_create("ChatGPTTitleDraft.ObjC.Background", DISPATCH_QUEUE_SERIAL);
         _autoStartEnabled=TitleSyncStartupEnabled();_icons=[TitleSyncIcons new];
+        NSString *executable=NSProcessInfo.processInfo.arguments[0];
+        NSString *rulesState=[NSHomeDirectory() stringByAppendingPathComponent:@"Library/Application Support/ChatGPT-TitleSync/runtime/objc"];
+        _nameRules=[[CTSRulesClient alloc] initWithExecutablePath:CTSRulesCompanionPath(executable) rulesPath:CTSRulesDefaultPath() stateDirectory:rulesState captionMode:YES];
         _records = [NSMutableArray array]; _nextToken = 1; _interval = 2; _backgroundInterval = 5;
         // Legacy preferences domain retained so existing settings survive the product rename.
         _timingLock=[NSLock new];_scanPreferences=[[NSUserDefaults alloc] initWithSuiteName:@"org.chatgpt-title.objc"];
@@ -316,7 +323,26 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
         NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:titles[i] action:actions[i] keyEquivalent:i==3?@"q":@""];
         item.target=self; [menu addItem:item];
     }
+    NSMenuItem *replacement=[[NSMenuItem alloc] initWithTitle:@"Name replacement… / 名称替换…" action:@selector(showNameReplacement) keyEquivalent:@""];
+    replacement.target=self;[menu insertItem:replacement atIndex:MAX((NSInteger)0,(NSInteger)menu.numberOfItems-3)];
     self.status.menu=menu;
+}
+- (NSArray<NSString *> *)rawRuleNames {
+    NSMutableArray<NSString *> *names=[NSMutableArray array];
+    for(WindowRecord *record in self.records)if(record.rawSourceName)[names addObject:record.rawSourceName];
+    return names;
+}
+- (void)showNameReplacement {
+    // Capture only the already-verified raw cache on its serial owner queue.
+    dispatch_async(self.queue,^{
+        [self.nameRules publishSources:[self rawRuleNames]];
+        dispatch_async(dispatch_get_main_queue(),^{
+            NSError *error=nil;
+            if(![self.nameRules openEditorWithHelpPath:CTSRulesHelpPath(NSProcessInfo.processInfo.arguments[0]) error:&error]) {
+                NSAlert *alert=[NSAlert new];alert.messageText=@"Name replacement";alert.informativeText=error.localizedDescription?:@"The companion could not be opened.";[alert runModal];
+            }
+        });
+    });
 }
 // A modeless panel leaves normal monitoring responsive while editing.
 - (NSArray<NSNumber *> *)timingSnapshot {
@@ -349,6 +375,7 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
         NSMutableArray<NSPopUpButton *> *choices=[NSMutableArray array];
         for(NSUInteger i=0;i<3;i++){CGFloat y=186-36*i;NSTextField *label=[NSTextField labelWithString:iconLabels[i]];label.frame=NSMakeRect(14,y,200,24);[view addSubview:label];NSPopUpButton *popup=[[NSPopUpButton alloc] initWithFrame:NSMakeRect(222,y,190,26) pullsDown:NO];[popup addItemsWithTitles:iconValues[i]];[view addSubview:popup];[choices addObject:popup];}
         self.iconModeInput=choices[0];self.fixedIconInput=choices[1];self.iconPeriodInput=choices[2];self.iconModeInput.target=self;self.iconModeInput.action=@selector(iconModeChanged:);
+        NSButton *replacement=[[NSButton alloc] initWithFrame:NSMakeRect(14,73,398,28)];replacement.title=@"Name replacement… / 名称替换…";replacement.target=self;replacement.action=@selector(showNameReplacement);[view addSubview:replacement];
         self.settingsPanel=panel;
     }
     self.foregroundInput.stringValue=[NSString stringWithFormat:@"%.0f",self.interval];
@@ -426,7 +453,7 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
 - (void)quit {
     if (self.quitting) return;
     self.generation++;self.quitting=YES; [self.timer invalidate];
-    dispatch_async(self.queue, ^{[self restoreAll]; dispatch_async(dispatch_get_main_queue(), ^{[NSApp terminate:nil];});});
+    dispatch_async(self.queue, ^{[self restoreAll];[self.nameRules publishSources:@[]];[self.nameRules dispose]; dispatch_async(dispatch_get_main_queue(), ^{[NSApp terminate:nil];});});
 }
 - (void)enqueueScan {
     if (self.paused || self.queued || self.quitting) return;
@@ -525,11 +552,13 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
     NSString *current=AXString(record.window,kAXTitleAttribute);if(!current)return;
     [self releaseChangedLease:record current:current];
     if([self generic:name]) {
-        record.cachedTitle=nil;
+        record.cachedTitle=nil;record.rawSourceName=nil;[self.nameRules publishSources:[self rawRuleNames]];
         if(record.lastWritten&&[current isEqualToString:record.lastWritten]&&record.original&&[self write:record wanted:record.original expected:current foreground:foreground]){record.lastWritten=nil;record.original=nil;}
         return;
     }
-    NSString *wanted=[name stringByAppendingString:@" — ChatGPT"];record.cachedTitle=wanted;
+    record.rawSourceName=name;[self.nameRules publishSources:[self rawRuleNames]];
+    NSString *display=[self.nameRules resolve:name];if(!display){record.cachedTitle=nil;return;}
+    NSString *wanted=display;record.cachedTitle=wanted;
     if([self generic:current])record.manualOverride=NO;
     if([current isEqualToString:wanted])return;
     if(![self generic:current]&&![current isEqualToString:record.lastWritten]){record.manualOverride=YES;[self log:@"custom_caption_preserved" record:record error:nil];return;}
@@ -553,10 +582,24 @@ static NSString *ConversationTitle(AXUIElementRef window, NSString **error, BOOL
         });
     });
 }
+// Presentation completions never change source epochs, deadlines or cancellation.
+- (void)refreshRuleDisplays {
+    [self.nameRules poll];uint64_t revision=self.nameRules.displayRevision;
+    if(revision==self.lastRulesDisplayRevision)return;self.lastRulesDisplayRevision=revision;
+    for(WindowRecord *record in self.records) {
+        if(!record.rawSourceName)continue;NSString *display=[self.nameRules resolve:record.rawSourceName];if(!display)continue;
+        NSString *wanted=display,*prior=record.cachedTitle;record.cachedTitle=wanted;
+        if([prior isEqualToString:wanted]||record.manualOverride||!record.lastWritten)continue;
+        NSString *current=AXString(record.window,kAXTitleAttribute);
+        if(![current isEqualToString:record.lastWritten])continue;
+        [self write:record wanted:wanted expected:current foreground:[self active:record]];
+    }
+}
 - (NSArray<NSString *> *)scan {
     if(![self allowed]||!AXIsProcessTrusted())return @[@"Accessibility permission required"];
     NSArray *timing=[self timingSnapshot];
     NSArray<WindowRecord *> *candidates=[self discover];WindowRecord *foreground=nil,*due=nil;
+    [self.nameRules publishSources:[self rawRuleNames]];[self refreshRuleDisplays];
     NSDate *now=NSDate.date;
     for(WindowRecord *record in candidates) {
         BOOL isForeground=[self active:record];

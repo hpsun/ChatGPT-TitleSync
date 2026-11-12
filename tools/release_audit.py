@@ -16,7 +16,7 @@ PRIVATE_TEXT = [
     ("credential-like-token", re.compile(r"(?:gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{30,}|sk-[A-Za-z0-9]{24,})")),
     ("private-key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
 ]
-TEXT_EXT = {".md", ".html", ".json", ".txt", ".py", ".ps1", ".cs", ".rs", ".go", ".mod", ".toml", ".lock", ".yml", ".yaml", ".ahk", ".swift", ".m", ".applescript"}
+TEXT_EXT = {".md", ".html", ".json", ".txt", ".py", ".ps1", ".cs", ".rs", ".go", ".mod", ".toml", ".lock", ".yml", ".yaml", ".ahk", ".swift", ".m", ".h", ".sh", ".applescript"}
 class AuditFailure(Exception): pass
 
 def digest(data: bytes) -> str:

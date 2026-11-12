@@ -2,7 +2,7 @@
 
 [English](README.md) · [项目主页](../README.zh-CN.md)
 
-Windows x64构建及隔离测试已验证。macOS为**Experimental实验源码，未在Mac编译或实测**。实现独立使用Go与原生接口，不调用C#监听程序。
+Windows x64构建及隔离测试已验证。macOS仍为**Experimental**，CI编译检查不等于Mac本机GUI／持续监听实测。实现独立使用Go与原生接口，不调用C#监听程序。
 
 ## 环境与构建
 Windows使用Go 1.22及以上、Windows x64；Win32/COM绑定仅依赖标准库，无需cgo或MSVC。本机验证使用已核对官方SHA256的便携Go SDK，未安装到系统。
@@ -113,3 +113,43 @@ worker、probe、自测、once、read-only 和控制请求均不注册。read-on
 实验性 Mac 前端第 10 参数为 autostart_enabled，第 11 参数为当前绝对 EXE 路径。用户 LaunchAgent `~/Library/LaunchAgents/io.github.hpsun.ChatGPTTitleSync.plist` 由共享前端管理，Go/Rust 只传已提交状态并观察文件变更；--no-tray 跳过该可选前端及其自启动管理。本 Windows 主机未建立 Mac LaunchAgent，也未做 Mac 原生编译或实机运行。
 
 Windows 开启时，带引号的完整 Run 命令长度最多 260 个 UTF-16 字符；超限会明确报错并保持 Run/偏好原状，关闭不受此长度限制。相同命令与偏好已经一致时不重复写入。[Microsoft Run/RunOnce 文档](https://learn.microsoft.com/en-us/windows/win32/setupapi/run-and-runonce-registry-keys)。
+
+## 名称替换与共用系统辅助程序
+
+名称替换缺省为**空规则列表**，不包含个人前缀、本机规则或从其它程序迁移的预设。各语言监听程序调用同一份经过审查的系统辅助程序：Windows为`ChatGPT-TitleSync.Rules.exe`（.NET Framework Unicode／Regex），macOS为`chatgpt-titlesync-rules`（Foundation／AppKit）。发布此功能需要随包提供该辅助程序；Rust没有新增crate，Go没有新增外部Go模块。
+
+使用前先构建辅助程序：
+
+```powershell
+# 在当前语言目录中，Windows：
+powershell -NoProfile -File ..\shared\windows\Build.ps1
+```
+
+```sh
+# 在当前语言目录中，macOS：
+sh ../shared/macos/build.sh
+# 也可指定输出目录：
+sh ../shared/macos/build.sh /tmp/titlesync-rules-build
+```
+
+使用单独输出目录时，把生成的辅助程序随监听EXE放在同一目录；源码目录结构也支持已知`shared/windows`／`shared/macos`位置。程序不从规则偏好读取可执行命令，也不通过PATH查找辅助程序。需要同时打包本地帮助页。
+
+托盘菜单和设置窗口都增加**名称替换…**入口。规则按顺序执行，可启用、删除和调整顺序。`literal`按字面、区分大小写、非重叠全替换；`regex`使用对应操作系统引擎。数字捕获替换支持`$0`～`$99`、`${0}`～`${99}`和`$$`；高级正则语法存在Windows／macOS差异。允许空替换；失败、无效、空白、控制字符或超长结果均回退完整的已验证原名。
+
+当前对话名列表来自本监听运行／设置目录的私有`title-rule-sources.bin` CTS1快照，不额外查询ChatGPT。快照无效或不存在时仍可手工输入示例，并显示快照时间。**建议正则**只根据选中的示例／文字转义生成候选，先展示解释、正则、替换和结果，必须明确点击**使用规则**再**保存**。打开、预览或取消不创建持久规则文件。详见[名称替换帮助](../docs/name-replacement.zh-CN.html)。
+
+共享规则位于Windows的`%LOCALAPPDATA%/ChatGPT-TitleSync/title-rules.json`或macOS的`~/Library/Application Support/ChatGPT-TitleSync/title-rules.json`。扫描间隔、启动项和图标设置保持独立，保存这些设置不会抹掉规则。实际个人规则、来源名称快照、worker包和运行日志不应发布。
+
+监听保留未经替换的已验证原名，显示标题与退出恢复租约分开保存。规则变化只推进显示修订，丢弃过时异步结果，并仅改写仍由本实例持有且等于上次写入值的标题；不重排来源截止时间或取消来源读取。前后台缺省2秒／5秒与原有1秒后台原生标题维护节拍保持。格式化使用本实例创建的独立worker，1500毫秒硬截止，按原名与规则字节缓存成功／回退；未变化的维护不会反复启动格式化进程。人工标题、窗口创建身份和退出恢复保护保留。
+
+本功能新增的规则／三层假后端检查仅用私有文件和内存原生状态；可选的owned-worker夹具只启动并终止自己创建的无界面进程。既有未筛选Windows测试还会使用GUID临时注册表键及自有原生控件，因此不能把未筛选的`go test`／`cargo test`结果称为纯私有文件测试。即使CI编译与纯格式化用例通过，也不等于macOS本机GUI／持续监听已完成实测。
+
+配套程序缺失后的回退也会记录其存在性、修改时间和大小；安装补齐后只使显示缓存失效，不改变来源读取频率或取消状态。
+
+## 可关闭的ChatGPT后缀
+
+共享**名称替换**编辑器同时控制是否附加固定的` — ChatGPT`后缀，缺省已开。共享规则JSON的可选布尔字段`append_chatgpt_suffix`缺项时按`true`处理；关闭后只使用规则处理后的正文。此偏好不写入本实现原有的前台／后台、自启或图标设置。
+
+产品客户端通过`--format --caption`取得完整窗口标题，父缓存不再重复附加。原`--format`接口及正文模式夹具保持原义。没有规则文件时，立即使用可信原名加缺省后缀，不创建规则文件、不启动格式工作进程；已有空规则或停用规则仍由配套程序处理，保证明确的`false`生效。规则错误但合法关闭后缀时，保留完整原文而不加尾巴；规则不可读、配套程序缺失或工作进程应答无效时，使用本地缺省标题。处理过的回退包只接受精确原文，或精确原文加固定后缀。
+
+规则正文仍限512个UTF-16代码单元，完整标题限522个。保存后缀开关只通过显示代次刷新仍由本程序持有的标题，不改变可信原名、来源读取间隔、来源取消、手动标题保护或原标题还原。本次后缀检查仅用私有文件、内存原生状态和格式CLI配套进程，不表示真实桌面或Mac界面已经验收。

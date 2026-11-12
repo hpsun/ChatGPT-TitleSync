@@ -16,7 +16,7 @@ Source execution and the console/onedir candidate are described below. This rema
 
 - Windows and a Python 3 interpreter. The script uses only the standard library: ctypes, subprocess, pathlib, and related modules.
 - Windows UI Automation and Win32 APIs supplied by the OS.
-- No pythonnet, external COM package, C# helper, or model/API connection.
+- No pythonnet, external COM package or model/API connection. Optional name replacement uses the separately built shared C# companion below.
 
 Keep a python.exe next to pythonw.exe when using the latter: the source-mode worker chooses the console interpreter to capture its JSON output.
 
@@ -169,3 +169,41 @@ Final executable passed source/header and later native-title agreement, FG reset
 
 One accepted FG and one BG reset; the same three existing windows were reused and matched their original generic captions after exit. Native settings/menu-handler checks do not establish physical shell right-click, long-term use or installation acceptance. See the project support matrix for the precise scope.
 <!-- END TARGETED_WINDOWS_REAL -->
+
+## Name replacement — shared Unicode companion
+
+The tray **Name replacement… / 名称替换…** and the settings window's same-named button open the **same** shared editor: ordered literal/regex rows, preview, already-read raw-name dropdown, generic regex suggestions and local help. Suggestions require explicit **Use rule**, then Save. Defaults are empty/identity; no personal or machine-specific presets are built in or migrated.
+
+Build the companion first, from this branch directory:
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "..\..\shared\windows\Build.ps1"
+
+This builds [TitleRules.cs](../../shared/windows/TitleRules.cs) with the Windows .NET Framework compiler. Retain `ChatGPT-TitleSync.Rules.exe` beside the main EXE, or at the exact repository location `../../shared/windows`; it is never searched through PATH or a preference-supplied command. Keep [English help](../../docs/name-replacement.md) and [中文帮助](../../docs/name-replacement.zh-CN.md), including their HTML siblings, available locally.
+
+Rules are separate at `%LOCALAPPDATA%\ChatGPT-TitleSync\title-rules.json`. Reading, opening and previewing do not create it; only successful editor Save writes it. Timing/startup/icon saves do not overwrite rules. No file means unchanged raw name. Existing rules plus an unavailable companion mean whole-raw fallback with a diagnostic.
+
+Formatting runs on the **verified raw name before** the standard ` — ChatGPT` suffix. Raw-source cache and original native-caption restoration stay unchanged. A separate display revision refreshes only a caption still owned by this run and equal to its last write, protecting manual and generic captions. Normal source schedules and 1-second cached repair remain separate. A nonblocking, pinned, caller-owned format child has a 1500 ms deadline; unchanged success/fallback is cached and stale results are discarded. Signatures are checked on a bounded 1-second cadence without extra ChatGPT reads.
+
+`title-rule-sources.bin` is a **private** CTS1 snapshot in the monitor runtime/settings directory. It contains verified raw names only, is updated on name/window-set changes and must not be committed or published. It populates the editor dropdown without extra UIA reads.
+
+Keep [name_replacement.py](name_replacement.py) beside the main source. PyInstaller follows its static import; a custom spec must retain it, or add `--hidden-import name_replacement`. The shared rules EXE remains external. After the onedir build above:
+
+    $bundle = ".\build\dist\ChatGPTTitleSyncPython"
+    Copy-Item "..\..\shared\windows\ChatGPT-TitleSync.Rules.exe" $bundle
+    New-Item -ItemType Directory -Force "$bundle\docs" | Out-Null
+    Copy-Item "..\..\docs\name-replacement.html","..\..\docs\name-replacement.zh-CN.html" "$bundle\docs"
+    python -B tests/test_name_replacement.py -v
+
+The adapter passed 14 owned-file/process tests plus 8 private checks with the real shared format companion. The checks include Unicode CTS1, exact fallback, cache invalidation, timeout, stale generations and simulated ownership guards.
+
+These are format/protocol and controlled-ownership checks. They do not open the editor, start a normal resident, read ChatGPT, change production startup/preferences or claim new real-desktop/menu acceptance. The linked help defines limits, strict replacement references, OS regex differences and complete-raw fallback.
+
+### Optional ChatGPT suffix — default enabled
+
+The shared name-replacement editor has an independent **Append — ChatGPT / 标题末尾显示ChatGPT** checkbox, checked by default. Uncheck it and **Save** to stop adding the program's ` — ChatGPT` suffix. It remains effective when replacement rules are empty or **Enable name replacement** is off. This switch does not remove matching text that is part of the original conversation name.
+
+The optional JSON field `append_chatgpt_suffix` is a boolean in the shared `title-rules.json`; an omitted field defaults to `true`. It is not stored in scan-interval, icon or startup preferences. The frontend asks the shared formatter for the **complete caption** with `--format --caption`, then uses that output directly, avoiding a second suffix. Existing body-only `--format` clients keep their previous semantics. The verified raw source remains limited to 512 UTF-16 units; a complete caption is limited to 522 units including the optional 10-unit suffix.
+
+Saving this choice changes display generation only. It can refresh an owned caption still matching the last write, without extra source reads, source-timer resets or changes to raw/original restoration data. An existing configuration is always sent to the companion in caption mode, even with empty/disabled rules, so the unchecked suffix remains effective. A handled formatter fallback accepts only the entire raw name or that raw name plus the fixed suffix. If the companion cannot run or misses its deadline, the safe local fallback uses the default suffix and records a diagnostic; unchanged fallback stays cached until the rules/helper signature changes, a different raw name is observed or the monitor restarts.
+
+Caption revision checks: **23** owned Python unit tests and **14** private checks against the actual copied Windows companion passed. These are file/process and simulated ownership checks, not a fresh normal-desktop/editor acceptance.

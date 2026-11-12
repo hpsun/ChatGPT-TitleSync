@@ -107,6 +107,11 @@ func trayWndProc(h uintptr, m uint32, w, l uintptr) uintptr {
 		case 0x111:
 			id := w & 0xffff
 			if h == t.panel {
+				if id == 401 && !t.test {
+					if e := openNameRuleEditor(filepath.Dir(t.settings.path)); e != nil {
+						t.error(e)
+					}
+				}
 				if id == 301 && (w>>16) == 1 {
 					t.enableThemeFields()
 				}
@@ -118,7 +123,7 @@ func trayWndProc(h uintptr, m uint32, w, l uintptr) uintptr {
 				}
 				return 0
 			}
-			if h == t.hwnd && id >= 1 && id <= 4 {
+			if h == t.hwnd && id >= 1 && id <= 5 {
 				t.command(id)
 				return 0
 			}
@@ -174,6 +179,7 @@ func (t *winTray) popup() {
 	}
 	uiCall("AppendMenuW", menu, autoChecked, 4, tu("开机自启动"))
 	uiCall("AppendMenuW", menu, 0, 2, tu("扫描间隔设置…"))
+	uiCall("AppendMenuW", menu, 0, 5, tu("Name replacement… / 名称替换…"))
 	uiCall("AppendMenuW", menu, 0x800, 0, 0)
 	uiCall("AppendMenuW", menu, 0, 3, tu("退出并还原标题"))
 	var point trayPoint
@@ -185,6 +191,13 @@ func (t *winTray) popup() {
 }
 func (t *winTray) command(command uintptr) {
 	switch command {
+	case 5:
+		if !t.test {
+			if e := openNameRuleEditor(filepath.Dir(t.settings.path)); e != nil {
+				t.error(e)
+			}
+		}
+
 	case 1:
 		s := t.settings.snapshot()
 		s.Enabled = !s.Enabled
@@ -239,7 +252,7 @@ func (t *winTray) showSettings(show bool) {
 	s := t.settings.snapshot()
 	if t.panel == 0 {
 		cls := fmt.Sprintf("ChatGPTTitleGoTray_%d", os.Getpid())
-		t.panel = uiCall("CreateWindowExW", 0x00040000, tu(cls), tu("ChatGPT 标题同步助手 · Go — 设置"), 0x00c80000, 0x80000000, 0x80000000, 450, 410, 0, 0, 0, 0)
+		t.panel = uiCall("CreateWindowExW", 0x00040000, tu(cls), tu("ChatGPT 标题同步助手 · Go — 设置"), 0x00c80000, 0x80000000, 0x80000000, 450, 450, 0, 0, 0, 0)
 		if t.panel == 0 {
 			return
 		}
@@ -256,8 +269,9 @@ func (t *winTray) showSettings(show bool) {
 		t.child("STATIC", "随机周期", 0, 18, 227, 220, 23, 0)
 		t.periodCombo = t.combo([]string{"每日", "每小时", "每5分钟"}, 295, 222, 303)
 		t.child("STATIC", "后台标题回改仍每秒检查一次。", 0, 18, 267, 390, 25, 0)
-		t.child("BUTTON", "保存", 0x00010001, 220, 317, 85, 30, 101)
-		t.child("BUTTON", "取消", 0x00010000, 315, 317, 85, 30, 102)
+		t.child("BUTTON", "Name replacement… / 名称替换…", 0x00010000, 18, 307, 300, 30, 401)
+		t.child("BUTTON", "保存", 0x00010001, 220, 357, 85, 30, 101)
+		t.child("BUTTON", "取消", 0x00010000, 315, 357, 85, 30, 102)
 	}
 	uiCall("SetWindowTextW", t.fgEdit, tu(strconv.Itoa(s.ForegroundSeconds)))
 	uiCall("SetWindowTextW", t.bgEdit, tu(strconv.Itoa(s.BackgroundSeconds)))

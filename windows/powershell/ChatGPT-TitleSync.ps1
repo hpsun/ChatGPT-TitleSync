@@ -230,7 +230,7 @@ function Invoke-CgtActivePass($backend,$states,$cancel,[bool]$readOnly){
  return ,$results.ToArray()
 }
 
-function Remember-CgtWindow($states,$w){if(!$states.ContainsKey($w.Key)){$states[$w.Key]=@{Window=$w;Cached='';Last=$null;Original=$null;Own=$false;Version=0L;NextBackground=[DateTime]::MinValue;Pending=0L}};return $states[$w.Key]}
+function Remember-CgtWindow($states,$w){if(!$states.ContainsKey($w.Key)){$states[$w.Key]=@{Window=$w;Raw='';Cached='';Last=$null;Original=$null;Own=$false;Version=0L;NextBackground=[DateTime]::MinValue;Pending=0L}};return $states[$w.Key]}
 function New-CgtSourceJob($states,$w,[bool]$foreground,[long]$id,[long]$epoch){$e=Remember-CgtWindow $states $w;return @{Window=$w;Foreground=$foreground;ID=$id;Epoch=$epoch;Version=$e.Version}}
 function Maintain-CgtKnown($backend,$states,[bool]$readOnly){
  foreach($key in @($states.Keys)){
@@ -258,11 +258,11 @@ function Apply-CgtSource($backend,$states,$job,$result,[long]$epoch,[int]$backgr
  if($job.Foreground -and !(& $backend.Active $w)){return}
  $previous=$e.Last;$e.Version++;$e.NextBackground=$now.AddSeconds($backgroundSeconds)
  if(!$title -or $title -ieq 'ChatGPT'){
-  $e.Cached=''
+  $e.Raw='';$e.Cached=''
   if($e.Own -and $current -ceq $e.Last -and !$readOnly){[void](& $backend.Set $w $current $e.Original)}
   $e.Own=$false;$e.Last=$null;$e.Original=$null;return
  }
- $desired=$title;if(!$desired.EndsWith(' — ChatGPT')){$desired+=' — ChatGPT'};$e.Cached=$desired
+ $e.Raw=$title;$desired=if($script:CgtNameRules){$script:CgtNameRules.Resolve($title)}else{$title+' — ChatGPT'};$e.Cached=$desired
  if($current -ceq $desired){$e.Last=$desired;return}
  $generic=[string]::IsNullOrWhiteSpace($current) -or $current.Trim() -ieq 'ChatGPT'
  if(!$generic -and (!$previous -or $current -cne $previous)){$e.Own=$false;$e.Original=$null;$e.Last=$null;return}
@@ -365,6 +365,24 @@ function Save-CgtSettings([string]$path,[bool]$enabled,[int]$foreground,[int]$ba
   for($i=0;;$i++){try{if([IO.File]::Exists($path)){[IO.File]::Replace($temp,$path,[NullString]::Value)}else{[IO.File]::Move($temp,$path)};break}catch [IO.IOException]{if(($_.Exception.HResult -band 65535) -notin @(32,33) -or $i -ge 4){throw};Start-Sleep -Milliseconds (20*($i+1))}}
  }finally{try{if([IO.File]::Exists($temp)){[IO.File]::Delete($temp)}}catch{}}
 }
+function Get-CgtRulesTool {
+ foreach($relative in @('ChatGPT-TitleSync.Rules.exe','../../shared/windows/ChatGPT-TitleSync.Rules.exe','../shared/windows/ChatGPT-TitleSync.Rules.exe')){$path=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot $relative));if([IO.File]::Exists($path)){return $path}}
+ throw 'The packaged ChatGPT-TitleSync.Rules.exe companion is missing.'
+}
+function Open-CgtNameRules($state){
+ try{if(!$state.NameRules){throw 'Name replacement is unavailable in this mode.'};$name=if([Globalization.CultureInfo]::CurrentUICulture.TwoLetterISOLanguageName -eq 'zh'){'name-replacement.zh-CN.html'}else{'name-replacement.html'};$help=$null
+  foreach($relative in @('docs','../../docs','../docs')){$path=[IO.Path]::GetFullPath((Join-Path (Join-Path $PSScriptRoot $relative) $name));if([IO.File]::Exists($path)){$help=$path;break}}
+  if(!$help){throw 'Packaged local name-replacement help is unavailable.'};[void]$state.NameRules.OpenEditor($help)
+ }catch{[void][Windows.Forms.MessageBox]::Show($_.Exception.Message,'ChatGPT-TitleSync — Name replacement')}
+}
+function Refresh-CgtRuleDisplays($backend,$states,[bool]$readOnly){
+ if(!$script:CgtNameRules){return};$sources=[Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+ foreach($entry in $states.Values){$w=$entry.Window;if(!$entry.Raw -or !(& $backend.Same $w)){continue};$sources[$w.Key]=[string]$entry.Raw;$desired=$script:CgtNameRules.Resolve([string]$entry.Raw);$entry.Cached=$desired
+  if($readOnly -or !$entry.Own -or !$entry.Last){continue};$current=& $backend.Caption $w;if($current -cne $entry.Last -or $current -ceq $desired){continue};$active=& $backend.Active $w
+  $ok=if($active){& $backend.SetActive $w $current $desired}else{& $backend.SetInactive $w $current $desired};if($ok){$entry.Last=$desired}
+ }
+ try{$script:CgtNameRules.PublishSources($sources)}catch{}
+}
 function Get-CgtThemeFolder {
  foreach($relative in @('assets/themes','../assets/themes','../../assets/themes')){$path=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot $relative));if([IO.Directory]::Exists($path)){return $path}}
  return [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../../assets/themes'))
@@ -427,6 +445,7 @@ function Open-CgtScanSettings($state,[string]$path,[scriptblock]$saveAction){
  $cl=[Windows.Forms.Label]::new();$cl.Text='固定配色 / Fixed color';$cl.AutoSize=$true;$cl.Location=[Drawing.Point]::new(14,189)
  $pl=[Windows.Forms.Label]::new();$pl.Text='随机换色 / Random period';$pl.AutoSize=$true;$pl.Location=[Drawing.Point]::new(14,231)
  $form.Controls.AddRange(@($ml,$iconMode,$cl,$fixedIcon,$pl,$iconPeriod));$state.Form=$form
+ $nameRules=[Windows.Forms.Button]::new();$nameRules.Name='NameReplacement';$nameRules.Text='Name replacement… / 名称替换…';$nameRules.Location=[Drawing.Point]::new(14,365);$nameRules.Size=[Drawing.Size]::new(265,28);$nameRules.Enabled=[bool]$state.NameRules;$openRules=${function:Open-CgtNameRules};$nameRules.add_Click({& $openRules $state}.GetNewClosure());$form.Controls.Add($nameRules)
  if($state.Icon){$state.FormIcon=$state.Icon.Clone();$form.Icon=$state.FormIcon}
  $form.add_FormClosed({if($state.FormIcon){$state.FormIcon.Dispose();$state.FormIcon=$null}}.GetNewClosure())
  $form.Show();[void][CgtNative]::ShowSettingsWindow($form.Handle.ToInt64());$form.Activate()
@@ -447,6 +466,7 @@ function Initialize-CgtTray($state,[string]$path){
  $changeAutoStart=$state.AutoStartUiAction;$state.AutoStartMenu=$autoStart
  $autoStart.add_Click({try{& $changeAutoStart $state (!$state.AutoStartEnabled)}catch{[void][Windows.Forms.MessageBox]::Show($_.Exception.Message,'ChatGPT-TitleSync — Auto-start')}}.GetNewClosure());[void]$menu.Items.Add($autoStart)
  $exit=[Windows.Forms.ToolStripMenuItem]::new('Exit and restore titles');$exit.add_Click({$state.Quit=$true}.GetNewClosure());[void]$menu.Items.Add($exit)
+ $nameRules=[Windows.Forms.ToolStripMenuItem]::new('Name replacement… / 名称替换…');$nameRules.Enabled=[bool]$state.NameRules;$openRules=${function:Open-CgtNameRules};$nameRules.add_Click({& $openRules $state}.GetNewClosure());[void]$menu.Items.Add($nameRules)
  $tray.ContextMenuStrip=$menu;$tray.Visible=$true;$state.Tray=$tray;$state.Menu=$menu
 }
 
@@ -492,6 +512,15 @@ try{
   $ui.ThemeService=[TitleSyncThemes.ThemeService]::new([TitleSyncThemes.ThemeService]::PreferenceKey,[Func[DateTimeOffset]]{[DateTimeOffset]::Now},[Func[int,int]]$choose,[Action[int]]$validate,$null)
   try{$ui.ThemeService.Load()}catch{Write-CgtThemeError $ui $_.Exception}
  }
+ # The common Unicode formatter is loaded only by the normal resident, after readonly/worker entries returned.
+ $script:CgtNameRules=$null
+ if(!$ReadOnly -and !$BackgroundWorker){
+  try{$rulesTool=Get-CgtRulesTool;[void][Reflection.Assembly]::LoadFrom($rulesTool)
+   $emptyInspector=[TitleSyncRules.IdentityInspector]{param($bytes)$config=[Text.Encoding]::UTF8.GetString($bytes).TrimStart([char]0xFEFF)|ConvertFrom-Json;if($config.schema_version -ne 1 -or $config.enabled -isnot [bool] -or $null -eq $config.rules){throw 'Invalid rule configuration'};return (!$config.enabled -or @($config.rules|Where-Object {$_.enabled}).Count -eq 0)}
+   $rulePath=Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'ChatGPT-TitleSync/title-rules.json';$script:CgtNameRules=[TitleSyncRules.RulesClient]::new($rulesTool,$rulePath,[IO.Path]::GetFullPath($LogDirectory),$emptyInspector,$true)
+  }catch{$script:CgtNameRules=$null}
+ }
+ $ui.NameRules=$script:CgtNameRules
  Initialize-CgtTray $ui $settingsPath
  if($ui.ThemeService){try{$initial=$ui.ThemeService.PlanTick();if($initial){$ready=[Drawing.Icon]::new((Join-Path $ui.ThemeFolder ([string]$initial.Icon+'.ico')));try{$ui.ThemeService.Commit($initial);& $ui.ThemeApplyIcon $ui $initial.Icon $ready;$ready=$null}finally{if($ready){$ready.Dispose()}}}elseif($ui.ThemeDisplayedId -ne $ui.ThemeService.Current.Icon){& $ui.ThemeApplyIcon $ui $ui.ThemeService.Current.Icon $null}}catch{$ui.ThemeService.MarkTickFailed();Write-CgtThemeError $ui $_.Exception}}
  if($ui.AutoStartError){[void][Windows.Forms.MessageBox]::Show($ui.AutoStartError,'ChatGPT-TitleSync — Auto-start')}
@@ -526,6 +555,7 @@ try{
    }
   }
   if($elapsed -ge $nextNative){
+   Refresh-CgtRuleDisplays $backend $states ([bool]$ReadOnly)
    Maintain-CgtKnown $backend $states ([bool]$ReadOnly)
    $nextNative=Get-CgtNextDeadline $nextNative $elapsed 1000
   }
@@ -554,5 +584,6 @@ try{
  if($ui){if($ui.Form){$ui.Form.Dispose()};if($ui.Tray){$ui.Tray.Visible=$false;$ui.Tray.Dispose()};if($ui.Menu){$ui.Menu.Dispose()};if($ui.Icon){$ui.Icon.Dispose()}}
  Stop-CgtReaderTask $fgTask;Stop-CgtReaderTask $bgTask
  Restore-CgtKnown $backend $states
+ if($script:CgtNameRules){$script:CgtNameRules.Dispose();$script:CgtNameRules=$null}
  if($null -ne $settingsEvent){$settingsEvent.Dispose()};if($null -ne $event){$event.Dispose()};if($owns){$mutex.ReleaseMutex()};$mutex.Dispose()
 }

@@ -51,7 +51,7 @@
 <td>Swift / Objective-C</td>
 <td><a href="../macos/README.md">MD</a> · <a href="../macos/README.html">HTML</a></td>
 <td><a href="../macos/README.zh-CN.md">MD</a> · <a href="../macos/README.zh-CN.html">HTML</a></td>
-<td>Experimental；未原生 Mac 构建／AX 实测</td>
+<td>Experimental；已记录原生客户端CI编译，真实AX／GUI待验收</td>
 </tr>
 <tr>
 <td>Go</td>
@@ -67,7 +67,10 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_2">指南覆盖与待验收项</h2>
+<h2 id="_2">名称替换帮助</h2>
+<p><a href="name-replacement.zh-CN.md">中文帮助</a> · <a href="name-replacement.zh-CN.html">中文HTML</a> · <a href="name-replacement.md">English guide</a> · <a href="name-replacement.html">English HTML</a></p>
+<p>包含普通文字、正则、数字捕获组、当前名称选择、建议方案、顺序、预览、保存与取消、长度限制和完整原名回退。两种模式默认均为空规则；各语言指南另列配套组件的构建和打包方法。</p>
+<h2 id="_3">指南覆盖与待验收项</h2>
 <p>各指南包含环境、构建或解释器运行、运行／停止／恢复、45 图标及当前三层策略，并说明各分支计时器／工作进程边界。前台缺省每2秒取新鲜来源，后台原生修复每秒一次，后台来源缺省每窗口 5 秒。每秒调度不等于冷 UIA 读取一秒完成。</p>
-<p><a href="../support-matrix.zh-CN.md">支持矩阵</a> 按实际验证范围记录；见<a href="release-readiness.zh-CN.md#local-validation">本地验证与发布待办</a>。源码测试和打包后 smoke 不是同一项。Swift／Objective-C／Go／Rust macOS 源码仍为 Experimental，须完成目标 SDK 构建和真实 AX 实测。本地结果不声明远程 CI 或发布已完成；实际记录以已确认仓库为准。</p>
+<p><a href="../support-matrix.zh-CN.md">支持矩阵</a> 按实际验证范围记录；见<a href="release-readiness.zh-CN.md#local-validation">本地验证与发布待办</a>。源码测试和打包后 smoke 不是同一项。v0.1.0预览版已经公开，名称替换仍是功能分支、未建立新Release。当前Windows共享Unicode配套程序通过31／31项格式CLI用例，八种独立Windows前端实现的新完整桌面复测待开展。<a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43124672990">CI <code>19cec808</code></a>及<a href="https://github.com/hpsun/ChatGPT-TitleSync/actions/runs/43126332444">CI <code>97858710</code></a>已编译Foundation helper和新增Swift／Objective-C客户端，同一套30项共享CLI通过；Go／Rust当时仍为旧baseline适配。最新AppleScript／helper边界、客户端恢复和新Go／Rust集成等待下一完整CI。全部Mac路线的真实AX、菜单、编辑器和登录验收仍为Experimental；此前仅静态冻结及真实窗口样本均属历史，不能替代当前验收。</p>
 <p>正常恢复保留外部自定义标题。Windows 窗口标签不改变应用分组，macOS 窗口标题不重命名 Dock 应用。私有证据及对话名缓存不进入源码包。</p></body></html>

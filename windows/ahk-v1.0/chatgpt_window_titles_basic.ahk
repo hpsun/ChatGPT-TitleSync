@@ -159,6 +159,7 @@ BasicLoadIntervals()
 Menu, Tray, NoStandard
 Menu, Tray, Tip, ChatGPT-TitleSync - title synchronization helper (Basic)
 Menu, Tray, Add, Scan interval settings..., BasicSettingsOpen
+Menu, Tray, Add, Name replacement..., BasicRulesEditor
 Menu, Tray, Add, Start at sign-in, BasicAutoToggle
 Menu, Tray, Disable, Start at sign-in
 AutoMenuReady := 1
@@ -182,6 +183,10 @@ if (AutoAllowed) {
     else
         BasicThemeFinish(oldIcon,iconChanged)
 }
+if (!Once) {
+    BasicRulesInit("","","",1)
+    SetTimer, BasicRulesTimer, 50
+}
 Log("started readonly=" . ReadOnly . " interval=" . Interval)
 SetTimer, CheckStop, 200
 SetTimer, BasicBackgroundTimer, 1000
@@ -192,6 +197,12 @@ if (Once)
     ExitApp
 Return
 
+BasicRulesTimer:
+BasicRulesTick()
+Return
+BasicRulesEditor:
+BasicRulesOpenEditor()
+Return
 BasicBackgroundTimer:
 BasicBackgroundRefresh()
 Return
@@ -339,6 +350,8 @@ Loop, Parse, WindowList, |
 Busy := 0
 Return
 Cleanup:
+SetTimer, BasicRulesTimer, Off
+BasicRulesClose()
 BasicThemeDispose()
 if (hBgWorker) {
     DllCall("TerminateProcess","UInt",hBgWorker,"UInt",125)
@@ -580,6 +593,9 @@ SetCaptionChecked(hwnd, ByRef text, bytes) {
     return ok && result && ReadCaption(hwnd,back,blen) && BinaryEqual(text,bytes,back,blen)
 }
 BuildWanted(ByRef title, bytes, ByRef wanted, ByRef wb) {
+    BasicRulesCaption(title,bytes,wanted,wb)
+}
+BuildRawWanted(ByRef title, bytes, ByRef wanted, ByRef wb) {
     VarSetCapacity(wanted,bytes+22,0)
     if (bytes)
         DllCall("RtlMoveMemory","UInt",&wanted,"UInt",&title,"UInt",bytes)
@@ -1004,6 +1020,7 @@ BasicShowSettings(show=1) {
     Gui, 2:Add, Button, gBasicSettingsSave Default w100, Save
     Gui, 2:Add, Button, g2GuiClose x+10 w100, Cancel
     BasicThemeAddControls()
+    Gui, 2:Add, Button, gBasicRulesEditor x20 y335 w280, Name replacement...
     Gui, 2:+LastFound
     BasicSettingsHwnd := WinExist()
     if (TIcon)
@@ -1298,3 +1315,5 @@ BasicAutoSelfTest() {
 }
 
 #Include %A_ScriptDir%\IconThemeBasic.ahk
+
+#Include %A_ScriptDir%\NameReplacementBasic.ahk

@@ -1,4 +1,4 @@
-name: Experimental macOS compile only
+name: Experimental macOS compile and rule tests
 on:
   push:
   pull_request:
@@ -41,12 +41,14 @@ jobs:
           GOTOOLCHAIN: local
         run: |
           set -euo pipefail
+          bash shared/macos/build.sh "$RUNNER_TEMP"
           case "$TITLE_BUILD_LANGUAGE" in
             swift)
-              swiftc macos/ChatGPTWindowTitles.swift -framework AppKit -framework ApplicationServices -o "$RUNNER_TEMP/chatgpt-titlesync-swift"
+              clang -fobjc-arc -fblocks -c shared/macos/RulesClient.m -o "$RUNNER_TEMP/RulesClient.o"
+              swiftc macos/ChatGPTWindowTitles.swift "$RUNNER_TEMP/RulesClient.o" -import-objc-header shared/macos/RulesClient.h -framework AppKit -framework ApplicationServices -o "$RUNNER_TEMP/chatgpt-titlesync-swift"
               ;;
             objective-c)
-              clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices macos/ChatGPTWindowTitles.m -o "$RUNNER_TEMP/chatgpt-titlesync-objc"
+              clang -fobjc-arc -fblocks -framework Cocoa -framework ApplicationServices macos/ChatGPTWindowTitles.m shared/macos/RulesClient.m -o "$RUNNER_TEMP/chatgpt-titlesync-objc"
               ;;
             rust)
               cargo +1.82.0 build --manifest-path rust/Cargo.toml --release --offline
@@ -55,6 +57,17 @@ jobs:
               (cd go && CGO_ENABLED=1 go build -trimpath -o "$RUNNER_TEMP/chatgpt-titlesync-go" .)
               ;;
           esac
+      - name: Verify Unicode name rules without UI or AX
+        if: ${{ always() && matrix.language == 'swift' }}
+        run: python3 tools/test_name_replacement.py --worker "$RUNNER_TEMP/chatgpt-titlesync-rules" --report "$RUNNER_TEMP/name-rules-report.json"
+      - name: Verify bounded rule-file I/O without UI or AX
+        if: ${{ always() && matrix.language == 'swift' }}
+        run: python3 tools/test_macos_name_rules_io.py --helper "$RUNNER_TEMP/chatgpt-titlesync-rules" --output "$RUNNER_TEMP/name-rules-io.json"
+      - name: Verify raw-name client recovery without UI or AX
+        if: ${{ always() && matrix.language == 'swift' }}
+        run: |
+          clang -fobjc-arc -fblocks -framework Foundation tools/tests/macos_rules_client_fixture.m shared/macos/RulesClient.m -o "$RUNNER_TEMP/rules-client-fixture"
+          "$RUNNER_TEMP/rules-client-fixture" "$RUNNER_TEMP/chatgpt-titlesync-rules"
       - name: Compile the shared menu script without launching it
         id: applescript_compile
         if: ${{ always() && matrix.language == 'swift' }}
