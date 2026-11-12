@@ -12,7 +12,6 @@ jobs:
     env:
       GOTOOLCHAIN: local
       CGO_ENABLED: '0'
-      CTS_CAPTION_TEST_HELPER: '${{ runner.temp }}/ChatGPT-TitleSync.Rules.exe'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,6 +34,8 @@ jobs:
         run: |
           & ./shared/windows/Build.ps1 -OutputDirectory "$env:RUNNER_TEMP"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          # Runner paths exist at step execution time, outside job-level env evaluation.
+          "CTS_CAPTION_TEST_HELPER=$env:RUNNER_TEMP/ChatGPT-TitleSync.Rules.exe" | Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Go fake states, COM ABI and owned-window checks
         working-directory: go
         shell: pwsh
